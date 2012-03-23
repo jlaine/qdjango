@@ -1,0 +1,17 @@
+{% include "header.html" %}
+<div class="module">
+    <table width="100%">
+    <tbody>
+{% for model in model_list %}
+        <tr>
+            <td><a href="{{ model }}/">{{ model }}</a></td>
+            <td>
+                <a href="{{ model }}/add/">Add</a>
+                <a href="{{ model }}/">Change</a>
+            </td>
+        </tr>
+{% endfor %}
+    </tbody>
+    </table>
+</div>
+{% include "footer.html" %}

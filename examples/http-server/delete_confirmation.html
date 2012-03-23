@@ -1,0 +1,8 @@
+{% include "header.html" %}
+<p>
+    Are you sure you want to delete the {{ model_name }} "{{ original.username }}"?
+</p>
+<form method="post">
+    <input type="submit" value="Yes, I'm sure"/>
+</form>
+{% include "footer.html" %}

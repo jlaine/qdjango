@@ -1,0 +1,63 @@
+/*
+ * Copyright (C) 2010-2012 Jeremy Lainé
+ * Contact: http://code.google.com/p/qdjango/
+ *
+ * This file is part of the QDjango Library.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*! \page database Database configuration
+
+QDjango relies on the <a href="http://doc.qt.nokia.com/latest/qtsql.html">QtSql module</a>
+for database access, which supports a wide array of database drivers.
+
+\section setup Setting the database
+
+The first step is to open the database using
+<a href="http://doc.qt.nokia.com/latest/qsqldatabase.html#addDatabase">QSqlDatabase::addDatabase()</a>,
+for instance for an in-memory SQLite database:
+
+\code
+QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
+db.setDatabaseName(":memory:");
+db.open();
+\endcode
+
+You should now tell QDjango to use the database you just opened:
+
+\code
+QDjango::setDatabase(db);
+\endcode
+
+\section creating Creating or dropping database tables
+
+Once you have set the database and declared all your models (see \ref models), you can ask QDjango to create
+the database tables for all models:
+
+\code
+QDjango::createTables();
+\endcode
+
+Conversely, you can ask QDjango to drop the database tables for all models:
+
+\code
+QDjango::dropTables();
+\endcode
+
+\section threading Threading support
+
+Internally, QDjango calls the QDjango::database() method whenever it needs a handle to the database. This method will clone the database connection as needed if it is invoked from a different thread.
+
+*/

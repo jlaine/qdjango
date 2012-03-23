@@ -1,0 +1,87 @@
+body {
+    font-family: "Lucida Grande","DejaVu Sans","Bitstream Vera Sans",Verdana,Arial,sans-serif;
+    font-size 12px;
+    margin: 0;
+    padding: 0;
+}
+
+a:link, a:visited {
+    color: #5B80B2;
+    text-decoration: none;
+}
+
+h1 {
+    color: #666666;
+    font-size: 18px;
+    margin: 0 0 0.2em;
+    padding: 0 6px 0 0;
+}
+
+input[type="text"], input[type="password"], textarea, select {
+    border: 1px solid #CCCCCC;
+}
+
+table {
+    border-collapse: collapse;
+}
+
+td, th {
+    font-size: 11px;
+    line-height: 13px;
+    border-bottom: 1px solid #eee;
+    vertical-align: top;
+    padding: 5px;
+    text-align: left;
+}
+
+th {
+    color: #666;
+    padding: 2px 5px;
+    font-weight: bold;
+    background: #e1e1e1;
+    background-image: linear-gradient(bottom, rgb(255,255,255) 10%, rgb(245,245,245) 100%);
+    background-image: -moz-linear-gradient(top, rgb(255,255,255) 10%, rgb(245,245,245) 100%);
+    background-image: -webkit-linear-gradient(top, rgb(255,255,255) 10%, rgb(245,245,245) 100%);
+    border-left: 1px solid #ddd;
+    border-bottom: 1px solid #ddd;
+}
+
+#header {
+    background: none repeat scroll 0 0 #417690;
+    color: #FFFFCC;
+    overflow: hidden;
+}
+
+#header h1 {
+    color: #F4F379;
+    font-size: 18px;
+    font-weight: normal;
+    margin: 8px 0;
+    padding: 0 10px;
+}
+
+#content {
+    margin: 10px 15px;
+}
+
+.breadcrumbs {
+    background: white;
+    border-bottom: 1px solid #CCCCCC;
+    border-top: 1px solid white;
+    color: #999999;
+    font-size: 11px;
+    padding: 2px 8px 3px;
+    text-align: left;
+}
+
+.module {
+    background: none repeat scroll 0 0 white;
+    border: 1px solid #CCCCCC;
+    margin-bottom: 5px;
+}
+
+.aligned label {
+    display: inline-block;
+    padding: 3px 10px 0 0;
+    width: 8em;
+}

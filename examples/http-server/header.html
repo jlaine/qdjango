@@ -1,0 +1,30 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en" >
+<head>
+    <link rel="stylesheet" href="/media/css/base.css"/>
+    <title>{{ title }} | Test application</title>
+{% comment %}
+test
+{% endcomment %}
+</head>
+<body>
+<div id="container">
+  <div id="header">
+    <h1>Test application</h1>
+  </div>
+</div>
+<div class="breadcrumbs">
+{% if model_name %}
+    <a href="/">Home</a> &rsaquo;
+{% if original %}
+    <a href="/{{ model_name }}/">{{ model_name }}</a> &rsaquo;
+   {{ original.name }}{{ original.username }}
+{% else %}
+    {{ model_name }}
+{% endif %}
+{% else %}
+    Home
+{% endif %}
+</div>
+<div id="content">
+<h1>{{ title }}</h1>

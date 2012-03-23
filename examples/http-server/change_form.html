@@ -1,0 +1,16 @@
+{% include "header.html" %}
+<form method="post">
+    <fieldset class="module aligned">
+{% for field in field_list %}
+        <div>
+            <label for="id_{{ field.key }}">{{ field.name }}</label>
+            <input id="id_{{ field.key }}" type="text" name="{{ field.key }}" value="{{ field.value }}"/>
+        </div>
+{% endfor %}
+    </fieldset>
+    <div class="submit-row">
+        <a href="delete/">Delete</a>
+        <input type="submit"/>
+    </div>
+</form>
+{% include "footer.html" %}

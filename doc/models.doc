@@ -1,0 +1,135 @@
+/*
+ * Copyright (C) 2010-2012 Jeremy Lainé
+ * Contact: http://code.google.com/p/qdjango/
+ *
+ * This file is part of the QDjango Library.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*! \page models Database models
+
+Database models are usually created by subclassing the QDjangoModel class.
+
+The following example defines a \c User model suitable for storing basic
+account information, and illustrate different types of queries on this model.
+
+\section declaring Declaring your model
+
+To declare your model, subclass the QDjangoModel class, and define a property
+using the <a href="http://doc.qt.nokia.com/latest/qobject.html#Q_PROPERTY">Q_PROPERTY</a>
+macro for each database field. You can provide additional information about a
+field using the <a href="http://doc.qt.nokia.com/latest/qobject.html#Q_CLASSINFO">Q_CLASSINFO</a>
+macro:
+
+ \li \c max_length : the maximum length of the field (used when creating the database table)
+ \li \c primary_key : if set to 'true', this field will be used as the primary key. If no primary key is explicitly defined, an auto-increment integer field will be added.
+
+\code
+#include "QDjangoModel.h"
+
+class User : public QDjangoModel
+{
+    Q_OBJECT
+    Q_PROPERTY(QString username READ username WRITE setUsername)
+    Q_PROPERTY(QString password READ password WRITE setPassword)
+
+    Q_CLASSINFO("username", "max_length=255")
+    Q_CLASSINFO("password", "max_length=128")
+
+public:
+    QString username() const;
+    void setUsername(const QString &username);
+
+    QString password() const;
+    void setPassword(const QString &password);
+
+private:
+    QString m_username;
+    QString m_password;
+};
+\endcode
+
+\section implementing Implementing your model
+
+\code
+QString User::username() const
+{
+    return m_username;
+}
+
+void User::setUsername(const QString &username)
+{
+    m_username = username;
+}
+
+QString User::password() const
+{
+    return m_password;
+}
+
+void User::setPassword(const QString &password)
+{
+    m_password = password;
+}
+\endcode
+
+\section registering Registering and using your model
+
+To make your model available for database operations, you should now register your model using:
+
+\code
+QDjango::registerModel<User>();
+\endcode
+
+Once you have set the database (see \ref database), you will now be able to create model instances and save them to the database:
+
+\code
+User *user = new User;
+user->setUsername("someuser");
+user->setPassword("somepassword");
+user->save();
+\endcode
+
+.. or remove them from the database:
+
+\code
+user->remove();
+\endcode
+
+You can also perform operations such as filtering or retrieving model
+instances as described in \ref queries.
+
+\section qobject Using QDjango without QDjangoModel
+
+Although it is recommended you make your models inherit QDjangoModel, it is not strictly necessary. QDjango can in fact handle any QObject-derived class, but you will lose some of the syntactic sugar.
+
+If for instance you defined a \c SomeObject class which inherits <a href="http://doc.qt.nokia.com/latest/qobject.html">QObject</a>, you can write:
+
+\code
+QDjangoMetaModel meta = QDjango::registerModel<SomeObject>();
+
+// prepare a SomeObject instance
+SomeObject *obj = new SomeObject;
+obj->setSomeProperty("some value");
+obj->setOtherProperty("other value");
+
+// save the object
+meta.save(obj);
+
+// remove the object from database
+meta.remove(obj);
+\endcode
+
+*/

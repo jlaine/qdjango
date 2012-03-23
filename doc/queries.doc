@@ -1,0 +1,112 @@
+/*
+ * Copyright (C) 2010-2012 Jeremy Lainé
+ * Contact: http://code.google.com/p/qdjango/
+ *
+ * This file is part of the QDjango Library.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*! \page queries Making queries
+
+The QDjango object relational mapper (ORM) supports the concept of querysets, borrowed from django's ORM. A queryset is a collection of database objects which match a certain number of user-specified conditions.
+
+You can learn more about querysets by reading the QDjangoQuerySet template class documentation.
+
+\section creating-queries Creating and filtering querysets
+
+Before you can start using querysets, you need to declare your database models as described in \ref models.
+
+The most basic queryset matches all the objects for a given model.
+
+\code
+// all users
+QDjangoQuerySet<User> users;
+\endcode
+
+You can use the QDjangoQuerySet::filter() and QDjangoQuerySet::exclude() methods to add filtering conditions to a querset:
+
+\code
+// find all users whose password is "foo" and whose username is not "bar"
+QDjangoQuerySet<User> someUsers;
+someUsers = users.filter(QDjangoWhere("password", QDjangoWhere::Equals, "foo") &&
+                         QDjangoWhere("username", QDjangoWhere::NotEquals, "bar"));
+
+// find all users whose username is "foo" or "bar"
+someUsers = users.filter(QDjangoWhere("username", QDjangoWhere::Equals, "foo") ||
+                         QDjangoWhere("username", QDjangoWhere::Equals, "bar"));
+
+// find all users whose username starts with "f":
+someUsers = users.filter(QDjangoWhere("username", QDjangoWhere::StartsWith, "f"));
+\endcode
+
+You can also use the QDjangoQuerySet::limit() method to limit the number of returned rows:
+
+\code
+// limit number of results
+someUsers = users.limit(0, 100);
+\endcode
+
+\section iterating-queries Iterating over results
+
+The easiest way to iterate over results is to use Qt's <a href="http://doc.qt.nokia.com/latest/containers.html#the-foreach-keyword">foreach</a> keyword:
+
+\code
+// iterate over matching users
+foreach (const User &user, someUsers) {
+  qDebug() << "found user" << user.username;   
+}
+\endcode
+
+Another way of iterating over results is to run over model instances using the QDjangoQuerySet::size() and QDjangoQuerySet::at() methods:
+
+\code
+// iterate over matching users
+User user;
+for (int i = 0; i < someUsers.size(); ++i) {
+  if (someUsers.at(i, &user)) {
+    qDebug() << "found user" << user.username;   
+  }
+}
+\endcode
+
+It is also possible to retrieve field data without creating model instances using the QDjangoQuerySet::values() and QDjangoQuerySet::valuesList() methods:
+
+\code
+// retrieve usernames and passwords for matching users as maps
+QList<QVariantMap> propertyMaps = someUsers.values(QStringList() << "username" << "password");
+foreach (const QVariantMap &propertyMap, propertyMaps) {
+  qDebug() << "username" << propertyList["username"];
+  qDebug() << "password" << propertyList["password"];
+}
+
+// retrieve usernames and passwords for matching users as lists
+QList<QVariantList> propertyLists = someUsers.valuesList(QStringList() << "username" << "password");
+foreach (const QVariantList &propertyList, propertyLists) {
+  qDebug() << "username" << propertyList[0];
+  qDebug() << "password" << propertyList[1];
+}
+\endcode
+
+\section other-queries Other operations
+
+\code
+// count matching users without retrieving their data
+int numberOfUsers = someUsers.count();
+
+// delete all the users in the queryset
+someUsers.remove();
+\endcode
+
+*/

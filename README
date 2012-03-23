@@ -1,0 +1,61 @@
+QDjango
+
+License
+=======
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+ 
+You should have received a copy of the GNU Lesser General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+Requirements
+============
+
+On Debian
+----------
+
+$ sudo aptitude install cmake libqt4-dev libqt4-sql-sqlite
+
+On Mac OS X
+-----------
+
+$ sudo port install cmake qt4-mac
+
+Building QDjango
+================
+
+$ mkdir build
+$ cd build
+$ cmake ..
+$ make
+
+See platform specific notes for applicable cmake options.
+
+On Mac OS X
+-----------
+
+If you are running MacOS/X and want to build specifically for i386 on an
+x86_64 machine, invoke cmake as:
+
+$ cmake .. -DCMAKE_CXX_FLAGS="-arch i386" -DLINK_FLAGS="-arch i386"
+
+Cross compiling for win32
+-------------------------
+
+To cross compile for win32 on a Debian machine, install the libqt4-mingw32-dev
+package from:
+
+  http://dev.jerryweb.org/debian/pool/main/
+
+Then invoke cmake as:
+
+$ cmake .. -DCMAKE_TOOLCHAIN_FILE=../cmake/mingw32.toolchain
+

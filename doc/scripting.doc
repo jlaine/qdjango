@@ -1,0 +1,73 @@
+/*
+ * Copyright (C) 2010-2012 Jeremy Lainé
+ * Contact: http://code.google.com/p/qdjango/
+ *
+ * This file is part of the QDjango Library.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*! \page scripting Scripting models
+
+The QDjangoScript class makes it easy to access your models from <a href="http://doc.qt.nokia.com/latest/qtscript.html">QtScript</a>.
+
+\section making-scriptable Making your models scriptable
+
+You can register a model with a <a href="http://doc.qt.nokia.com/latest/qscriptengine.html">QScriptEngine</a> instance as follows:
+
+\code
+#include <QDjangoQuerySet.h>
+#include <QDjangoScript.h>
+
+Q_DECLARE_METATYPE(QDjangoQuerySet<User>)
+
+QScriptEngine *engine = new QScriptEngine;
+QDjangoScript::registerWhere(engine);
+QDjangoScript::registerModel<User>(engine);
+\endcode
+
+\section scripting-models Using your models from a script
+
+Because QDjango makes use of Qt's property system, all model fields can
+automatically be accessed from <a href="http://doc.qt.nokia.com/latest/qtscript.html">QtScript</a>.
+For instance if you declared a \c User model, you can run the following code:
+
+\code
+// create a user instance and save it to database
+user = new User();
+user.username = "someuser";
+user.password = "somepassword";
+user.save();
+
+// remove the user from database
+user.remove();
+\endcode
+
+You can also perform database queries:
+
+\code
+// filter users whose username is "foouser" and password is "foopass"
+qs = User.objects.filter({'username': 'foouser', 'password': 'foopass'});
+
+// iterate over the results
+for (var i = 0; i < qs.size(); i++) {
+  user = qs.at(i);
+  print("found " + user.username);
+}
+
+// remove all matching users from database
+qs.remove();
+\endcode
+
+*/

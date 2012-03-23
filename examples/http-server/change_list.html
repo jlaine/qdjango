@@ -1,0 +1,28 @@
+{% include "header.html" %}
+<ul class="object-tools">
+    <li><a href="add/">{{ add_link }}</a></li>
+</ul>
+
+<div class="module">
+    <table width="100%">
+        <tr>
+{% for field in field_list %}
+            <th>{{ field.name }}</th>
+{% endfor %}
+        </tr>
+{% for object in object_list %}
+        <tr id="{{ forloop.counter }}">
+{% if model_name == "user" %}
+            <td><a href="{{ object.pk }}/">{{ object.username }}</a></td>
+            <td>{{ object.email }}</td>
+            <td>{{ object.first_name }}</td>
+            <td>{{ object.last_name }}</td>
+{% endif %}
+{% if model_name == "group" %}
+            <td><a href="{{ object.pk }}/">{{ object.name }}</a></td>
+{% endif %}
+        </tr>
+{% endfor %}
+    </table>
+</div>
+{% include "footer.html" %}
