@@ -21,7 +21,10 @@
 #include <QObject>
 
 class QDjangoHttpController;
+class QDjangoHttpRequest;
+class QDjangoHttpResponse;
 class QDjangoHttpServer;
+class QDjangoUrlResolver;
 
 /** Test QDjangoServer class.
  */
@@ -38,5 +41,24 @@ private slots:
 private:
     QDjangoHttpController *httpController;
     QDjangoHttpServer *httpServer;
+};
+
+class tst_QDjangoUrlResolver : public QObject
+{
+    Q_OBJECT
+
+private slots:
+    void cleanupTestCase();
+    void initTestCase();
+    void testGet_data();
+    void testGet();
+
+    QDjangoHttpResponse* _q_index(const QDjangoHttpRequest &request);
+    QDjangoHttpResponse* _q_noArgs(const QDjangoHttpRequest &request);
+    QDjangoHttpResponse* _q_oneArg(const QDjangoHttpRequest &request, const QString &id);
+    QDjangoHttpResponse* _q_twoArgs(const QDjangoHttpRequest &request, const QString &id, const QString &action);
+
+private:
+    QDjangoUrlResolver *urlResolver;
 };
 

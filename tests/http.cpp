@@ -28,6 +28,7 @@
 #include "QDjangoHttpRequest.h"
 #include "QDjangoHttpResponse.h"
 #include "QDjangoHttpServer.h"
+#include "QDjangoUrlResolver.h"
 
 #include "http.h"
 
@@ -93,8 +94,65 @@ void TestHttp::testGet()
     QObject::connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
     loop.exec();
 
+    QVERIFY(reply);
     QCOMPARE(int(reply->error()), err);
     QCOMPARE(reply->readAll(), body);
     delete reply;
 }
 
+void tst_QDjangoUrlResolver::cleanupTestCase()
+{
+    delete urlResolver;
+}
+
+void tst_QDjangoUrlResolver::initTestCase()
+{
+    urlResolver = new QDjangoUrlResolver;
+    QVERIFY(urlResolver->addView(QRegExp("^/$"), this, "_q_index"));
+    QVERIFY(urlResolver->addView(QRegExp("^/test/$"), this, "_q_noArgs"));
+    QVERIFY(urlResolver->addView(QRegExp("^/test/([0-9]+)/$"), this, "_q_oneArg"));
+    QVERIFY(urlResolver->addView(QRegExp("^/test/([0-9]+)/([a-z]+)/$"), this, "_q_twoArgs"));
+}
+
+void tst_QDjangoUrlResolver::testGet_data()
+{
+    QTest::addColumn<QString>("path");
+    QTest::addColumn<int>("err");
+
+    QTest::newRow("root") << "/" << 200;
+    QTest::newRow("not-found") << "/foo/" << 404;
+    QTest::newRow("no-args") << "/test/" << 200;
+    QTest::newRow("one-args") << "/test/123/" << 200;
+    QTest::newRow("two-args") << "/test/123/delete/" << 200;
+    QTest::newRow("three-args") << "/test/123/delete/zoo/" << 404;
+}
+
+void tst_QDjangoUrlResolver::testGet()
+{
+    QFETCH(QString, path);
+    QFETCH(int, err);
+
+    QDjangoHttpResponse *response = urlResolver->respond(QDjangoHttpTestRequest("GET", path));
+    QVERIFY(response);
+    QCOMPARE(int(response->statusCode()), err);
+}
+
+QDjangoHttpResponse* tst_QDjangoUrlResolver::_q_index(const QDjangoHttpRequest &request)
+{
+    return new QDjangoHttpResponse;
+}
+
+QDjangoHttpResponse* tst_QDjangoUrlResolver::_q_noArgs(const QDjangoHttpRequest &request)
+{
+    return new QDjangoHttpResponse;
+}
+
+QDjangoHttpResponse* tst_QDjangoUrlResolver::_q_oneArg(const QDjangoHttpRequest &request, const QString &id)
+{
+    return new QDjangoHttpResponse;
+}
+
+QDjangoHttpResponse* tst_QDjangoUrlResolver::_q_twoArgs(const QDjangoHttpRequest &request, const QString &id, const QString &action)
+{
+    return new QDjangoHttpResponse;
+}

@@ -754,9 +754,14 @@ int main(int argc, char *argv[])
         TestShares testShares;
         errors += QTest::qExec(&testShares);
 
+        // http
         TestHttp testHttp;
         errors += QTest::qExec(&testHttp);
 
+        tst_QDjangoUrlResolver testUrlResolver;
+        errors += QTest::qExec(&testUrlResolver);
+
+        // script
         TestScript testScript;
         errors += QTest::qExec(&testScript);
     }
