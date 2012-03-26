@@ -1,0 +1,4 @@
+usr/include/
+usr/lib/libqdjango-db.so
+usr/lib/libqdjango-http.so
+usr/lib/libqdjango-script.so

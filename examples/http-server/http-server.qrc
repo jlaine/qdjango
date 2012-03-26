@@ -2,11 +2,11 @@
 <RCC version="1.0">
 <qresource>
     <file>base.css</file>
-    <file>change_form.html</file>
-    <file>change_list.html</file>
-    <file>delete_confirmation.html</file>
-    <file>footer.html</file>
-    <file>header.html</file>
-    <file>index.html</file>
+    <file>templates/change_form.html</file>
+    <file>templates/change_list.html</file>
+    <file>templates/delete_confirmation.html</file>
+    <file>templates/footer.html</file>
+    <file>templates/header.html</file>
+    <file>templates/index.html</file>
 </qresource>
 </RCC>

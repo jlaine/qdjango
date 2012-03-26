@@ -185,7 +185,7 @@ static QString render(const QList<Node> &nodes, const QVariantMap &context)
                 }
                 i = endPos;
             } else if (includeRx.exactMatch(node.second)) {
-                output += renderTemplate(":/" + includeRx.cap(1), context);
+                output += renderTemplate(":/templates/" + includeRx.cap(1), context);
             }
         } else {
             output += substitute(node.second, context);
@@ -298,7 +298,7 @@ QDjangoHttpResponse* ModelController<T>::changeForm(const QDjangoHttpRequest &re
         } else {
             context.insert("title", QString("Add %1").arg(m_modelName));
         }
-        return renderToResponse(request, ":/change_form.html", context);
+        return renderToResponse(request, ":/templates/change_form.html", context);
     }
 }
 
@@ -324,7 +324,7 @@ QDjangoHttpResponse* ModelController<T>::changeList(const QDjangoHttpRequest &re
     context.insert("model_name", m_modelName);
     context.insert("field_list", fieldList);
     context.insert("object_list", objectList);
-    return renderToResponse(request, ":/change_list.html", context);
+    return renderToResponse(request, ":/templates/change_list.html", context);
 }
 
 template <class T>
@@ -342,7 +342,7 @@ QDjangoHttpResponse* ModelController<T>::deleteForm(const QDjangoHttpRequest &re
         context.insert("model_name", m_modelName);
         context.insert("original", dump(original));
         context.insert("title", "Are you sure?");
-        return renderToResponse(request, ":/delete_confirmation.html", context);
+        return renderToResponse(request, ":/templates/delete_confirmation.html", context);
     }
 }
 
@@ -403,7 +403,7 @@ QDjangoHttpResponse* RedirectController::respondToRequest(const QDjangoHttpReque
         QVariantMap context;
         context.insert("model_list", QStringList() << "group" << "user");
         context.insert("title", "Administration");
-        return renderToResponse(request, ":/index.html", context);
+        return renderToResponse(request, ":/templates/index.html", context);
     } else if (path == "/large/") {
         QDjangoHttpResponse *response = new QDjangoHttpResponse;
         response->setHeader("Content-Type", "text/plain");

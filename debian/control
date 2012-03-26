@@ -1,0 +1,44 @@
+Source: qdjango
+Section: libs
+Priority: optional
+Maintainer: Jeremy Lainé <jeremy.laine@m4x.org>
+Build-Depends: debhelper (>= 7.0.50~), libqt4-dev
+Standards-Version: 3.9.2
+Homepage: http://code.google.com/p/qdjango/
+
+Package: libqdjango-db0
+Section: libdevel
+Architecture: any
+Depends: ${misc:Depends}, ${shlibs:Depends}
+Description: Development files for the QDjango library
+ QDjango is a cross-platform C++ web development library built upon Qt.
+ .
+ This package contains the database object relational model library.
+
+Package: libqdjango-http0
+Section: libdevel
+Architecture: any
+Depends: ${misc:Depends}, ${shlibs:Depends}
+Description: Development files for the QDjango library
+ QDjango is a cross-platform C++ web development library built upon Qt.
+ .
+ This package contains the HTTP library.
+
+Package: libqdjango-script0
+Section: libdevel
+Architecture: any
+Depends: ${misc:Depends}, ${shlibs:Depends}
+Description: Development files for the QDjango library
+ QDjango is a cross-platform C++ web development library built upon Qt.
+ .
+ This package contains the script library.
+
+Package: libqdjango-dev
+Section: libdevel
+Architecture: any
+Depends: ${misc:Depends}, libqdjango-db0, libqdjango-http0, libqdjango-script0, libqt4-dev
+Description: Development files for the QDjango library
+ QDjango is a cross-platform C++ web development library built upon Qt.
+ .
+ This package contains the development headers and libraries.
+
