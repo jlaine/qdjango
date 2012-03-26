@@ -91,9 +91,9 @@ bool QDjangoUrlResolver::addView(const QRegExp &path, QObject *receiver, const c
  *
  * @param respond
  */
-QDjangoHttpResponse* QDjangoUrlResolver::respond(const QDjangoHttpRequest &request) const
+QDjangoHttpResponse* QDjangoUrlResolver::respond(const QDjangoHttpRequest &request, const QString &path) const
 {
-    const QString path = request.path();
+    qDebug("%x responding for %s", this, qPrintable(path));
     QList<QDjangoUrlResolverRoute>::const_iterator it;
     for (it = d->routes.constBegin(); it != d->routes.constEnd(); ++it) {
         if (it->path.exactMatch(path)) {

@@ -176,7 +176,7 @@ void QDjangoHttpConnection::handleData()
     else if (m_requestHeader.value("Connection").toLower() == QLatin1String("close"))
         keepAlive = false;
 
-    QDjangoHttpResponse *response = m_server->urls()->respond(*request);
+    QDjangoHttpResponse *response = m_server->urls()->respond(*request, request->path());
     m_pendingJobs << qMakePair(request, response);
 
     /* Store keep-alive flag */

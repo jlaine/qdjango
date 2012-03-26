@@ -303,7 +303,7 @@ void QDjangoFastCgiConnection::_q_readyRead()
                 m_pendingRequest = 0;
                 m_pendingRequestId = 0;
 
-                QDjangoHttpResponse *response = m_server->urls()->respond(*request);
+                QDjangoHttpResponse *response = m_server->urls()->respond(*request, request->path());
                 writeResponse(requestId, response);
             }
             break;

@@ -32,24 +32,6 @@
 
 #include "http.h"
 
-class TestController : public QDjangoHttpController
-{
-    QDjangoHttpResponse *respondToRequest(const QDjangoHttpRequest &request);
-};
-
-QDjangoHttpResponse *TestController::respondToRequest(const QDjangoHttpRequest &request)
-{
-    if (request.path() == "/") {
-        QDjangoHttpResponse *response = new QDjangoHttpResponse;
-        response->setHeader("Content-Type", "text/plain");
-        response->setBody("hello");
-        return response;
-    } else if (request.path() == "/internal-server-error") {
-        return serveInternalServerError(request);
-    }
-    return serveNotFound(request);
-}
-
 void TestHttp::cleanupTestCase()
 {
     delete httpServer;
@@ -144,7 +126,7 @@ void tst_QDjangoUrlResolver::testRespond()
     QFETCH(QString, path);
     QFETCH(int, err);
 
-    QDjangoHttpResponse *response = urlResolver->respond(QDjangoHttpTestRequest("GET", path));
+    QDjangoHttpResponse *response = urlResolver->respond(QDjangoHttpTestRequest("GET", path), path);
     QVERIFY(response);
     QCOMPARE(int(response->statusCode()), err);
 }

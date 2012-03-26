@@ -22,6 +22,7 @@
 #define QDJANGO_URL_RESOLVER_H
 
 #include <QObject>
+#include <QVariant>
 
 class QDjangoHttpRequest;
 class QDjangoHttpResponse;
@@ -34,13 +35,17 @@ class QRegExp;
  */
 class QDjangoUrlResolver : public QObject
 {
+    Q_OBJECT
+
 public:
     QDjangoUrlResolver(QObject *parent = 0);
     ~QDjangoUrlResolver();
 
     bool addView(const QRegExp &path, QObject *receiver, const char *member);
-    QDjangoHttpResponse* respond(const QDjangoHttpRequest &request) const;
     QString reverse(QObject *receiver, const char *member, const QVariantList &args = QVariantList()) const;
+
+public slots:
+    QDjangoHttpResponse* respond(const QDjangoHttpRequest &request, const QString &path) const;
 
 private:
     QDjangoUrlResolverPrivate *d;

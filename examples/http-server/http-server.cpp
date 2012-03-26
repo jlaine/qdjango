@@ -265,6 +265,7 @@ public:
     QList<QByteArray> changeFields;
     QList<QByteArray> listFields;
     ModelAdminFetcher *modelFetcher;
+    QDjangoUrlResolver *urlResolver;
 };
 
 ModelAdmin::ModelAdmin(ModelAdminFetcher *fetcher, QObject *parent)
@@ -272,6 +273,11 @@ ModelAdmin::ModelAdmin(ModelAdminFetcher *fetcher, QObject *parent)
 {
     d = new ModelAdminPrivate;
     d->modelFetcher = fetcher;
+    d->urlResolver = new QDjangoUrlResolver(this);
+    d->urlResolver->addView(QRegExp("^/$"), this, "changeList");
+    d->urlResolver->addView(QRegExp("^/add/$"), this, "addForm");
+    d->urlResolver->addView(QRegExp("^/([0-9]+)/"), this, "changeForm");
+    d->urlResolver->addView(QRegExp("^/([0-9]+)/delete/"), this, "deleteForm");
 }
 
 ModelAdmin::~ModelAdmin()
@@ -407,6 +413,11 @@ QDjangoHttpResponse* ModelAdmin::deleteForm(const QDjangoHttpRequest &request, c
     }
 }
 
+QDjangoUrlResolver *ModelAdmin::urls() const
+{
+    return d->urlResolver;
+}
+
 class AdminControllerPrivate
 {
 public:
@@ -460,18 +471,12 @@ void AdminController::setupUrls(QDjangoUrlResolver *urls)
     ModelAdmin *groupAdmin = new ModelAdmin(new ModelAdminFetcherImpl<Group>);
     groupAdmin->setChangeFields(QList<QByteArray>() << "name");
     groupAdmin->setListFields(QList<QByteArray>() << "name");
-    urls->addView(QRegExp("^/group/$"), groupAdmin, "changeList");
-    urls->addView(QRegExp("^/group/add/$"), groupAdmin, "addForm");
-    urls->addView(QRegExp("^/group/([0-9]+)/"), groupAdmin, "changeForm");
-    urls->addView(QRegExp("^/group/([0-9]+)/delete/"), groupAdmin, "deleteForm");
+    urls->addView(QRegExp("^/group(/.*)$"), groupAdmin->urls(), "respond");
 
     ModelAdmin *userAdmin = new ModelAdmin(new ModelAdminFetcherImpl<User>);
     userAdmin->setChangeFields(QList<QByteArray>() << "username" << "email" << "first_name" << "last_name");
     userAdmin->setListFields(QList<QByteArray>() << "username" << "email" << "first_name" << "last_name");
-    urls->addView(QRegExp("^/user/$"), userAdmin, "changeList");
-    urls->addView(QRegExp("^/user/add/$"), userAdmin, "addForm");
-    urls->addView(QRegExp("^/user/([0-9]+)/"), userAdmin, "changeForm");
-    urls->addView(QRegExp("^/user/([0-9]+)/delete/"), userAdmin, "deleteForm");
+    urls->addView(QRegExp("^/user(/.*)$"), userAdmin->urls(), "respond");
 }
 
 int main(int argc, char* argv[])

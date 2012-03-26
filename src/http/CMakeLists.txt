@@ -25,7 +25,8 @@ set(MOC_HEADERS
     QDjangoFastCgiServer_p.h
     QDjangoHttpResponse.h
     QDjangoHttpServer.h
-    QDjangoHttpServer_p.h)
+    QDjangoHttpServer_p.h
+    QDjangoUrlResolver.h)
 qt4_wrap_cpp(MOC_SOURCES ${MOC_HEADERS})
 add_library(qdjango-http ${QDJANGO_LIBRARY_TYPE} ${SOURCES} ${MOC_SOURCES})
 set_target_properties(qdjango-http PROPERTIES SOVERSION 0)
