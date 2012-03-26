@@ -122,3 +122,42 @@ QDjangoHttpResponse* QDjangoUrlResolver::respond(const QDjangoHttpRequest &reque
     return QDjangoHttpController::serveNotFound(request);
 }
 
+/** Returns the URL for the member \a member of \a receiver with
+ *  \a args as arguments.
+ */
+QString QDjangoUrlResolver::reverse(QObject *receiver, const char *member, const QVariantList &args) const
+{
+    QList<QDjangoUrlResolverRoute>::const_iterator it;
+    for (it = d->routes.constBegin(); it != d->routes.constEnd(); ++it) {
+        if (it->receiver == receiver && it->member == member) {
+            QString path = it->path.pattern();
+            if (path.startsWith('^'))
+                path.remove(0, 1);
+            if (path.endsWith('$'))
+                path.chop(1);
+
+            // replace parameters
+            QVariantList arguments(args);
+            int pos = 0;
+            QRegExp rx("\\([^)]+\\)");
+            while ((pos = rx.indexIn(path, pos)) != -1) {
+                if (arguments.isEmpty()) {
+                    qWarning("Too few arguments for '%s'", member);
+                    return QString();
+                }
+                const QString str = arguments.takeFirst().toString();
+                path.replace(pos, rx.matchedLength(), str);
+                pos += str.size();
+            }
+            if (!arguments.isEmpty()) {
+                qWarning("Too many arguments for '%s'", member);
+                return QString();
+            }
+            return path;
+        }
+    }
+
+    // not found
+    return QString();
+}
+

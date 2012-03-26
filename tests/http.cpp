@@ -114,7 +114,7 @@ void tst_QDjangoUrlResolver::initTestCase()
     QVERIFY(urlResolver->addView(QRegExp("^/test/([0-9]+)/([a-z]+)/$"), this, "_q_twoArgs"));
 }
 
-void tst_QDjangoUrlResolver::testGet_data()
+void tst_QDjangoUrlResolver::testRespond_data()
 {
     QTest::addColumn<QString>("path");
     QTest::addColumn<int>("err");
@@ -127,7 +127,7 @@ void tst_QDjangoUrlResolver::testGet_data()
     QTest::newRow("three-args") << "/test/123/delete/zoo/" << 404;
 }
 
-void tst_QDjangoUrlResolver::testGet()
+void tst_QDjangoUrlResolver::testRespond()
 {
     QFETCH(QString, path);
     QFETCH(int, err);
@@ -135,6 +135,34 @@ void tst_QDjangoUrlResolver::testGet()
     QDjangoHttpResponse *response = urlResolver->respond(QDjangoHttpTestRequest("GET", path));
     QVERIFY(response);
     QCOMPARE(int(response->statusCode()), err);
+}
+
+void tst_QDjangoUrlResolver::testReverse_data()
+{
+    QTest::addColumn<QString>("path");
+    QTest::addColumn<QString>("member");
+    QTest::addColumn<QString>("args");
+
+    QTest::newRow("root") << "/" << "_q_index" << "";
+    QTest::newRow("no-args") << "/test/" << "_q_noArgs" << "";
+    QTest::newRow("one-arg") << "/test/123/" << "_q_oneArg" << "123";
+    QTest::newRow("two-args") << "/test/123/delete/" << "_q_twoArgs" << "123|delete";
+    QTest::newRow("too-few-args") << "" << "_q_oneArg" << "";
+    QTest::newRow("too-many-args") << "" << "_q_noArgs" << "123";
+}
+
+void tst_QDjangoUrlResolver::testReverse()
+{
+    QFETCH(QString, path);
+    QFETCH(QString, member);
+    QFETCH(QString, args);
+
+    QVariantList varArgs;
+    if (!args.isEmpty()) {
+        foreach (const QString &bit, args.split('|'))
+            varArgs << bit;
+    }
+    QCOMPARE(urlResolver->reverse(this, member.toLatin1(), varArgs), path);
 }
 
 QDjangoHttpResponse* tst_QDjangoUrlResolver::_q_index(const QDjangoHttpRequest &request)

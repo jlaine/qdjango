@@ -40,6 +40,7 @@ public:
 
     bool addView(const QRegExp &path, QObject *receiver, const char *member);
     QDjangoHttpResponse* respond(const QDjangoHttpRequest &request) const;
+    QString reverse(QObject *receiver, const char *member, const QVariantList &args = QVariantList()) const;
 
 private:
     QDjangoUrlResolverPrivate *d;

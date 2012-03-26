@@ -50,8 +50,10 @@ class tst_QDjangoUrlResolver : public QObject
 private slots:
     void cleanupTestCase();
     void initTestCase();
-    void testGet_data();
-    void testGet();
+    void testRespond_data();
+    void testRespond();
+    void testReverse_data();
+    void testReverse();
 
     QDjangoHttpResponse* _q_index(const QDjangoHttpRequest &request);
     QDjangoHttpResponse* _q_noArgs(const QDjangoHttpRequest &request);
