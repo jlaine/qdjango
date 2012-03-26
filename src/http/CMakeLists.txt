@@ -10,13 +10,15 @@ set(HEADERS
     QDjangoHttpRequest.h
     QDjangoHttpResponse.h
     QDjangoHttpServer.h
-    QDjangoHttpServer_p.h)
+    QDjangoHttpServer_p.h
+    QDjangoUrlResolver.h)
 set(SOURCES
     QDjangoFastCgiServer.cpp
     QDjangoHttpController.cpp
     QDjangoHttpRequest.cpp
     QDjangoHttpResponse.cpp
-    QDjangoHttpServer.cpp)
+    QDjangoHttpServer.cpp
+    QDjangoUrlResolver.cpp)
 
 set(MOC_HEADERS
     QDjangoFastCgiServer.h
