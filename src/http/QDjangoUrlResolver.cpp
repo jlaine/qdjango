@@ -45,8 +45,98 @@ public:
 class QDjangoUrlResolverPrivate
 {
 public:
+    QDjangoHttpResponse* respond(const QDjangoHttpRequest &request, const QString &path) const;
+    QString reverse(QObject *receiver, const char *member, const QVariantList &args = QVariantList()) const;
+
     QList<QDjangoUrlResolverRoute> routes;
 };
+
+QDjangoHttpResponse* QDjangoUrlResolverPrivate::respond(const QDjangoHttpRequest &request, const QString &path) const
+{
+    QList<QDjangoUrlResolverRoute>::const_iterator it;
+    for (it = routes.constBegin(); it != routes.constEnd(); ++it) {
+        if (it->urls && it->path.indexIn(path) == 0) {
+            // try recursing
+            QString subPath = path.mid(it->path.capturedTexts().first().size());
+            QDjangoHttpResponse *response = it->urls->d->respond(request, subPath);
+            if (response)
+                return response;
+        } else if (it->receiver && it->path.exactMatch(path)) {
+            // collect arguments
+            QStringList caps = it->path.capturedTexts();
+            caps.takeFirst();
+            QList<QGenericArgument> args;
+            args << Q_ARG(QDjangoHttpRequest, request);
+            for (int i = 0; i < caps.size(); ++i) {
+                args << Q_ARG(QString, caps[i]);
+            }
+            while (args.size() < 10) {
+                args << QGenericArgument();
+            }
+
+            QDjangoHttpResponse *response = 0;
+            if (!QMetaObject::invokeMethod(it->receiver, it->member.constData(), Qt::DirectConnection,
+                    Q_RETURN_ARG(QDjangoHttpResponse*, response),
+                    args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9])
+                || !response) {
+                return QDjangoHttpController::serveInternalServerError(request);
+            }
+            return response;
+        }
+    }
+    return 0;
+}
+
+QString QDjangoUrlResolverPrivate::reverse(QObject *receiver, const char *member, const QVariantList &args) const
+{
+    QList<QDjangoUrlResolverRoute>::const_iterator it;
+    for (it = routes.constBegin(); it != routes.constEnd(); ++it) {
+        // recurse
+        if (it->urls) {
+            QString path = it->urls->d->reverse(receiver, member, args);
+            if (!path.isNull()) {
+                QString prefix = it->path.pattern();
+                if (prefix.startsWith('^'))
+                    prefix.remove(0, 1);
+                if (prefix.endsWith('$'))
+                    prefix.chop(1);
+
+                return prefix + path;
+            }
+        } else if (it->receiver == receiver && it->member == member) {
+            QString path = it->path.pattern();
+            if (path.startsWith('^'))
+                path.remove(0, 1);
+            if (path.endsWith('$'))
+                path.chop(1);
+
+            // replace parameters
+            QVariantList arguments(args);
+            int pos = 0;
+            QRegExp rx("\\([^)]+\\)");
+            while ((pos = rx.indexIn(path, pos)) != -1) {
+                if (arguments.isEmpty()) {
+                    qWarning("Too few arguments for '%s'", member);
+                    return QString();
+                }
+                const QString str = arguments.takeFirst().toString();
+                path.replace(pos, rx.matchedLength(), str);
+                pos += str.size();
+            }
+            if (!arguments.isEmpty()) {
+                qWarning("Too many arguments for '%s'", member);
+                return QString();
+            }
+            if (path.isEmpty())
+                return QString("");
+            else
+                return path;
+        }
+    }
+
+    // not found
+    return QString();
+}
 
 QDjangoUrlResolver::QDjangoUrlResolver(QObject *parent)
     : QObject(parent)
@@ -61,7 +151,7 @@ QDjangoUrlResolver::~QDjangoUrlResolver()
 
 /** Adds a URL mapping for the given \a path.
  */
-bool QDjangoUrlResolver::addView(const QRegExp &path, QObject *receiver, const char *member)
+bool QDjangoUrlResolver::set(const QRegExp &path, QObject *receiver, const char *member)
 {
     Q_ASSERT(receiver);
     Q_ASSERT(member);
@@ -118,47 +208,11 @@ QDjangoHttpResponse* QDjangoUrlResolver::respond(const QDjangoHttpRequest &reque
     if (path.startsWith('/'))
         path.remove(0, 1);
 
-    QDjangoHttpResponse *response = respondSub(request, path);
+    QDjangoHttpResponse *response = d->respond(request, path);
     if (response)
         return response;
     else
         return QDjangoHttpController::serveNotFound(request);
-}
-
-QDjangoHttpResponse* QDjangoUrlResolver::respondSub(const QDjangoHttpRequest &request, const QString &path) const
-{
-    QList<QDjangoUrlResolverRoute>::const_iterator it;
-    for (it = d->routes.constBegin(); it != d->routes.constEnd(); ++it) {
-        if (it->urls && it->path.indexIn(path) == 0) {
-            // try recursing
-            QString subPath = path.mid(it->path.capturedTexts().first().size());
-            QDjangoHttpResponse *response = it->urls->respondSub(request, subPath);
-            if (response)
-                return response;
-        } else if (it->receiver && it->path.exactMatch(path)) {
-            // collect arguments
-            QStringList caps = it->path.capturedTexts();
-            caps.takeFirst();
-            QList<QGenericArgument> args;
-            args << Q_ARG(QDjangoHttpRequest, request);
-            for (int i = 0; i < caps.size(); ++i) {
-                args << Q_ARG(QString, caps[i]);
-            }
-            while (args.size() < 10) {
-                args << QGenericArgument();
-            }
-
-            QDjangoHttpResponse *response = 0;
-            if (!QMetaObject::invokeMethod(it->receiver, it->member.constData(), Qt::DirectConnection,
-                    Q_RETURN_ARG(QDjangoHttpResponse*, response),
-                    args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9])
-                || !response) {
-                return QDjangoHttpController::serveInternalServerError(request);
-            }
-            return response;
-        }
-    }
-    return 0;
 }
 
 /** Returns the URL for the member \a member of \a receiver with
@@ -166,61 +220,11 @@ QDjangoHttpResponse* QDjangoUrlResolver::respondSub(const QDjangoHttpRequest &re
  */
 QString QDjangoUrlResolver::reverse(QObject *receiver, const char *member, const QVariantList &args) const
 {
-    QString path = reverseSub(receiver, member, args);
+    QString path = d->reverse(receiver, member, args);
     if (path.isNull())
         return QString();
     else
         return "/" + path;
 }
 
-QString QDjangoUrlResolver::reverseSub(QObject *receiver, const char *member, const QVariantList &args) const
-{
-    QList<QDjangoUrlResolverRoute>::const_iterator it;
-    for (it = d->routes.constBegin(); it != d->routes.constEnd(); ++it) {
-        // recurse
-        if (it->urls) {
-            QString path = it->urls->reverseSub(receiver, member, args);
-            if (!path.isNull()) {
-                QString prefix = it->path.pattern();
-                if (prefix.startsWith('^'))
-                    prefix.remove(0, 1);
-                if (prefix.endsWith('$'))
-                    prefix.chop(1);
-
-                return prefix + path;
-            }
-        } else if (it->receiver == receiver && it->member == member) {
-            QString path = it->path.pattern();
-            if (path.startsWith('^'))
-                path.remove(0, 1);
-            if (path.endsWith('$'))
-                path.chop(1);
-
-            // replace parameters
-            QVariantList arguments(args);
-            int pos = 0;
-            QRegExp rx("\\([^)]+\\)");
-            while ((pos = rx.indexIn(path, pos)) != -1) {
-                if (arguments.isEmpty()) {
-                    qWarning("Too few arguments for '%s'", member);
-                    return QString();
-                }
-                const QString str = arguments.takeFirst().toString();
-                path.replace(pos, rx.matchedLength(), str);
-                pos += str.size();
-            }
-            if (!arguments.isEmpty()) {
-                qWarning("Too many arguments for '%s'", member);
-                return QString();
-            }
-            if (path.isEmpty())
-                return QString("");
-            else
-                return path;
-        }
-    }
-
-    // not found
-    return QString();
-}
 

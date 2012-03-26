@@ -40,8 +40,8 @@ void TestHttp::cleanupTestCase()
 void TestHttp::initTestCase()
 {
     httpServer = new QDjangoHttpServer;
-    httpServer->urls()->addView(QRegExp("^$"), this, "_q_index");
-    httpServer->urls()->addView(QRegExp("^internal-server-error$"), this, "_q_error");
+    httpServer->urls()->set(QRegExp("^$"), this, "_q_index");
+    httpServer->urls()->set(QRegExp("^internal-server-error$"), this, "_q_error");
     QCOMPARE(httpServer->listen(QHostAddress::LocalHost, 8123), true);
 }
 
@@ -119,14 +119,14 @@ void tst_QDjangoUrlResolver::initTestCase()
 {
     urlHelper = new tst_QDjangoUrlHelper;
     urlSub = new QDjangoUrlResolver;
-    QVERIFY(urlSub->addView(QRegExp("^$"), urlHelper, "_q_index"));
-    QVERIFY(urlSub->addView(QRegExp("^test/$"), urlHelper, "_q_test"));
+    QVERIFY(urlSub->set(QRegExp("^$"), urlHelper, "_q_index"));
+    QVERIFY(urlSub->set(QRegExp("^test/$"), urlHelper, "_q_test"));
 
     urlResolver = new QDjangoUrlResolver;
-    QVERIFY(urlResolver->addView(QRegExp("^$"), this, "_q_index"));
-    QVERIFY(urlResolver->addView(QRegExp("^test/$"), this, "_q_noArgs"));
-    QVERIFY(urlResolver->addView(QRegExp("^test/([0-9]+)/$"), this, "_q_oneArg"));
-    QVERIFY(urlResolver->addView(QRegExp("^test/([0-9]+)/([a-z]+)/$"), this, "_q_twoArgs"));
+    QVERIFY(urlResolver->set(QRegExp("^$"), this, "_q_index"));
+    QVERIFY(urlResolver->set(QRegExp("^test/$"), this, "_q_noArgs"));
+    QVERIFY(urlResolver->set(QRegExp("^test/([0-9]+)/$"), this, "_q_oneArg"));
+    QVERIFY(urlResolver->set(QRegExp("^test/([0-9]+)/([a-z]+)/$"), this, "_q_twoArgs"));
     QVERIFY(urlResolver->include(QRegExp("^recurse/"), urlSub));
 }
 
