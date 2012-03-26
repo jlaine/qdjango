@@ -38,17 +38,56 @@
 #include "../../tests/auth-models.h"
 #include "http-server.h"
 
-static QVariantMap dump(const QObject *object)
+class ModelAdminFetcher
 {
-    const QMetaObject *metaObject = object->metaObject();
-    QVariantMap props;
-    props.insert("pk", object->property("pk"));
-    for (int i = metaObject->propertyOffset(); i < metaObject->propertyCount(); ++i) {
-        const char *key = metaObject->property(i).name();
-        props.insert(key, object->property(key));
+public:
+    virtual QDjangoModel *createObject() const = 0;
+    virtual QVariantMap dumpObject(const QObject *object) const = 0;
+    virtual QDjangoModel *getObject(const QString& objectId) const = 0;
+    virtual QVariantList listObjects() const = 0;
+    virtual QString modelName() const = 0;
+};
+
+template<class T>
+class ModelAdminFetcherImpl : public ModelAdminFetcher
+{
+public:
+    QDjangoModel *createObject() const
+    {
+        return new T;
     }
-    return props;
-}
+
+    QVariantMap dumpObject(const QObject *object) const
+    {
+        const QMetaObject *metaObject = object->metaObject();
+        QVariantMap props;
+        props.insert("pk", object->property("pk"));
+        for (int i = metaObject->propertyOffset(); i < metaObject->propertyCount(); ++i) {
+            const char *key = metaObject->property(i).name();
+            props.insert(key, object->property(key));
+        }
+        return props;
+    }
+
+    QDjangoModel *getObject(const QString& objectId) const
+    {
+        return QDjangoQuerySet<T>().get(QDjangoWhere("pk", QDjangoWhere::Equals, objectId));
+    }
+
+    QVariantList listObjects() const
+    {
+        QVariantList objectList;
+        QDjangoQuerySet<T> objects;
+        foreach (const T &obj, objects)
+            objectList << dumpObject(&obj);
+        return objectList;
+    }
+
+    QString modelName() const
+    {
+        return QString::fromLatin1(T::staticMetaObject.className()).toLower();
+    }
+};
 
 static QVariant evaluate(const QString &input, const QVariantMap &context)
 {
@@ -215,63 +254,61 @@ static QDjangoHttpResponse *renderToResponse(const QDjangoHttpRequest &request, 
     return response;
 }
 
-template <class T>
-class ModelController : public QDjangoHttpController
+class ModelAdminPrivate
 {
 public:
-    ModelController();
-    QDjangoHttpResponse* respondToRequest(const QDjangoHttpRequest &request);
-    void setChangeFields(const QList<QByteArray> fields) {
-        m_changeFields = fields;
-    }
-    void setListFields(const QList<QByteArray> fields) {
-        m_listFields = fields;
+    QDjangoHttpResponse* redirectHome(const QDjangoHttpRequest &request)
+    {
+        return QDjangoHttpController::serveRedirect(request, QUrl("/" + modelFetcher->modelName() + "/"));
     }
 
-private:
-    QDjangoHttpResponse* changeList(const QDjangoHttpRequest &request);
-    QDjangoHttpResponse* changeForm(const QDjangoHttpRequest &request, int objectId);
-    QDjangoHttpResponse* deleteForm(const QDjangoHttpRequest &request, int objectId);
-
-    QList<QByteArray> m_changeFields;
-    QList<QByteArray> m_listFields;
-    QString m_modelName;
-    QString m_prefix;
+    QList<QByteArray> changeFields;
+    QList<QByteArray> listFields;
+    ModelAdminFetcher *modelFetcher;
 };
 
-template <class T>
-ModelController<T>::ModelController()
+ModelAdmin::ModelAdmin(ModelAdminFetcher *fetcher, QObject *parent)
+    : QObject(parent)
 {
-    m_modelName = QString::fromLatin1(T::staticMetaObject.className()).toLower();
-    m_prefix = "/" + m_modelName;
-
-    // initialise fields
-    const QMetaObject *metaObject = &T::staticMetaObject;
-    QVariantList fieldList;
-    for (int i = metaObject->propertyOffset(); i < metaObject->propertyCount(); ++i) {
-        const char *key = metaObject->property(i).name();
-        m_changeFields << key;
-    }
+    d = new ModelAdminPrivate;
+    d->modelFetcher = fetcher;
 }
 
-template <class T>
-QDjangoHttpResponse* ModelController<T>::changeForm(const QDjangoHttpRequest &request, int objectId)
+ModelAdmin::~ModelAdmin()
 {
-    T *original = 0;
-    if (objectId) {
-        original = QDjangoQuerySet<T>().get(QDjangoWhere("pk", QDjangoWhere::Equals, objectId));
-        if (!original)
-            return serveNotFound(request);
-    }
+    delete d;
+}
+
+QList<QByteArray> ModelAdmin::changeFields() const
+{
+    return d->changeFields;
+}
+
+void ModelAdmin::setChangeFields(const QList<QByteArray> fields)
+{
+    d->changeFields = fields;
+}
+
+QList<QByteArray> ModelAdmin::listFields() const
+{
+    return d->listFields;
+}
+
+void ModelAdmin::setListFields(const QList<QByteArray> fields)
+{
+    d->listFields = fields;
+}
+
+QDjangoHttpResponse* ModelAdmin::addForm(const QDjangoHttpRequest &request)
+{
+    const QString modelName = d->modelFetcher->modelName();
 
     // collect fields
     QVariantList fieldList;
-    foreach (const QByteArray &key, m_changeFields) {
+    foreach (const QByteArray &key, d->changeFields) {
         QVariantMap props;
         props.insert("key", key);
         props.insert("name", QByteArray(key).replace("_", " "));
-        if (original)
-            props.insert("value", original->property(key));
         fieldList << props;
     }
 
@@ -279,99 +316,100 @@ QDjangoHttpResponse* ModelController<T>::changeForm(const QDjangoHttpRequest &re
         QUrl url;
         url.setEncodedQuery(request.body());
 
-        if (original) {
-            foreach (const QByteArray &key, m_changeFields)
-                original->setProperty(key, url.queryItemValue(key));
-            original->save();
-        } else {
-            T obj;
-            foreach (const QByteArray &key, m_changeFields)
-                obj.setProperty(key, url.queryItemValue(key));
-            obj.save();
-        }
-        return serveRedirect(request, QUrl(m_prefix + "/"));
+        QDjangoModel *obj = d->modelFetcher->createObject();
+        foreach (const QByteArray &key, d->changeFields)
+            obj->setProperty(key, url.queryItemValue(key));
+        obj->save();
+        delete obj;
+        return d->redirectHome(request);
     } else {
         QVariantMap context;
-        context.insert("model_name", m_modelName);
+        context.insert("model_name", modelName);
         context.insert("field_list", fieldList);
-        if (original) {
-            context.insert("original", dump(original));
-            context.insert("title", QString("Change %1").arg(m_modelName));
-        } else {
-            context.insert("title", QString("Add %1").arg(m_modelName));
-        }
+        context.insert("title", QString("Add %1").arg(modelName));
         return renderToResponse(request, ":/templates/change_form.html", context);
     }
 }
 
-template <class T>
-QDjangoHttpResponse* ModelController<T>::changeList(const QDjangoHttpRequest &request)
+QDjangoHttpResponse* ModelAdmin::changeForm(const QDjangoHttpRequest &request, const QString &objectId)
 {
-    QDjangoQuerySet<T> objects;
-    QVariantList objectList;
-    foreach (const T &obj, objects)
-        objectList << dump(&obj);
+    QDjangoModel *original = original = d->modelFetcher->getObject(objectId);
+    if (!original)
+        return QDjangoHttpController::serveNotFound(request);
+
+    // collect fields
+    QVariantList fieldList;
+    foreach (const QByteArray &key, d->changeFields) {
+        QVariantMap props;
+        props.insert("key", key);
+        props.insert("name", QByteArray(key).replace("_", " "));
+        props.insert("value", original->property(key));
+        fieldList << props;
+    }
+
+    if (request.method() == "POST") {
+        QUrl url;
+        url.setEncodedQuery(request.body());
+
+        foreach (const QByteArray &key, d->changeFields)
+            original->setProperty(key, url.queryItemValue(key));
+        original->save();
+        return d->redirectHome(request);
+    } else {
+        const QString modelName = d->modelFetcher->modelName();
+        QVariantMap context;
+        context.insert("model_name", modelName);
+        context.insert("field_list", fieldList);
+        context.insert("original", d->modelFetcher->dumpObject(original));
+        context.insert("title", QString("Change %1").arg(modelName));
+        return renderToResponse(request, ":/templates/change_form.html", context);
+    }
+}
+
+QDjangoHttpResponse* ModelAdmin::changeList(const QDjangoHttpRequest &request)
+{
+    QVariantList objectList = d->modelFetcher->listObjects();
 
     QVariantList fieldList;
-    foreach (const QByteArray &key, m_listFields) {
+    foreach (const QByteArray &key, d->listFields) {
         QVariantMap props;
         props.insert("key", key);
         props.insert("name", QByteArray(key).replace("_", " "));
         fieldList << props;
     }
 
+    const QString modelName = d->modelFetcher->modelName();
     QVariantMap context;
-    context.insert("title", QString("Select %1 to change").arg(m_modelName));
-    context.insert("add_link", QString("Add %1").arg(m_modelName));
-    context.insert("model_name", m_modelName);
+    context.insert("title", QString("Select %1 to change").arg(modelName));
+    context.insert("add_link", QString("Add %1").arg(modelName));
+    context.insert("model_name", modelName);
     context.insert("field_list", fieldList);
     context.insert("object_list", objectList);
     return renderToResponse(request, ":/templates/change_list.html", context);
 }
 
-template <class T>
-QDjangoHttpResponse* ModelController<T>::deleteForm(const QDjangoHttpRequest &request, int objectId)
+QDjangoHttpResponse* ModelAdmin::deleteForm(const QDjangoHttpRequest &request, const QString &objectId)
 {
-    T *original = QDjangoQuerySet<T>().get(QDjangoWhere("pk", QDjangoWhere::Equals, objectId));
+    QDjangoModel *original = original = d->modelFetcher->getObject(objectId);
     if (!original)
-        return serveNotFound(request);
+        return QDjangoHttpController::serveNotFound(request);
 
     if (request.method() == "POST") {
         original->remove();
-        return serveRedirect(request, QUrl(m_prefix + "/"));
+        return d->redirectHome(request);
     } else {
+        const QString modelName = d->modelFetcher->modelName();
         QVariantMap context;
-        context.insert("model_name", m_modelName);
-        context.insert("original", dump(original));
+        context.insert("model_name", modelName);
+        context.insert("original", d->modelFetcher->dumpObject(original));
         context.insert("title", "Are you sure?");
         return renderToResponse(request, ":/templates/delete_confirmation.html", context);
     }
 }
 
-template <class T>
-QDjangoHttpResponse* ModelController<T>::respondToRequest(const QDjangoHttpRequest &request)
-{
-    QRegExp changeRx("/([0-9]+)/");
-    QRegExp deleteRx("/([0-9]+)/delete/");
-
-    const QString path = request.path().mid(m_prefix.size());
-    if (path == "/") {
-        return changeList(request);
-    } else if (path == "/add/") {
-        return changeForm(request, 0);
-    } else if (changeRx.exactMatch(path)) {
-        return changeForm(request, changeRx.cap(1).toInt());
-    } else if (deleteRx.exactMatch(path)) {
-        return deleteForm(request, deleteRx.cap(1).toInt());
-    }
-    return serveNotFound(request);
-}
-
 class AdminControllerPrivate
 {
 public:
-    ModelController<Group> groupController;
-    ModelController<User> userController;
 };
 
 AdminController::AdminController(QObject *parent)
@@ -391,21 +429,6 @@ AdminController::AdminController(QObject *parent)
     QDjango::registerModel<Group>();
     QDjango::registerModel<User>();
     QDjango::createTables();
-
-    d->userController.setListFields(QList<QByteArray>() << "username" << "email" << "first_name" << "last_name");
-    d->groupController.setListFields(QList<QByteArray>() << "name");
-}
-
-QDjangoHttpResponse* AdminController::change(const QDjangoHttpRequest &request, const QString &model, const QString &path)
-{
-    qDebug("change %s", qPrintable(model));
-    if (model == "group") {
-        return d->groupController.respondToRequest(request);
-    } else if (model == "user") {
-        return d->userController.respondToRequest(request);
-    } else {
-        return QDjangoHttpController::serveNotFound(request);
-    }
 }
 
 QDjangoHttpResponse* AdminController::index(const QDjangoHttpRequest &request)
@@ -442,12 +465,27 @@ void usage()
     fprintf(stderr, "runserver\n");
 }
 
-void setupUrls(QDjangoUrlResolver *urls, QObject *controller)
+void AdminController::setupUrls(QDjangoUrlResolver *urls)
 {
-    urls->addView(QRegExp("^/$"), controller, "index");
-    urls->addView(QRegExp("^/large/$"), controller, "largeText");
-    urls->addView(QRegExp("^/media/(.+)$"), controller, "staticFiles");
-    urls->addView(QRegExp("^/([a-z]+)/(.*)$"), controller, "change");
+    urls->addView(QRegExp("^/$"), this, "index");
+    urls->addView(QRegExp("^/large/$"), this, "largeText");
+    urls->addView(QRegExp("^/media/(.+)$"), this, "staticFiles");
+
+    ModelAdmin *groupAdmin = new ModelAdmin(new ModelAdminFetcherImpl<Group>);
+    groupAdmin->setChangeFields(QList<QByteArray>() << "name");
+    groupAdmin->setListFields(QList<QByteArray>() << "name");
+    urls->addView(QRegExp("^/group/$"), groupAdmin, "changeList");
+    urls->addView(QRegExp("^/group/add/$"), groupAdmin, "addForm");
+    urls->addView(QRegExp("^/group/([0-9]+)/"), groupAdmin, "changeForm");
+    urls->addView(QRegExp("^/group/([0-9]+)/delete/"), groupAdmin, "deleteForm");
+
+    ModelAdmin *userAdmin = new ModelAdmin(new ModelAdminFetcherImpl<User>);
+    userAdmin->setChangeFields(QList<QByteArray>() << "username" << "email" << "first_name" << "last_name");
+    userAdmin->setListFields(QList<QByteArray>() << "username" << "email" << "first_name" << "last_name");
+    urls->addView(QRegExp("^/user/$"), userAdmin, "changeList");
+    urls->addView(QRegExp("^/user/add/$"), userAdmin, "addForm");
+    urls->addView(QRegExp("^/user/([0-9]+)/"), userAdmin, "changeForm");
+    urls->addView(QRegExp("^/user/([0-9]+)/delete/"), userAdmin, "deleteForm");
 }
 
 int main(int argc, char* argv[])
@@ -466,14 +504,14 @@ int main(int argc, char* argv[])
 
     if (!strcmp(argv[1], "runfcgi")) {
         QDjangoFastCgiServer *server = new QDjangoFastCgiServer;
-        setupUrls(server->urls(), &controller);
+        controller.setupUrls(server->urls());
         if (!server->listen(QHostAddress::Any, port)) {
             qWarning("Could not start listening on port %i", port);
             return EXIT_FAILURE;
         }
     } else if (!strcmp(argv[1], "runserver")) {
         QDjangoHttpServer *server = new QDjangoHttpServer;
-        setupUrls(server->urls(), &controller);
+        controller.setupUrls(server->urls());
         if (!server->listen(QHostAddress::Any, port)) {
             qWarning("Could not start listening on port %i", port);
             return EXIT_FAILURE;
