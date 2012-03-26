@@ -33,8 +33,10 @@
 #include "QDjangoHttpRequest.h"
 #include "QDjangoHttpResponse.h"
 #include "QDjangoHttpServer.h"
+#include "QDjangoUrlResolver.h"
 
 #include "../../tests/auth-models.h"
+#include "http-server.h"
 
 static QVariantMap dump(const QObject *object)
 {
@@ -365,18 +367,16 @@ QDjangoHttpResponse* ModelController<T>::respondToRequest(const QDjangoHttpReque
     return serveNotFound(request);
 }
 
-class RedirectController : public QDjangoHttpController
+class AdminControllerPrivate
 {
 public:
-    RedirectController();
-    QDjangoHttpResponse* respondToRequest(const QDjangoHttpRequest &request);
-
-private:
     ModelController<Group> groupController;
     ModelController<User> userController;
 };
 
-RedirectController::RedirectController()
+AdminController::AdminController(QObject *parent)
+    : QObject(parent)
+    , d(new AdminControllerPrivate)
 {
     const QString databaseName("test.db");
 
@@ -392,36 +392,46 @@ RedirectController::RedirectController()
     QDjango::registerModel<User>();
     QDjango::createTables();
 
-    userController.setListFields(QList<QByteArray>() << "username" << "email" << "first_name" << "last_name");
-    groupController.setListFields(QList<QByteArray>() << "name");
+    d->userController.setListFields(QList<QByteArray>() << "username" << "email" << "first_name" << "last_name");
+    d->groupController.setListFields(QList<QByteArray>() << "name");
 }
 
-QDjangoHttpResponse* RedirectController::respondToRequest(const QDjangoHttpRequest &request)
+QDjangoHttpResponse* AdminController::change(const QDjangoHttpRequest &request, const QString &model, const QString &path)
 {
-    const QString path = request.path();
-    if (path == "/") {
-        QVariantMap context;
-        context.insert("model_list", QStringList() << "group" << "user");
-        context.insert("title", "Administration");
-        return renderToResponse(request, ":/templates/index.html", context);
-    } else if (path == "/large/") {
-        QDjangoHttpResponse *response = new QDjangoHttpResponse;
-        response->setHeader("Content-Type", "text/plain");
-        const QByteArray line("Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.\n");
-        QByteArray data;
-        for (int i = 0; i < 1000; ++i) {
-            data += line;
-        }
-        response->setBody(data);
-        return response;
-    } else if (request.path() == "/media/css/base.css") {
-        return serveStatic(request, ":/base.css");
-    } else if (request.path().startsWith("/group/")) {
-        return groupController.respondToRequest(request);
-    } else if (request.path().startsWith("/user/")) {
-        return userController.respondToRequest(request);
+    qDebug("change %s", qPrintable(model));
+    if (model == "group") {
+        return d->groupController.respondToRequest(request);
+    } else if (model == "user") {
+        return d->userController.respondToRequest(request);
+    } else {
+        return QDjangoHttpController::serveNotFound(request);
     }
-    return serveNotFound(request);
+}
+
+QDjangoHttpResponse* AdminController::index(const QDjangoHttpRequest &request)
+{
+    QVariantMap context;
+    context.insert("model_list", QStringList() << "group" << "user");
+    context.insert("title", "Administration");
+    return renderToResponse(request, ":/templates/index.html", context);
+}
+
+QDjangoHttpResponse* AdminController::largeText(const QDjangoHttpRequest &request)
+{
+    QDjangoHttpResponse *response = new QDjangoHttpResponse;
+    response->setHeader("Content-Type", "text/plain");
+    const QByteArray line("Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.\n");
+    QByteArray data;
+    for (int i = 0; i < 1000; ++i) {
+        data += line;
+    }
+    response->setBody(data);
+    return response;
+}
+
+QDjangoHttpResponse* AdminController::staticFiles(const QDjangoHttpRequest &request, const QString &path)
+{
+    return QDjangoHttpController::serveStatic(request, ":/base.css");
 }
 
 void usage()
@@ -432,10 +442,18 @@ void usage()
     fprintf(stderr, "runserver\n");
 }
 
+void setupUrls(QDjangoUrlResolver *urls, QObject *controller)
+{
+    urls->addView(QRegExp("^/$"), controller, "index");
+    urls->addView(QRegExp("^/large/$"), controller, "largeText");
+    urls->addView(QRegExp("^/media/(.+)$"), controller, "staticFiles");
+    urls->addView(QRegExp("^/([a-z]+)/(.*)$"), controller, "change");
+}
+
 int main(int argc, char* argv[])
 {
     QCoreApplication app(argc, argv);
-    RedirectController controller;
+    AdminController controller;
 
     const quint16 port = 8000;
 
@@ -444,16 +462,18 @@ int main(int argc, char* argv[])
         return EXIT_FAILURE;
     }
 
+    QDjangoUrlResolver urls;
+
     if (!strcmp(argv[1], "runfcgi")) {
         QDjangoFastCgiServer *server = new QDjangoFastCgiServer;
-        server->setController(&controller);
+        setupUrls(server->urls(), &controller);
         if (!server->listen(QHostAddress::Any, port)) {
             qWarning("Could not start listening on port %i", port);
             return EXIT_FAILURE;
         }
     } else if (!strcmp(argv[1], "runserver")) {
         QDjangoHttpServer *server = new QDjangoHttpServer;
-        server->setController(&controller);
+        setupUrls(server->urls(), &controller);
         if (!server->listen(QHostAddress::Any, port)) {
             qWarning("Could not start listening on port %i", port);
             return EXIT_FAILURE;

@@ -24,11 +24,11 @@
 #include <QHostAddress>
 #include <QObject>
 
-class QDjangoHttpController;
 class QDjangoHttpRequest;
 class QDjangoHttpResponse;
 class QDjangoHttpServer;
 class QDjangoHttpServerPrivate;
+class QDjangoUrlResolver;
 
 /** \defgroup Http */
 
@@ -44,11 +44,9 @@ public:
     QDjangoHttpServer(QObject *parent = 0);
     ~QDjangoHttpServer();
 
-    QDjangoHttpController *controller() const;
-    void setController(QDjangoHttpController *controller);
-
     void close();
     bool listen(const QHostAddress &address, quint16 port);
+    QDjangoUrlResolver *urls() const;
 
 signals:
     /** This signal is emitted when a request completes.

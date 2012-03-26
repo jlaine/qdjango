@@ -31,6 +31,7 @@
 #include "QDjangoHttpResponse_p.h"
 #include "QDjangoHttpServer.h"
 #include "QDjangoHttpServer_p.h"
+#include "QDjangoUrlResolver.h"
 
 //#define QDJANGO_DEBUG_HTTP
 
@@ -175,12 +176,7 @@ void QDjangoHttpConnection::handleData()
     else if (m_requestHeader.value("Connection").toLower() == QLatin1String("close"))
         keepAlive = false;
 
-    QDjangoHttpController *controller = m_server->controller();
-    QDjangoHttpResponse *response = 0;
-    if (!controller)
-        response = QDjangoHttpController::serveNotFound(*request);
-    else
-        response = controller->respondToRequest(*request);
+    QDjangoHttpResponse *response = m_server->urls()->respond(*request);
     m_pendingJobs << qMakePair(request, response);
 
     /* Store keep-alive flag */
@@ -225,8 +221,8 @@ class QDjangoHttpServerPrivate
 {
 public:
     int connectionCount;
-    QDjangoHttpController *requestHandler;
     QTcpServer *tcpServer;
+    QDjangoUrlResolver *urlResolver;
 };
 
 /** Constructs a new HTTP server.
@@ -236,8 +232,8 @@ QDjangoHttpServer::QDjangoHttpServer(QObject *parent)
     d(new QDjangoHttpServerPrivate)
 {
     d->connectionCount = 0;
-    d->requestHandler = 0;
     d->tcpServer = 0;
+    d->urlResolver = new QDjangoUrlResolver(this);
 }
 
 /** Destroys the HTTP server.
@@ -245,22 +241,6 @@ QDjangoHttpServer::QDjangoHttpServer(QObject *parent)
 QDjangoHttpServer::~QDjangoHttpServer()
 {
     delete d;
-}
-
-/** Returns the controller which serves requests received by the server.
- */
-QDjangoHttpController *QDjangoHttpServer::controller() const
-{
-    return d->requestHandler;
-}
-
-/** Sets the controller which serves requests received by the server.
- *
- * \param controller
- */
-void QDjangoHttpServer::setController(QDjangoHttpController *controller)
-{
-    d->requestHandler = controller;
 }
 
 /** Closes the server. The server will no longer listen for
@@ -288,6 +268,14 @@ bool QDjangoHttpServer::listen(const QHostAddress &address, quint16 port)
     }
 
     return d->tcpServer->listen(address, port);
+}
+
+/** Returns the root URL resolver for the server, which dispatches
+ *  requests to handlers.
+ */
+QDjangoUrlResolver* QDjangoHttpServer::urls() const
+{
+    return d->urlResolver;
 }
 
 /** Handles the creation of new HTTP connections.

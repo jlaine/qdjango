@@ -53,14 +53,13 @@ QDjangoHttpResponse *TestController::respondToRequest(const QDjangoHttpRequest &
 void TestHttp::cleanupTestCase()
 {
     delete httpServer;
-    delete httpController;
 }
 
 void TestHttp::initTestCase()
 {
-    httpController = new TestController;
     httpServer = new QDjangoHttpServer;
-    httpServer->setController(httpController);
+    httpServer->urls()->addView(QRegExp("^/$"), this, "_q_index");
+    httpServer->urls()->addView(QRegExp("^/internal-server-error$"), this, "_q_error");
     QCOMPARE(httpServer->listen(QHostAddress::LocalHost, 8123), true);
 }
 
@@ -98,6 +97,19 @@ void TestHttp::testGet()
     QCOMPARE(int(reply->error()), err);
     QCOMPARE(reply->readAll(), body);
     delete reply;
+}
+
+QDjangoHttpResponse *TestHttp::_q_index(const QDjangoHttpRequest &request)
+{
+    QDjangoHttpResponse *response = new QDjangoHttpResponse;
+    response->setHeader("Content-Type", "text/plain");
+    response->setBody("hello");
+    return response;
+}
+
+QDjangoHttpResponse *TestHttp::_q_error(const QDjangoHttpRequest &request)
+{
+    return QDjangoHttpController::serveInternalServerError(request);
 }
 
 void tst_QDjangoUrlResolver::cleanupTestCase()

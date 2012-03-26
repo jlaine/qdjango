@@ -31,6 +31,7 @@
 #include "QDjangoHttpResponse.h"
 #include "QDjangoHttpResponse_p.h"
 #include "QDjangoHttpServer.h"
+#include "QDjangoUrlResolver.h"
 
 //#define QDJANGO_DEBUG_FCGI
 
@@ -75,7 +76,7 @@ public:
     QDjangoFastCgiServerPrivate(QDjangoFastCgiServer *qq);
     QLocalServer *localServer;
     QTcpServer *tcpServer;
-    QDjangoHttpController *requestHandler;
+    QDjangoUrlResolver *urlResolver;
 
 private:
     QDjangoFastCgiServer *q;
@@ -302,13 +303,7 @@ void QDjangoFastCgiConnection::_q_readyRead()
                 m_pendingRequest = 0;
                 m_pendingRequestId = 0;
 
-                QDjangoHttpController *controller = m_server->controller();
-                QDjangoHttpResponse *response = 0;
-                if (!controller)
-                    response = QDjangoHttpController::serveNotFound(*request);
-                else
-                    response = controller->respondToRequest(*request);
-
+                QDjangoHttpResponse *response = m_server->urls()->respond(*request);
                 writeResponse(requestId, response);
             }
             break;
@@ -324,6 +319,7 @@ QDjangoFastCgiServerPrivate::QDjangoFastCgiServerPrivate(QDjangoFastCgiServer *q
     tcpServer(0),
     q(qq)
 {
+    urlResolver = new QDjangoUrlResolver(q);
 }
 
 /** Constructs a new FastCGI server.
@@ -339,20 +335,6 @@ QDjangoFastCgiServer::QDjangoFastCgiServer(QObject *parent)
 QDjangoFastCgiServer::~QDjangoFastCgiServer()
 {
     delete d;
-}
-
-/** Returns the controller which serves requests received by the server.
- */
-QDjangoHttpController *QDjangoFastCgiServer::controller() const
-{
-    return d->requestHandler;
-}
-
-/** Sets the \a controller which serves requests received by the server.
- */
-void QDjangoFastCgiServer::setController(QDjangoHttpController *controller)
-{
-    d->requestHandler = controller;
 }
 
 /** Closes the server. The server will no longer listen for
@@ -400,6 +382,14 @@ bool QDjangoFastCgiServer::listen(const QHostAddress &address, quint16 port)
     }
 
     return d->tcpServer->listen(address, port);
+}
+
+/** Returns the root URL resolver for the server, which dispatches
+ *  requests to handlers.
+ */
+QDjangoUrlResolver* QDjangoFastCgiServer::urls() const
+{
+    return d->urlResolver;
 }
 
 void QDjangoFastCgiServer::_q_newLocalConnection()

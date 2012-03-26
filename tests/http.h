@@ -20,7 +20,6 @@
 
 #include <QObject>
 
-class QDjangoHttpController;
 class QDjangoHttpRequest;
 class QDjangoHttpResponse;
 class QDjangoHttpServer;
@@ -38,8 +37,10 @@ private slots:
     void testGet_data();
     void testGet();
 
+    QDjangoHttpResponse* _q_index(const QDjangoHttpRequest &request);
+    QDjangoHttpResponse* _q_error(const QDjangoHttpRequest &request);
+
 private:
-    QDjangoHttpController *httpController;
     QDjangoHttpServer *httpServer;
 };
 

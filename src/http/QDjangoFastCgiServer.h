@@ -26,6 +26,7 @@
 
 class QDjangoFastCgiServerPrivate;
 class QDjangoHttpController;
+class QDjangoUrlResolver;
 
 /** \brief The QDjangoFastCgiServer class represents a FastCGI server.
  *
@@ -39,12 +40,10 @@ public:
     QDjangoFastCgiServer(QObject *parent = 0);
     ~QDjangoFastCgiServer();
 
-    QDjangoHttpController *controller() const;
-    void setController(QDjangoHttpController *controller);
-
     void close();
     bool listen(const QString &name);
     bool listen(const QHostAddress &address, quint16 port);
+    QDjangoUrlResolver *urls() const;
 
 private slots:
     void _q_newLocalConnection();
