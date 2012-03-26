@@ -49,12 +49,6 @@ public:
     static QDjangoHttpResponse *serveRedirect(const QDjangoHttpRequest &request, const QUrl &url, bool permanent = false);
     static QDjangoHttpResponse *serveStatic(const QDjangoHttpRequest &request, const QString &filePath, const QDateTime &expires = QDateTime());
 
-    /** \brief Responds to an HTTP request.
-     *
-     * Reimplement this method when creating a subclass of QDjangoHttpController.
-     */
-    virtual QDjangoHttpResponse *respondToRequest(const QDjangoHttpRequest &request) = 0;
-
 private:
     static QDjangoHttpResponse *serveError(const QDjangoHttpRequest &request, int code, const QString &text);
 };
