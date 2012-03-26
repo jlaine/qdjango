@@ -274,10 +274,10 @@ ModelAdmin::ModelAdmin(ModelAdminFetcher *fetcher, QObject *parent)
     d = new ModelAdminPrivate;
     d->modelFetcher = fetcher;
     d->urlResolver = new QDjangoUrlResolver(this);
-    d->urlResolver->addView(QRegExp("^/$"), this, "changeList");
-    d->urlResolver->addView(QRegExp("^/add/$"), this, "addForm");
-    d->urlResolver->addView(QRegExp("^/([0-9]+)/"), this, "changeForm");
-    d->urlResolver->addView(QRegExp("^/([0-9]+)/delete/"), this, "deleteForm");
+    d->urlResolver->addView(QRegExp("^$"), this, "changeList");
+    d->urlResolver->addView(QRegExp("^add/$"), this, "addForm");
+    d->urlResolver->addView(QRegExp("^([0-9]+)/"), this, "changeForm");
+    d->urlResolver->addView(QRegExp("^([0-9]+)/delete/"), this, "deleteForm");
 }
 
 ModelAdmin::~ModelAdmin()
@@ -465,18 +465,18 @@ void usage()
 
 void AdminController::setupUrls(QDjangoUrlResolver *urls)
 {
-    urls->addView(QRegExp("^/$"), this, "index");
-    urls->addView(QRegExp("^/static/admin/(.+)$"), this, "staticFiles");
+    urls->addView(QRegExp("^$"), this, "index");
+    urls->addView(QRegExp("^static/admin/(.+)$"), this, "staticFiles");
 
     ModelAdmin *groupAdmin = new ModelAdmin(new ModelAdminFetcherImpl<Group>);
     groupAdmin->setChangeFields(QList<QByteArray>() << "name");
     groupAdmin->setListFields(QList<QByteArray>() << "name");
-    urls->addView(QRegExp("^/group(/.*)$"), groupAdmin->urls(), "respond");
+    urls->include(QRegExp("^group/"), groupAdmin->urls());
 
     ModelAdmin *userAdmin = new ModelAdmin(new ModelAdminFetcherImpl<User>);
     userAdmin->setChangeFields(QList<QByteArray>() << "username" << "email" << "first_name" << "last_name");
     userAdmin->setListFields(QList<QByteArray>() << "username" << "email" << "first_name" << "last_name");
-    urls->addView(QRegExp("^/user(/.*)$"), userAdmin->urls(), "respond");
+    urls->include(QRegExp("^user/"), userAdmin->urls());
 }
 
 int main(int argc, char* argv[])

@@ -44,6 +44,15 @@ private:
     QDjangoHttpServer *httpServer;
 };
 
+class tst_QDjangoUrlHelper : public QObject
+{
+    Q_OBJECT
+
+private slots:
+    QDjangoHttpResponse* _q_index(const QDjangoHttpRequest &request);
+    QDjangoHttpResponse* _q_test(const QDjangoHttpRequest &request);
+};
+
 class tst_QDjangoUrlResolver : public QObject
 {
     Q_OBJECT
@@ -62,6 +71,8 @@ private slots:
     QDjangoHttpResponse* _q_twoArgs(const QDjangoHttpRequest &request, const QString &id, const QString &action);
 
 private:
+    tst_QDjangoUrlHelper *urlHelper;
     QDjangoUrlResolver *urlResolver;
+    QDjangoUrlResolver *urlSub;
 };
 

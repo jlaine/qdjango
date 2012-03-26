@@ -41,6 +41,7 @@ public:
     QDjangoUrlResolver(QObject *parent = 0);
     ~QDjangoUrlResolver();
 
+    bool include(const QRegExp &path, QDjangoUrlResolver *urls);
     bool addView(const QRegExp &path, QObject *receiver, const char *member);
     QString reverse(QObject *receiver, const char *member, const QVariantList &args = QVariantList()) const;
 
@@ -48,6 +49,8 @@ public slots:
     QDjangoHttpResponse* respond(const QDjangoHttpRequest &request, const QString &path) const;
 
 private:
+    QDjangoHttpResponse* respondSub(const QDjangoHttpRequest &request, const QString &path) const;
+    QString reverseSub(QObject *receiver, const char *member, const QVariantList &args = QVariantList()) const;
     QDjangoUrlResolverPrivate *d;
 };
 

@@ -40,8 +40,8 @@ void TestHttp::cleanupTestCase()
 void TestHttp::initTestCase()
 {
     httpServer = new QDjangoHttpServer;
-    httpServer->urls()->addView(QRegExp("^/$"), this, "_q_index");
-    httpServer->urls()->addView(QRegExp("^/internal-server-error$"), this, "_q_error");
+    httpServer->urls()->addView(QRegExp("^$"), this, "_q_index");
+    httpServer->urls()->addView(QRegExp("^internal-server-error$"), this, "_q_error");
     QCOMPARE(httpServer->listen(QHostAddress::LocalHost, 8123), true);
 }
 
@@ -94,6 +94,22 @@ QDjangoHttpResponse *TestHttp::_q_error(const QDjangoHttpRequest &request)
     return QDjangoHttpController::serveInternalServerError(request);
 }
 
+QDjangoHttpResponse* tst_QDjangoUrlHelper::_q_index(const QDjangoHttpRequest &request)
+{
+    QDjangoHttpResponse *response = new QDjangoHttpResponse;
+    response->setHeader("Content-Type", "text/plain");
+    response->setBody("sub index");
+    return response;
+}
+
+QDjangoHttpResponse* tst_QDjangoUrlHelper::_q_test(const QDjangoHttpRequest &request)
+{
+    QDjangoHttpResponse *response = new QDjangoHttpResponse;
+    response->setHeader("Content-Type", "text/plain");
+    response->setBody("sub test");
+    return response;
+}
+
 void tst_QDjangoUrlResolver::cleanupTestCase()
 {
     delete urlResolver;
@@ -101,30 +117,41 @@ void tst_QDjangoUrlResolver::cleanupTestCase()
 
 void tst_QDjangoUrlResolver::initTestCase()
 {
+    urlHelper = new tst_QDjangoUrlHelper;
+    urlSub = new QDjangoUrlResolver;
+    QVERIFY(urlSub->addView(QRegExp("^$"), urlHelper, "_q_index"));
+    QVERIFY(urlSub->addView(QRegExp("^test/$"), urlHelper, "_q_test"));
+
     urlResolver = new QDjangoUrlResolver;
-    QVERIFY(urlResolver->addView(QRegExp("^/$"), this, "_q_index"));
-    QVERIFY(urlResolver->addView(QRegExp("^/test/$"), this, "_q_noArgs"));
-    QVERIFY(urlResolver->addView(QRegExp("^/test/([0-9]+)/$"), this, "_q_oneArg"));
-    QVERIFY(urlResolver->addView(QRegExp("^/test/([0-9]+)/([a-z]+)/$"), this, "_q_twoArgs"));
+    QVERIFY(urlResolver->addView(QRegExp("^$"), this, "_q_index"));
+    QVERIFY(urlResolver->addView(QRegExp("^test/$"), this, "_q_noArgs"));
+    QVERIFY(urlResolver->addView(QRegExp("^test/([0-9]+)/$"), this, "_q_oneArg"));
+    QVERIFY(urlResolver->addView(QRegExp("^test/([0-9]+)/([a-z]+)/$"), this, "_q_twoArgs"));
+    QVERIFY(urlResolver->include(QRegExp("^recurse/"), urlSub));
 }
 
 void tst_QDjangoUrlResolver::testRespond_data()
 {
     QTest::addColumn<QString>("path");
     QTest::addColumn<int>("err");
+    QTest::addColumn<QString>("body");
 
-    QTest::newRow("root") << "/" << 200;
-    QTest::newRow("not-found") << "/foo/" << 404;
-    QTest::newRow("no-args") << "/test/" << 200;
-    QTest::newRow("one-args") << "/test/123/" << 200;
-    QTest::newRow("two-args") << "/test/123/delete/" << 200;
-    QTest::newRow("three-args") << "/test/123/delete/zoo/" << 404;
+    QTest::newRow("root") << "/" << 200 << "";
+    QTest::newRow("not-found") << "/non-existent/" << 404 << "";
+    QTest::newRow("no-args") << "/test/" << 200 << "";
+    QTest::newRow("one-args") << "/test/123/" << 200 << "";
+    QTest::newRow("two-args") << "/test/123/delete/" << 200 << "";
+    QTest::newRow("three-args") << "/test/123/delete/zoo/" << 404 << "";
+    QTest::newRow("recurse-not-found") << "/recurse/non-existent/" << 404 << "";
+    QTest::newRow("recurse-index") << "/recurse/" << 200 << "";
+    QTest::newRow("recurse-test") << "/recurse/test/" << 200 << "";
 }
 
 void tst_QDjangoUrlResolver::testRespond()
 {
     QFETCH(QString, path);
     QFETCH(int, err);
+    QFETCH(QString, body);
 
     QDjangoHttpResponse *response = urlResolver->respond(QDjangoHttpTestRequest("GET", path), path);
     QVERIFY(response);
@@ -134,20 +161,27 @@ void tst_QDjangoUrlResolver::testRespond()
 void tst_QDjangoUrlResolver::testReverse_data()
 {
     QTest::addColumn<QString>("path");
+    QTest::addColumn<QObject*>("receiver");
     QTest::addColumn<QString>("member");
     QTest::addColumn<QString>("args");
 
-    QTest::newRow("root") << "/" << "_q_index" << "";
-    QTest::newRow("no-args") << "/test/" << "_q_noArgs" << "";
-    QTest::newRow("one-arg") << "/test/123/" << "_q_oneArg" << "123";
-    QTest::newRow("two-args") << "/test/123/delete/" << "_q_twoArgs" << "123|delete";
-    QTest::newRow("too-few-args") << "" << "_q_oneArg" << "";
-    QTest::newRow("too-many-args") << "" << "_q_noArgs" << "123";
+    QObject *receiver = this;
+    QTest::newRow("root") << "/" << receiver << "_q_index" << "";
+    QTest::newRow("no-args") << "/test/" << receiver << "_q_noArgs" << "";
+    QTest::newRow("one-arg") << "/test/123/" << receiver << "_q_oneArg" << "123";
+    QTest::newRow("two-args") << "/test/123/delete/" << receiver << "_q_twoArgs" << "123|delete";
+    QTest::newRow("too-few-args") << "" << receiver << "_q_oneArg" << "";
+    QTest::newRow("too-many-args") << "" << receiver << "_q_noArgs" << "123";
+
+    receiver = urlHelper;
+    QTest::newRow("recurse-index") << "/recurse/" << receiver << "_q_index" << "";
+    QTest::newRow("recurse-test") << "/recurse/test/" << receiver << "_q_test" << "";
 }
 
 void tst_QDjangoUrlResolver::testReverse()
 {
     QFETCH(QString, path);
+    QFETCH(QObject*, receiver);
     QFETCH(QString, member);
     QFETCH(QString, args);
 
@@ -156,7 +190,7 @@ void tst_QDjangoUrlResolver::testReverse()
         foreach (const QString &bit, args.split('|'))
             varArgs << bit;
     }
-    QCOMPARE(urlResolver->reverse(this, member.toLatin1(), varArgs), path);
+    QCOMPARE(urlResolver->reverse(receiver, member.toLatin1(), varArgs), path);
 }
 
 QDjangoHttpResponse* tst_QDjangoUrlResolver::_q_index(const QDjangoHttpRequest &request)
