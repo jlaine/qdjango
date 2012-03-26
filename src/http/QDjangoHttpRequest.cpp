@@ -66,3 +66,9 @@ QString QDjangoHttpRequest::path() const
 {
     return d->path;
 }
+
+QDjangoHttpTestRequest::QDjangoHttpTestRequest(const QString &method, const QString &path)
+{
+    d->method = method;
+    d->path = path;
+}

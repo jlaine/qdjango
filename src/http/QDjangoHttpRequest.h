@@ -23,7 +23,6 @@
 
 #include <QString>
 
-class QDjangoHttpRequest;
 class QDjangoHttpRequestPrivate;
 
 /** \brief The QDjangoHttpRequest class represents an HTTP request.
@@ -46,6 +45,13 @@ private:
     QDjangoHttpRequestPrivate* const d;
     friend class QDjangoFastCgiConnection;
     friend class QDjangoHttpConnection;
+    friend class QDjangoHttpTestRequest;
+};
+
+class QDjangoHttpTestRequest : public QDjangoHttpRequest
+{
+public:
+    QDjangoHttpTestRequest(const QString &method, const QString &path);
 };
 
 #endif
