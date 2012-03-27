@@ -30,7 +30,13 @@ class QDjangoUrlResolver;
 
 /** \brief The QDjangoFastCgiServer class represents a FastCGI server.
  *
+ *  It allows you to create a FastCGI server which your reverse proxy
+ *  (e.g. apache, nginx) will query to serve your web application.
+ *
+ *  To register views, see urls().
+ *
  * \ingroup Http
+ * \sa QDjangoHttpServer
  */
 class QDjangoFastCgiServer : public QObject
 {

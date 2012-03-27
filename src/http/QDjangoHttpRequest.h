@@ -25,6 +25,12 @@
 
 class QDjangoHttpRequestPrivate;
 
+/** \defgroup Http
+ *
+ * QDjango's HTTP request and response framework enables you to write web
+ * web applications and serve them over HTTP.
+ */
+
 /** \brief The QDjangoHttpRequest class represents an HTTP request.
  *
  * \ingroup Http

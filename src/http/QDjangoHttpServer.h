@@ -30,11 +30,15 @@ class QDjangoHttpServer;
 class QDjangoHttpServerPrivate;
 class QDjangoUrlResolver;
 
-/** \defgroup Http */
-
 /** \brief The QDjangoHttpServer class represents an HTTP server.
  *
+ *  It allows you to create a standalone HTTP server which will
+ *  serve your web application.
+ *
+ *  To register views, see urls().
+ *
  * \ingroup Http
+ * \sa QDjangoFastCgiServer
  */
 class QDjangoHttpServer : public QObject
 {

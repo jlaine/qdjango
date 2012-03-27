@@ -30,7 +30,12 @@ class QString;
 
 class QDjangoMetaModel;
 
-/** \defgroup Database */
+/** \defgroup Database
+ *
+ * QDjango's Object Relation Mapper (ORM) strives to be both powerful
+ * and simple to use. Where possible it tries to follow django's
+ * ORM API, with a similar lazy queryset mechanism.
+ */
 
 /** \brief The QDjango class provides a set of static functions.
  *
