@@ -138,6 +138,8 @@ QString QDjangoUrlResolverPrivate::reverse(QObject *receiver, const char *member
     return QString();
 }
 
+/** Constructs a new URL resolver with the given \a parent.
+ */
 QDjangoUrlResolver::QDjangoUrlResolver(QObject *parent)
     : QObject(parent)
     , d(new QDjangoUrlResolverPrivate)
@@ -198,17 +200,15 @@ bool QDjangoUrlResolver::include(const QRegExp &path, QDjangoUrlResolver *urls)
     return true;
 }
 
-/** Responds to the given HTTP request.
- *
- * @param respond
+/** Responds to the given HTTP \a request for the given \a path.
  */
-QDjangoHttpResponse* QDjangoUrlResolver::respond(const QDjangoHttpRequest &request, const QString &path_) const
+QDjangoHttpResponse* QDjangoUrlResolver::respond(const QDjangoHttpRequest &request, const QString &path) const
 {
-    QString path(path_);
-    if (path.startsWith('/'))
-        path.remove(0, 1);
+    QString fixedPath(path);
+    if (fixedPath.startsWith('/'))
+        fixedPath.remove(0, 1);
 
-    QDjangoHttpResponse *response = d->respond(request, path);
+    QDjangoHttpResponse *response = d->respond(request, fixedPath);
     if (response)
         return response;
     else
