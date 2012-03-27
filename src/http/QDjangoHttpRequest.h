@@ -48,10 +48,14 @@ private:
     friend class QDjangoHttpTestRequest;
 };
 
+/** \cond */
+
 class QDjangoHttpTestRequest : public QDjangoHttpRequest
 {
 public:
     QDjangoHttpTestRequest(const QString &method, const QString &path);
 };
+
+/** \endcond */
 
 #endif
