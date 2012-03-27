@@ -50,6 +50,8 @@ bool QDjangoHttpController::getBasicAuth(const QDjangoHttpRequest &request, QStr
     return false;
 }
 
+/** Converts a QDateTime to an HTTP datetime string.
+ */
 QString QDjangoHttpController::httpDateTime(const QDateTime &dt)
 {
     if (dt.isValid())
@@ -57,13 +59,14 @@ QString QDjangoHttpController::httpDateTime(const QDateTime &dt)
     return QString();
 }
 
+/** Converts an HTTP datetime string to a QDateTime.
+ */
 QDateTime QDjangoHttpController::httpDateTime(const QString &str)
 {
     QDateTime dt = QDateTime::fromString(str.left(25), "ddd, dd MMM yyyy HH:mm:ss");
     dt.setTimeSpec(Qt::UTC);
     return dt;
 }
-
 
 QDjangoHttpResponse *QDjangoHttpController::serveError(const QDjangoHttpRequest &request, int code, const QString &text)
 {
