@@ -198,7 +198,7 @@ void QDjangoHttpConnection::writeResponse()
             return;
 
         /* Finalise response */
-        response->setHeader("Date", httpDateTime(QDateTime::currentDateTime()));
+        response->setHeader("Date", QDjangoHttpController::httpDateTime(QDateTime::currentDateTime()));
         response->setHeader("Server", QString("%1/%2").arg(qApp->applicationName(), qApp->applicationVersion()));
         response->setHeader("Connection", m_closeAfterResponse ? "close" : "keep-alive");
 

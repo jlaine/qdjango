@@ -28,10 +28,7 @@ class QDjangoHttpRequest;
 class QDjangoHttpResponse;
 class QUrl;
 
-QString httpDateTime(const QDateTime &dt);
-QDateTime httpDateTime(const QString &str);
-
-/** \brief The QDjangoHttpController class is the base class for HTTP request handlers.
+/** \brief The QDjangoHttpController class provides static methods for replying to HTTP requests.
  *
  * \ingroup Http
  */
@@ -40,6 +37,10 @@ class QDjangoHttpController
 public:
     // get basic authorization credentials
     static bool getBasicAuth(const QDjangoHttpRequest &request, QString &username, QString &password);
+
+    // date / time handling
+    static QString httpDateTime(const QDateTime &dt);
+    static QDateTime httpDateTime(const QString &str);
 
     // common responses
     static QDjangoHttpResponse *serveAuthorizationRequired(const QDjangoHttpRequest &request, const QString &realm = QString("Secure Area"));

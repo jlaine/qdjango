@@ -30,20 +30,6 @@
 #include "QDjangoHttpRequest.h"
 #include "QDjangoHttpResponse.h"
 
-QString httpDateTime(const QDateTime &dt)
-{
-    if (dt.isValid())
-        return dt.toUTC().toString("ddd, dd MMM yyyy HH:mm:ss") + " GMT";
-    return QString();
-}
-
-QDateTime httpDateTime(const QString &str)
-{
-    QDateTime dt = QDateTime::fromString(str.left(25), "ddd, dd MMM yyyy HH:mm:ss");
-    dt.setTimeSpec(Qt::UTC);
-    return dt;
-}
-
 /** Extract basic credentials from an HTTP \a request.
  *
  * Returns \b true if credentials were provider, \b false otherwise.
@@ -63,6 +49,21 @@ bool QDjangoHttpController::getBasicAuth(const QDjangoHttpRequest &request, QStr
     }
     return false;
 }
+
+QString QDjangoHttpController::httpDateTime(const QDateTime &dt)
+{
+    if (dt.isValid())
+        return dt.toUTC().toString("ddd, dd MMM yyyy HH:mm:ss") + " GMT";
+    return QString();
+}
+
+QDateTime QDjangoHttpController::httpDateTime(const QString &str)
+{
+    QDateTime dt = QDateTime::fromString(str.left(25), "ddd, dd MMM yyyy HH:mm:ss");
+    dt.setTimeSpec(Qt::UTC);
+    return dt;
+}
+
 
 QDjangoHttpResponse *QDjangoHttpController::serveError(const QDjangoHttpRequest &request, int code, const QString &text)
 {
