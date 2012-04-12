@@ -444,6 +444,12 @@ void TestUser::update()
     QVariantMap fields;
     fields.insert("password", "xxx");
 
+    // update no fields
+    QCOMPARE(QDjangoQuerySet<User>().update(QVariantMap()), 0);
+
+    // update none
+    QCOMPARE(QDjangoQuerySet<User>().none().update(fields), 0);
+
     // update all
     QDjangoQuerySet<User> qs;
     QCOMPARE(qs.update(fields), 3);

@@ -304,7 +304,7 @@ bool QDjangoQuerySetPrivate::sqlLoad(QObject *model, int index)
 int QDjangoQuerySetPrivate::sqlUpdate(const QVariantMap &fields)
 {
     // UPDATE on an empty queryset doesn't need a query
-    if (whereClause.isNone())
+    if (whereClause.isNone() || fields.isEmpty())
         return 0;
 
     // FIXME : it is not possible to update entries once a limit has been set
@@ -320,15 +320,15 @@ int QDjangoQuerySetPrivate::sqlUpdate(const QVariantMap &fields)
     QDjangoWhere resolvedWhere(whereClause);
     compiler.resolve(resolvedWhere);
 
+    QString sql = "UPDATE " + compiler.fromSql();
+
+    // add SET
     QStringList fieldAssign;
     foreach (const QString &name, fields.keys())
         fieldAssign << db.driver()->escapeIdentifier(name, QSqlDriver::FieldName) + " = ?";
+    sql += " SET " + fieldAssign.join(", ");
 
-    QString sql = QString("UPDATE %1 SET %2").arg(
-        compiler.fromSql(),
-        fieldAssign.join(", "));
-
-    // add where
+    // add WHERE
     const QString where = resolvedWhere.sql(db);
     if (!where.isEmpty())
         sql += " WHERE " + where;
