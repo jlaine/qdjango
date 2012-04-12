@@ -36,6 +36,8 @@ private slots:
     void initTestCase();
     void testGet_data();
     void testGet();
+    void testPost_data();
+    void testPost();
 
     QDjangoHttpResponse* _q_index(const QDjangoHttpRequest &request);
     QDjangoHttpResponse* _q_error(const QDjangoHttpRequest &request);

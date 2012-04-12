@@ -42,9 +42,11 @@ public:
     ~QDjangoHttpRequest();
 
     QByteArray body() const;
+    QString get(const QString &key) const;
     QString meta(const QString &key) const;
     QString method() const;
     QString path() const;
+    QString post(const QString &key) const;
 
 private:
     Q_DISABLE_COPY(QDjangoHttpRequest)

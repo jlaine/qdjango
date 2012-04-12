@@ -19,6 +19,7 @@
  */
 
 #include <QIODevice>
+#include <QUrl>
 
 #include "QDjangoHttpRequest.h"
 #include "QDjangoHttpRequest_p.h"
@@ -44,6 +45,15 @@ QByteArray QDjangoHttpRequest::body() const
     return d->buffer;
 }
 
+/** Returns the GET data for the given \a key.
+ */
+QString QDjangoHttpRequest::get(const QString &key) const
+{
+    QUrl url;
+    url.setEncodedQuery(d->meta.value("QUERY_STRING").toLatin1());
+    return url.queryItemValue(key);
+}
+
 /** Returns the specified HTTP request header.
  *
  * \param key
@@ -65,6 +75,15 @@ QString QDjangoHttpRequest::method() const
 QString QDjangoHttpRequest::path() const
 {
     return d->path;
+}
+
+/** Returns the POST data for the given \a key.
+ */
+QString QDjangoHttpRequest::post(const QString &key) const
+{
+    QUrl url;
+    url.setEncodedQuery(d->buffer);
+    return url.queryItemValue(key);
 }
 
 QDjangoHttpTestRequest::QDjangoHttpTestRequest(const QString &method, const QString &path)

@@ -57,7 +57,8 @@ void TestHttp::testGet_data()
         "<body><p>%1</p></body>"
         "</html>");
 
-    QTest::newRow("root") << "/" << int(QNetworkReply::NoError) << QByteArray("hello");
+    QTest::newRow("root") << "/" << int(QNetworkReply::NoError) << QByteArray("empty");
+    QTest::newRow("query-string") << "/?message=bar" << int(QNetworkReply::NoError) << QByteArray("get=bar");
     QTest::newRow("not-found") << "/not-found" << int(QNetworkReply::ContentNotFoundError) << errorTemplate.arg("The document you requested was not found.").toUtf8();
     QTest::newRow("internal-server-error") << "/internal-server-error" << int(QNetworkReply::UnknownContentError) << errorTemplate.arg("An internal server error was encountered.").toUtf8();
 }
@@ -81,11 +82,57 @@ void TestHttp::testGet()
     delete reply;
 }
 
+void TestHttp::testPost_data()
+{
+    QTest::addColumn<QString>("path");
+    QTest::addColumn<QByteArray>("data");
+    QTest::addColumn<int>("err");
+    QTest::addColumn<QByteArray>("body");
+
+    QTest::newRow("empty") << "/" << QByteArray() << int(QNetworkReply::NoError) << QByteArray("empty");
+    QTest::newRow("simple") << "/" << QByteArray("message=bar") << int(QNetworkReply::NoError) << QByteArray("post=bar");
+    QTest::newRow("multi") << "/" << QByteArray("bob=wiz&message=bar&zoo=wow") << int(QNetworkReply::NoError) << QByteArray("post=bar");
+}
+
+void TestHttp::testPost()
+{
+    QFETCH(QString, path);
+    QFETCH(QByteArray, data);
+    QFETCH(int, err);
+    QFETCH(QByteArray, body);
+
+    QNetworkAccessManager network;
+    QNetworkReply *reply = network.post(QNetworkRequest(QUrl("http://127.0.0.1:8123" + path)), data);
+
+    QEventLoop loop;
+    QObject::connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
+    loop.exec();
+
+    QVERIFY(reply);
+    QCOMPARE(int(reply->error()), err);
+    QCOMPARE(reply->readAll(), body);
+    delete reply;
+}
+
 QDjangoHttpResponse *TestHttp::_q_index(const QDjangoHttpRequest &request)
 {
     QDjangoHttpResponse *response = new QDjangoHttpResponse;
     response->setHeader("Content-Type", "text/plain");
-    response->setBody("hello");
+
+    QString output;
+
+    const QString getValue = request.get("message");
+    if (!getValue.isEmpty())
+        output += "get=" + getValue;
+
+    const QString postValue = request.post("message");
+    if (!postValue.isEmpty())
+        output += "post=" + postValue;
+
+    if (output.isEmpty())
+        output = "empty";
+
+    response->setBody(output.toUtf8());
     return response;
 }
 
