@@ -444,9 +444,25 @@ void TestUser::update()
     QVariantMap fields;
     fields.insert("password", "xxx");
 
-    QDjangoQuerySet<User>().update(fields);
-    foreach (const User &user, QDjangoQuerySet<User>()) {
-        qDebug("pass: %s",qP
+    // update all
+    QDjangoQuerySet<User> qs;
+    QVERIFY(qs.update(fields));
+
+    QDjangoQuerySet<User> all;
+    foreach (const User &user, all)
+        QCOMPARE(user.password(), QLatin1String("xxx"));
+
+    // update one
+    fields.insert("password", "yyy");
+    qs = qs.filter(QDjangoWhere("username", QDjangoWhere::Equals, "baruser"));
+    QVERIFY(qs.update(fields));
+
+    all = QDjangoQuerySet<User>();
+    foreach (const User &user, all) {
+        if (user.username() == "baruser")
+            QCOMPARE(user.password(), QLatin1String("yyy"));
+        else
+            QCOMPARE(user.password(), QLatin1String("xxx"));
     }
 }
 
