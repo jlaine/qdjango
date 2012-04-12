@@ -302,6 +302,58 @@ bool QDjangoQuerySetPrivate::sqlLoad(QObject *model, int index)
     return true;
 }
 
+int QDjangoQuerySetPrivate::sqlUpdate(const QVariantMap &fields)
+{
+    // UPDATE on an empty queryset doesn't need a query
+    if (whereClause.isNone())
+        return 0;
+
+    // FIXME : it is not possible to update entries once a limit has been set
+    // because SQLite does not support limits on UPDATE unless compiled with the
+    // SQLITE_ENABLE_UPDATE_DELETE_LIMIT option
+    if (lowMark || highMark)
+        return 0;
+
+    QSqlDatabase db = QDjango::database();
+
+    // build query
+    QDjangoCompiler compiler(m_modelName, db);
+    QDjangoWhere resolvedWhere(whereClause);
+    compiler.resolve(resolvedWhere);
+
+    QStringList fieldAssign;
+    foreach (const QString &name, fields.keys())
+        fieldAssign << db.driver()->escapeIdentifier(name, QSqlDriver::FieldName) + " = ?";
+
+    QString sql = QString("UPDATE %1 SET %2").arg(
+        compiler.fromSql(),
+        fieldAssign.join(", "));
+
+    // add where
+    const QString where = resolvedWhere.sql(db);
+    if (!where.isEmpty())
+        sql += " WHERE " + where;
+
+    qDebug("QRY: %s", qPrintable(sql));
+
+    QDjangoQuery query(db);
+    query.prepare(sql);
+    foreach (const QString &name, fields.keys())
+        query.addBindValue(fields.value(name));
+    resolvedWhere.bindValues(query);
+
+    // execute query
+    if (!query.exec())
+        return 0;
+
+    // invalidate cache
+    if (hasResults) {
+        properties.clear();
+        hasResults = false;
+    }
+    return 1;
+}
+
 QList<QVariantMap> QDjangoQuerySetPrivate::sqlValues(const QStringList &fields)
 {
     QList<QVariantMap> values;

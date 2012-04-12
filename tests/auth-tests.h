@@ -39,6 +39,7 @@ private slots:
     void limit();
     void subLimit();
     void orderBy();
+    void update();
     void values();
     void valuesList();
     void constIterator();

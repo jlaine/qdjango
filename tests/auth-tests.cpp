@@ -435,6 +435,21 @@ void TestUser::orderBy()
     QCOMPARE(user.username(), QLatin1String("baruser"));
 }
 
+/** Test updating.
+ */
+void TestUser::update()
+{
+    loadFixtures();
+
+    QVariantMap fields;
+    fields.insert("password", "xxx");
+
+    QDjangoQuerySet<User>().update(fields);
+    foreach (const User &user, QDjangoQuerySet<User>()) {
+        qDebug("pass: %s",qP
+    }
+}
+
 /** Test retrieving maps of values.
  */
 void TestUser::values()

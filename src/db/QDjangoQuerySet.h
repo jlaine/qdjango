@@ -306,6 +306,7 @@ public:
 
     bool remove();
     int size();
+    int update(const QVariantMap &fields);
     QList<QVariantMap> values(const QStringList &fields = QStringList());
     QList<QVariantList> valuesList(const QStringList &fields = QStringList());
 
@@ -595,6 +596,15 @@ int QDjangoQuerySet<T>::size()
     if (!d->sqlFetch())
         return -1;
     return d->properties.size();
+}
+
+/** Performs an SQL update query for the specified \a fields and returns the
+ *  number of rows affected.
+ */
+template <class T>
+int QDjangoQuerySet<T>::update(const QVariantMap &fields)
+{
+    return d->sqlUpdate(fields);
 }
 
 /** Returns a list of property hashes for the current QDjangoQuerySet.
