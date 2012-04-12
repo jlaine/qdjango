@@ -57,8 +57,8 @@ void TestHttp::testGet_data()
         "<body><p>%1</p></body>"
         "</html>");
 
-    QTest::newRow("root") << "/" << int(QNetworkReply::NoError) << QByteArray("empty");
-    QTest::newRow("query-string") << "/?message=bar" << int(QNetworkReply::NoError) << QByteArray("get=bar");
+    QTest::newRow("root") << "/" << int(QNetworkReply::NoError) << QByteArray("method=GET|path=/");
+    QTest::newRow("query-string") << "/?message=bar" << int(QNetworkReply::NoError) << QByteArray("method=GET|path=/|get=bar");
     QTest::newRow("not-found") << "/not-found" << int(QNetworkReply::ContentNotFoundError) << errorTemplate.arg("The document you requested was not found.").toUtf8();
     QTest::newRow("internal-server-error") << "/internal-server-error" << int(QNetworkReply::UnknownContentError) << errorTemplate.arg("An internal server error was encountered.").toUtf8();
 }
@@ -89,9 +89,9 @@ void TestHttp::testPost_data()
     QTest::addColumn<int>("err");
     QTest::addColumn<QByteArray>("body");
 
-    QTest::newRow("empty") << "/" << QByteArray() << int(QNetworkReply::NoError) << QByteArray("empty");
-    QTest::newRow("simple") << "/" << QByteArray("message=bar") << int(QNetworkReply::NoError) << QByteArray("post=bar");
-    QTest::newRow("multi") << "/" << QByteArray("bob=wiz&message=bar&zoo=wow") << int(QNetworkReply::NoError) << QByteArray("post=bar");
+    QTest::newRow("empty") << "/" << QByteArray() << int(QNetworkReply::NoError) << QByteArray("method=POST|path=/");
+    QTest::newRow("simple") << "/" << QByteArray("message=bar") << int(QNetworkReply::NoError) << QByteArray("method=POST|path=/|post=bar");
+    QTest::newRow("multi") << "/" << QByteArray("bob=wiz&message=bar&zoo=wow") << int(QNetworkReply::NoError) << QByteArray("method=POST|path=/|post=bar");
 }
 
 void TestHttp::testPost()
@@ -119,18 +119,16 @@ QDjangoHttpResponse *TestHttp::_q_index(const QDjangoHttpRequest &request)
     QDjangoHttpResponse *response = new QDjangoHttpResponse;
     response->setHeader("Content-Type", "text/plain");
 
-    QString output;
+    QString output = "method=" + request.method();
+    output += "|path=" + request.path();
 
     const QString getValue = request.get("message");
     if (!getValue.isEmpty())
-        output += "get=" + getValue;
+        output += "|get=" + getValue;
 
     const QString postValue = request.post("message");
     if (!postValue.isEmpty())
-        output += "post=" + postValue;
-
-    if (output.isEmpty())
-        output = "empty";
+        output += "|post=" + postValue;
 
     response->setBody(output.toUtf8());
     return response;
