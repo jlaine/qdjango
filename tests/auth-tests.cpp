@@ -446,7 +446,7 @@ void TestUser::update()
 
     // update all
     QDjangoQuerySet<User> qs;
-    QVERIFY(qs.update(fields));
+    QCOMPARE(qs.update(fields), 3);
 
     QDjangoQuerySet<User> all;
     foreach (const User &user, all)
@@ -455,7 +455,7 @@ void TestUser::update()
     // update one
     fields.insert("password", "yyy");
     qs = qs.filter(QDjangoWhere("username", QDjangoWhere::Equals, "baruser"));
-    QVERIFY(qs.update(fields));
+    QCOMPARE(qs.update(fields), 1);
 
     all = QDjangoQuerySet<User>();
     foreach (const User &user, all) {

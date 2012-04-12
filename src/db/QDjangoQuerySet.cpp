@@ -239,8 +239,7 @@ bool QDjangoQuerySetPrivate::sqlDelete()
         return false;
 
     // invalidate cache
-    if (hasResults)
-    {
+    if (hasResults) {
         properties.clear();
         hasResults = false;
     }
@@ -334,8 +333,6 @@ int QDjangoQuerySetPrivate::sqlUpdate(const QVariantMap &fields)
     if (!where.isEmpty())
         sql += " WHERE " + where;
 
-    qDebug("QRY: %s", qPrintable(sql));
-
     QDjangoQuery query(db);
     query.prepare(sql);
     foreach (const QString &name, fields.keys())
@@ -351,7 +348,8 @@ int QDjangoQuerySetPrivate::sqlUpdate(const QVariantMap &fields)
         properties.clear();
         hasResults = false;
     }
-    return 1;
+
+    return query.numRowsAffected();
 }
 
 QList<QVariantMap> QDjangoQuerySetPrivate::sqlValues(const QStringList &fields)
