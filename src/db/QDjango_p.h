@@ -37,6 +37,7 @@ class QDjangoMetaField
 {
 public:
     QDjangoMetaField();
+    QVariant toDatabase(const QVariant &value) const;
 
     QByteArray name;
     QVariant::Type type;

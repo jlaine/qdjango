@@ -257,6 +257,14 @@ QDjangoMetaField::QDjangoMetaField()
 {
 }
 
+QVariant QDjangoMetaField::toDatabase(const QVariant &value) const
+{
+    if (type == QVariant::String && !null && value.isNull())
+        return QString("");
+    else
+        return value;
+}
+
 static QMap<QString, QString> parseOptions(const char *value)
 {
     QMap<QString, QString> options;
@@ -650,13 +658,13 @@ bool QDjangoMetaModel::save(QObject *model) const
     QSqlDatabase db = QDjango::database();
     QSqlDriver *driver = db.driver();
 
-    QStringList fieldNames;
+    // find primary key
     QDjangoMetaField primaryKey;
-    foreach (const QDjangoMetaField &field, m_localFields)
-    {
-        if (field.name == m_primaryKey)
+    foreach (const QDjangoMetaField &field, m_localFields) {
+        if (field.name == m_primaryKey) {
             primaryKey = field;
-        fieldNames << field.name;
+            break;
+        }
     }
 
     const QString quotedTable = db.driver()->escapeIdentifier(m_table, QSqlDriver::TableName);
@@ -666,23 +674,29 @@ bool QDjangoMetaModel::save(QObject *model) const
         QDjangoQuery query(db);
         query.prepare(QString("SELECT 1 AS a FROM %1 WHERE %2 = ?").arg(
                       quotedTable,
-                      driver->escapeIdentifier(primaryKey.name, QSqlDriver::FieldName)));
+                      driver->escapeIdentifier(m_primaryKey, QSqlDriver::FieldName)));
         query.addBindValue(pk);
         if (query.exec() && query.next())
         {
-            // remove primary key
-            fieldNames.removeAll(primaryKey.name);
+            // prepare data
+            QVariantMap fields;
+            foreach (const QDjangoMetaField &field, m_localFields) {
+                if (field.name != m_primaryKey) {
+                    const QVariant value = model->property(field.name);
+                    fields.insert(field.name, field.toDatabase(value));
+                }
+            }
 
-            // perform update
+            // perform UPDATE
             QStringList fieldAssign;
-            foreach (const QString &name, fieldNames)
+            foreach (const QString &name, fields.keys())
                 fieldAssign << driver->escapeIdentifier(name, QSqlDriver::FieldName) + " = ?";
 
             QDjangoQuery query(db);
             query.prepare(QString("UPDATE %1 SET %2 WHERE %3 = ?")
-                  .arg(quotedTable, fieldAssign.join(", "), primaryKey.name));
-            foreach (const QString &name, fieldNames)
-                query.addBindValue(model->property(name.toLatin1()));
+                  .arg(quotedTable, fieldAssign.join(", "), m_primaryKey));
+            foreach (const QString &name, fields.keys())
+                query.addBindValue(fields.value(name));
             query.addBindValue(pk);
             return query.exec();
         }
@@ -693,10 +707,7 @@ bool QDjangoMetaModel::save(QObject *model) const
     foreach (const QDjangoMetaField &field, m_localFields) {
         if (!field.autoIncrement) {
             const QVariant value = model->property(field.name);
-            if (field.type == QVariant::String && !field.null && value.isNull())
-                fields.insert(field.name, QString(""));
-            else
-                fields.insert(field.name, value);
+            fields.insert(field.name, field.toDatabase(value));
         }
     }
 
@@ -721,14 +732,14 @@ bool QDjangoMetaModel::save(QObject *model) const
         QVariant insertId;
         if (db.driverName() == "QPSQL") {
             QDjangoQuery query(db);
-            const QString seqName = driver->escapeIdentifier(m_table + "_" + primaryKey.name + "_seq", QSqlDriver::FieldName);
+            const QString seqName = driver->escapeIdentifier(m_table + "_" + m_primaryKey + "_seq", QSqlDriver::FieldName);
             if (!query.exec("SELECT CURRVAL('" + seqName + "')") || !query.next())
                 return false;
             insertId = query.value(0);
         } else {
             insertId = query.lastInsertId();
         }
-        model->setProperty(primaryKey.name, insertId);
+        model->setProperty(m_primaryKey, insertId);
     }
     return ret;
 }
