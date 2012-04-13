@@ -637,14 +637,10 @@ QString QDjangoMetaModel::table() const
  */
 bool QDjangoMetaModel::remove(QObject *model) const
 {
-    QSqlDatabase db = QDjango::database();
-
-    QDjangoQuery query(db);
-    query.prepare(QString("DELETE FROM %1 WHERE %2 = ?").arg(
-                  db.driver()->escapeIdentifier(m_table, QSqlDriver::TableName),
-                  db.driver()->escapeIdentifier(m_primaryKey, QSqlDriver::FieldName)));
-    query.addBindValue(model->property(m_primaryKey));
-    return query.exec();
+    const QVariant pk = model->property(m_primaryKey);
+    QDjangoQuerySetPrivate qs(model->metaObject()->className());
+    qs.addFilter(QDjangoWhere("pk", QDjangoWhere::Equals, pk));
+    return qs.sqlDelete();
 }
 
 /** Saves the given QObject to the database.
