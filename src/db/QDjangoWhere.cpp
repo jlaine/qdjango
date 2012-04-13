@@ -237,10 +237,13 @@ QString QDjangoWhere::sql(const QSqlDatabase &db) const
         case StartsWith:
         case EndsWith:
         case Contains:
+        {
+            const QString op = m_negate ? "NOT LIKE" : "LIKE";
             if (db.driverName() == "QSQLITE" || db.driverName() == "QSQLITE2")
-                return m_key + " LIKE ? ESCAPE '\\'";
+                return m_key + " " + op + " ? ESCAPE '\\'";
             else
-                return m_key + " LIKE ?";
+                return m_key + " " + op + " ?";
+        }
         case None:
             if (m_combine == NoCombine)
             {

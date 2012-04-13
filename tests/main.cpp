@@ -549,6 +549,9 @@ void tst_QDjangoWhere::startsWith()
 {
     QDjangoWhere testQuery = QDjangoWhere("name", QDjangoWhere::StartsWith, "abc");
     CHECKWHERE(testQuery, QLatin1String("name LIKE ?"), QVariantList() << "abc%");
+
+    testQuery = !QDjangoWhere("name", QDjangoWhere::StartsWith, "abc");
+    CHECKWHERE(testQuery, QLatin1String("name NOT LIKE ?"), QVariantList() << "abc%");
 }
 
 /** Test "endswith" comparison.
@@ -557,6 +560,9 @@ void tst_QDjangoWhere::endsWith()
 {
     QDjangoWhere testQuery = QDjangoWhere("name", QDjangoWhere::EndsWith, "abc");
     CHECKWHERE(testQuery, QLatin1String("name LIKE ?"), QVariantList() << "%abc");
+
+    testQuery = !QDjangoWhere("name", QDjangoWhere::EndsWith, "abc");
+    CHECKWHERE(testQuery, QLatin1String("name NOT LIKE ?"), QVariantList() << "%abc");
 }
 
 /** Test "contains" comparison.
@@ -565,6 +571,9 @@ void tst_QDjangoWhere::contains()
 {
     QDjangoWhere testQuery = QDjangoWhere("name", QDjangoWhere::Contains, "abc");
     CHECKWHERE(testQuery, QLatin1String("name LIKE ?"), QVariantList() << "%abc%");
+
+    testQuery = !QDjangoWhere("name", QDjangoWhere::Contains, "abc");
+    CHECKWHERE(testQuery, QLatin1String("name NOT LIKE ?"), QVariantList() << "%abc%");
 }
 
 /** Test compound where clause, using the AND operator.
