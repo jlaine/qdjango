@@ -526,6 +526,20 @@ void tst_QDjangoWhere::isIn()
     CHECKWHERE(testQuery, QLatin1String("id IN (?, ?)"), QVariantList() << 1 << 2);
 }
 
+/** Test "isnull" comparison.
+ */
+void tst_QDjangoWhere::isNull()
+{
+    QDjangoWhere testQuery = QDjangoWhere("id", QDjangoWhere::IsNull, true);
+    CHECKWHERE(testQuery, QLatin1String("id IS NULL"), QVariantList());
+
+    testQuery = QDjangoWhere("id", QDjangoWhere::IsNull, false);
+    CHECKWHERE(testQuery, QLatin1String("id IS NOT NULL"), QVariantList());
+
+    testQuery = !QDjangoWhere("id", QDjangoWhere::IsNull, true);
+    CHECKWHERE(testQuery, QLatin1String("id IS NOT NULL"), QVariantList());
+}
+
 /** Test "startswith" comparison.
  */
 void tst_QDjangoWhere::startsWith()

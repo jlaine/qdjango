@@ -62,6 +62,12 @@ QDjangoWhere QDjangoWhere::operator!() const
         case Contains:
             result.m_operation = m_operation;
             break;
+        case IsNull:
+            // simplify !(is null) to is not null
+            result.m_operation = m_operation;
+            result.m_negate = m_negate;
+            result.m_data = !m_data.toBool();
+            break;
         case Equals:
             // simplify !(a = b) to a != b
             result.m_operation = NotEquals;
@@ -149,6 +155,10 @@ void QDjangoWhere::bindValues(QDjangoQuery &query) const
         for (int i = 0; i < values.size(); i++)
             query.addBindValue(values[i]);
     }
+    else if (m_operation == QDjangoWhere::IsNull)
+    {
+        // no data to bind
+    }
     else if (m_operation == QDjangoWhere::StartsWith)
     {
         QString escaped = m_data.toString();
@@ -216,6 +226,8 @@ QString QDjangoWhere::sql(const QSqlDatabase &db) const
                 bits << "?";
             return m_key + " IN (" + bits.join(", ") + ")";
         }
+        case IsNull:
+            return m_key + (m_data.toBool() ? " IS NULL" : " IS NOT NULL");
         case StartsWith:
         case EndsWith:
         case Contains:

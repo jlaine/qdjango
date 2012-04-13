@@ -169,6 +169,7 @@ private slots:
     void lessThan();
     void lessOrEquals();
     void isIn();
+    void isNull();
     void startsWith();
     void endsWith();
     void contains();

@@ -64,6 +64,8 @@ public:
         Contains,
         /** Returns true if the column value is one of the given values. */
         IsIn,
+        /** Returns true if the column value is null. */
+        IsNull
     };
 
     QDjangoWhere();
