@@ -252,6 +252,7 @@ QDjangoMetaField::QDjangoMetaField()
     : autoIncrement(false),
     index(false),
     maxLength(0),
+    null(false),
     unique(false)
 {
 }
@@ -308,6 +309,7 @@ QDjangoMetaModel::QDjangoMetaModel(const QObject *model)
         bool ignoreFieldOption = false;
         int maxLengthOption = 0;
         bool primaryKeyOption = false;
+        bool nullOption = false;
         bool uniqueOption = false;
         const int infoIndex = meta->indexOfClassInfo(meta->property(i).name());
         if (infoIndex >= 0)
@@ -325,6 +327,8 @@ QDjangoMetaModel::QDjangoMetaModel(const QObject *model)
                     ignoreFieldOption = (value.toLower() == "true" || value == "1");
                 else if (option.key() == "max_length")
                     maxLengthOption = value.toInt();
+                else if (option.key() == "null")
+                    nullOption = (value.toLower() == "true" || value == "1");
                 else if (option.key() == "primary_key")
                     primaryKeyOption = (value.toLower() == "true" || value == "1");
                 else if (option.key() == "unique")
@@ -361,6 +365,7 @@ QDjangoMetaModel::QDjangoMetaModel(const QObject *model)
         field.name = meta->property(i).name();
         field.type = meta->property(i).type();
         field.maxLength = maxLengthOption;
+        field.null = nullOption;
         if (primaryKeyOption) {
             field.autoIncrement = autoIncrementOption;
             field.unique = true;
@@ -436,6 +441,9 @@ bool QDjangoMetaModel::createTable() const
             qWarning() << "Unhandled type" << field.type << "for property" << field.name;
             continue;
         }
+
+        if (!field.null)
+            fieldSql += " NOT NULL";
 
         // primary key
         if (field.name == m_primaryKey)
@@ -652,7 +660,7 @@ bool QDjangoMetaModel::save(QObject *model) const
     }
 
     const QString quotedTable = db.driver()->escapeIdentifier(m_table, QSqlDriver::TableName);
-    const QVariant pk = model->property(primaryKey.name);
+    const QVariant pk = model->property(m_primaryKey);
     if (!pk.isNull() && !(primaryKey.type == QVariant::Int && !pk.toInt()))
     {
         QDjangoQuery query(db);
@@ -680,15 +688,22 @@ bool QDjangoMetaModel::save(QObject *model) const
         }
     }
 
-    // remove auto-increment column
-    if (primaryKey.autoIncrement)
-        fieldNames.removeAll(primaryKey.name);
+    // prepare data
+    QVariantMap fields;
+    foreach (const QDjangoMetaField &field, m_localFields) {
+        if (!field.autoIncrement) {
+            const QVariant value = model->property(field.name);
+            if (field.type == QVariant::String && !field.null && value.isNull())
+                fields.insert(field.name, QString(""));
+            else
+                fields.insert(field.name, value);
+        }
+    }
 
-    // perform insert
+    // perform INSERT
     QStringList fieldColumns;
     QStringList fieldHolders;
-    foreach (const QString &name, fieldNames)
-    {
+    foreach (const QString &name, fields.keys()) {
         fieldColumns << driver->escapeIdentifier(name, QSqlDriver::FieldName);
         fieldHolders << "?";
     }
@@ -697,10 +712,11 @@ bool QDjangoMetaModel::save(QObject *model) const
     query.prepare(QString("INSERT INTO %1 (%2) VALUES(%3)").arg(
                   quotedTable,
                   fieldColumns.join(", "), fieldHolders.join(", ")));
-    foreach (const QString &name, fieldNames)
-        query.addBindValue(model->property(name.toLatin1()));
+    foreach (const QString &name, fields.keys())
+        query.addBindValue(fields.value(name));
+    const bool ret = query.exec();
 
-    bool ret = query.exec();
+    // fetch autoincrement pk
     if (primaryKey.autoIncrement) {
         QVariant insertId;
         if (db.driverName() == "QPSQL") {

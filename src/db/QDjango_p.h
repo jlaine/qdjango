@@ -43,6 +43,7 @@ public:
     bool autoIncrement;
     bool index;
     int maxLength;
+    bool null;
     bool unique;
     QString foreignModel;
 };
