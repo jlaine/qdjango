@@ -27,7 +27,9 @@
 /** Constructs an empty QDjangoWhere, which expresses no constraint.
  */
 QDjangoWhere::QDjangoWhere()
-    : m_operation(None), m_combine(NoCombine), m_negate(false)
+    : m_operation(None)
+    , m_combine(NoCombine)
+    , m_negate(false)
 {
 }
 
@@ -38,7 +40,11 @@ QDjangoWhere::QDjangoWhere()
  * \param value
  */
 QDjangoWhere::QDjangoWhere(const QString &key, QDjangoWhere::Operation operation, QVariant value)
-    : m_key(key), m_operation(operation), m_data(value), m_combine(NoCombine)
+    : m_key(key)
+    , m_operation(operation)
+    , m_data(value)
+    , m_combine(NoCombine)
+    , m_negate(false)
 {
 }
 
@@ -224,7 +230,7 @@ QString QDjangoWhere::sql(const QSqlDatabase &db) const
             QStringList bits;
             for (int i = 0; i < m_data.toList().size(); i++)
                 bits << "?";
-            return m_key + " IN (" + bits.join(", ") + ")";
+            return m_key + (m_negate ? " NOT IN " : " IN ") + "(" + bits.join(", ") + ")";
         }
         case IsNull:
             return m_key + (m_data.toBool() ? " IS NULL" : " IS NOT NULL");

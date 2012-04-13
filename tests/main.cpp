@@ -524,6 +524,9 @@ void tst_QDjangoWhere::isIn()
 {
     QDjangoWhere testQuery = QDjangoWhere("id", QDjangoWhere::IsIn, QVariantList() << 1 << 2);
     CHECKWHERE(testQuery, QLatin1String("id IN (?, ?)"), QVariantList() << 1 << 2);
+
+    testQuery = !QDjangoWhere("id", QDjangoWhere::IsIn, QVariantList() << 1 << 2);
+    CHECKWHERE(testQuery, QLatin1String("id NOT IN (?, ?)"), QVariantList() << 1 << 2);
 }
 
 /** Test "isnull" comparison.
