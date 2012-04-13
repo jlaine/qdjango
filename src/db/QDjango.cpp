@@ -688,17 +688,9 @@ bool QDjangoMetaModel::save(QObject *model) const
             }
 
             // perform UPDATE
-            QStringList fieldAssign;
-            foreach (const QString &name, fields.keys())
-                fieldAssign << driver->escapeIdentifier(name, QSqlDriver::FieldName) + " = ?";
-
-            QDjangoQuery query(db);
-            query.prepare(QString("UPDATE %1 SET %2 WHERE %3 = ?")
-                  .arg(quotedTable, fieldAssign.join(", "), m_primaryKey));
-            foreach (const QString &name, fields.keys())
-                query.addBindValue(fields.value(name));
-            query.addBindValue(pk);
-            return query.exec();
+            QDjangoQuerySetPrivate qs(model->metaObject()->className());
+            qs.addFilter(QDjangoWhere("pk", QDjangoWhere::Equals, pk));
+            return qs.sqlUpdate(fields) == 1;
         }
     }
 
