@@ -52,6 +52,9 @@ public:
     static QSqlDatabase database();
     static void setDatabase(QSqlDatabase database);
 
+    static bool isDebugEnabled();
+    static void setDebugEnabled(bool enabled);
+
     template <class T>
     static QDjangoMetaModel registerModel();
 

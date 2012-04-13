@@ -679,6 +679,9 @@ int main(int argc, char *argv[])
         }
     }
 
+    // enabled SQL debugging
+    QDjango::setDebugEnabled(true);
+
     // open database
     QSqlDatabase db = QSqlDatabase::addDatabase(databaseDriver);
     db.setDatabaseName(databaseName);

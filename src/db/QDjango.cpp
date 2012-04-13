@@ -19,6 +19,7 @@
  */
 
 #include <QCoreApplication>
+#include <QDateTime>
 #include <QDebug>
 #include <QMetaProperty>
 #include <QSqlDriver>
@@ -35,6 +36,7 @@ static const char *connectionPrefix = "_qdjango_";
 
 QMap<QString, QDjangoMetaModel> globalMetaModels = QMap<QString, QDjangoMetaModel>();
 static QDjangoDatabase *globalDatabase = 0;
+static bool globalDebugEnabled = false;
 
 QDjangoDatabase::QDjangoDatabase(QObject *parent)
     : QObject(parent), connectionId(0)
@@ -59,6 +61,52 @@ void QDjangoDatabase::threadFinished()
 static void closeDatabase()
 {
     delete globalDatabase;
+}
+
+QDjangoQuery::QDjangoQuery(QSqlDatabase db)
+    : QSqlQuery(db)
+{
+}
+
+void QDjangoQuery::addBindValue(const QVariant &val, QSql::ParamType paramType)
+{
+    // this hack is required so that we do not store a mix of local
+    // and UTC times
+    if (val.type() == QVariant::DateTime)
+        QSqlQuery::addBindValue(val.toDateTime().toLocalTime(), paramType);
+    else
+        QSqlQuery::addBindValue(val, paramType);
+}
+
+bool QDjangoQuery::exec()
+{
+    if (globalDebugEnabled) {
+        qDebug() << "SQL query" << lastQuery();
+        QMapIterator<QString, QVariant> i(boundValues());
+        while (i.hasNext()) {
+            i.next();
+            qDebug() << "SQL   " << i.key().toAscii().data() << "="
+                     << i.value().toString().toAscii().data();
+        }
+    }
+    if (!QSqlQuery::exec()) {
+        if (globalDebugEnabled)
+            qWarning() << "SQL error" << lastError();
+        return false;
+    }
+    return true;
+}
+
+bool QDjangoQuery::exec(const QString &query)
+{
+    if (globalDebugEnabled)
+        qDebug() << "SQL query" << query;
+    if (!QSqlQuery::exec(query)) {
+        if (globalDebugEnabled)
+            qWarning() << "SQL error" << lastError();
+        return false;
+    }
+    return true;
 }
 
 /*! \mainpage
@@ -126,6 +174,24 @@ void QDjango::setDatabase(QSqlDatabase database)
         qAddPostRoutine(closeDatabase);
     }
     globalDatabase->reference = database;
+}
+
+/** Returns whether debugging information should be printed.
+ *
+ * \sa setDebugEnabled()
+ */
+bool QDjango::isDebugEnabled()
+{
+    return globalDebugEnabled;
+}
+
+/** Sets whether debugging information should be printed.
+ *
+ * \sa isDebugEnabled()
+ */
+void QDjango::setDebugEnabled(bool enabled)
+{
+    globalDebugEnabled = enabled;
 }
 
 /** Creates the database tables for all registered models.
