@@ -4,14 +4,7 @@ set(QT_USE_QTSCRIPT 1)
 set(QT_USE_QTSQL 1)
 include(${QT_USE_FILE})
 
-# Needed for plugin support
-if(UNIX)
-  if(NOT APPLE)
-    add_definitions(-fPIC)
-  endif(NOT APPLE)
-endif(UNIX)
-
-# Until binary stability is reached, build static libraries
+# Build a shared library by default
 if(NOT QDJANGO_LIBRARY_TYPE)
   set(QDJANGO_LIBRARY_TYPE SHARED)
 endif()
