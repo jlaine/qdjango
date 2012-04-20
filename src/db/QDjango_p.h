@@ -21,8 +21,6 @@
 #ifndef QDJANGO_P_H
 #define QDJANGO_P_H
 
-#include <QDebug>
-#include <QDateTime>
 #include <QMap>
 #include <QMutex>
 #include <QObject>
@@ -39,12 +37,14 @@ class QDjangoMetaField
 {
 public:
     QDjangoMetaField();
+    QVariant toDatabase(const QVariant &value) const;
 
     QByteArray name;
     QVariant::Type type;
     bool autoIncrement;
     bool index;
     int maxLength;
+    bool null;
     bool unique;
     QString foreignModel;
 };
@@ -108,47 +108,10 @@ private slots:
 class QDjangoQuery : public QSqlQuery
 {
 public:
-    QDjangoQuery(QSqlDatabase db) : QSqlQuery(db)
-    {
-    }
-
-    void addBindValue(const QVariant &val, QSql::ParamType paramType = QSql::In)
-    {
-        // this hack is required so that we do not store a mix of local
-        // and UTC times
-        if (val.type() == QVariant::DateTime)
-            QSqlQuery::addBindValue(val.toDateTime().toLocalTime(), paramType);
-        else
-            QSqlQuery::addBindValue(val, paramType);
-    }
-
-#ifdef QDJANGO_DEBUG_SQL
-    bool exec()
-    {
-        qDebug() << "SQL query" << lastQuery();
-        QMapIterator<QString, QVariant> i(boundValues());
-        while (i.hasNext()) {
-            i.next();
-            qDebug() << "SQL   " << i.key().toAscii().data() << "="
-                     << i.value().toString().toAscii().data();
-        }
-        if (!QSqlQuery::exec()) {
-            qWarning() << "SQL error" << lastError();
-            return false;
-        }
-        return true;
-    }
-
-    bool exec(const QString &query)
-    {
-        qDebug() << "SQL query" << query;
-        if (!QSqlQuery::exec(query)) {
-            qWarning() << "SQL error" << lastError();
-            return false;
-        }
-        return true;
-    }
-#endif
+    QDjangoQuery(QSqlDatabase db);
+    void addBindValue(const QVariant &val, QSql::ParamType paramType = QSql::In);
+    bool exec();
+    bool exec(const QString &query);
 };
 
 #endif

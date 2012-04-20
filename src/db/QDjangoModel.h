@@ -58,6 +58,8 @@
  *  \li \c ignore_field if set to 'true', this field will be ignored
  *  \li \c max_length the maximum length of the field (used when creating
  *  the database table)
+ *  \li \c null if set to 'true', empty values will be stored as NULL. The
+ *  default value is 'false'.
  *  \li \c primary_key if set to 'true', this field will be used as the primary
  *  key. If no primary key is explicitly defined, an auto-increment integer
  *  field will be added.

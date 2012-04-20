@@ -27,7 +27,9 @@
 /** Constructs an empty QDjangoWhere, which expresses no constraint.
  */
 QDjangoWhere::QDjangoWhere()
-    : m_operation(None), m_combine(NoCombine), m_negate(false)
+    : m_operation(None)
+    , m_combine(NoCombine)
+    , m_negate(false)
 {
 }
 
@@ -38,7 +40,11 @@ QDjangoWhere::QDjangoWhere()
  * \param value
  */
 QDjangoWhere::QDjangoWhere(const QString &key, QDjangoWhere::Operation operation, QVariant value)
-    : m_key(key), m_operation(operation), m_data(value), m_combine(NoCombine)
+    : m_key(key)
+    , m_operation(operation)
+    , m_data(value)
+    , m_combine(NoCombine)
+    , m_negate(false)
 {
 }
 
@@ -61,6 +67,12 @@ QDjangoWhere QDjangoWhere::operator!() const
         case EndsWith:
         case Contains:
             result.m_operation = m_operation;
+            break;
+        case IsNull:
+            // simplify !(is null) to is not null
+            result.m_operation = m_operation;
+            result.m_negate = m_negate;
+            result.m_data = !m_data.toBool();
             break;
         case Equals:
             // simplify !(a = b) to a != b
@@ -149,6 +161,10 @@ void QDjangoWhere::bindValues(QDjangoQuery &query) const
         for (int i = 0; i < values.size(); i++)
             query.addBindValue(values[i]);
     }
+    else if (m_operation == QDjangoWhere::IsNull)
+    {
+        // no data to bind
+    }
     else if (m_operation == QDjangoWhere::StartsWith)
     {
         QString escaped = m_data.toString();
@@ -214,15 +230,20 @@ QString QDjangoWhere::sql(const QSqlDatabase &db) const
             QStringList bits;
             for (int i = 0; i < m_data.toList().size(); i++)
                 bits << "?";
-            return m_key + " IN (" + bits.join(", ") + ")";
+            return m_key + (m_negate ? " NOT IN " : " IN ") + "(" + bits.join(", ") + ")";
         }
+        case IsNull:
+            return m_key + (m_data.toBool() ? " IS NULL" : " IS NOT NULL");
         case StartsWith:
         case EndsWith:
         case Contains:
+        {
+            const QString op = m_negate ? "NOT LIKE" : "LIKE";
             if (db.driverName() == "QSQLITE" || db.driverName() == "QSQLITE2")
-                return m_key + " LIKE ? ESCAPE '\\'";
+                return m_key + " " + op + " ? ESCAPE '\\'";
             else
-                return m_key + " LIKE ?";
+                return m_key + " " + op + " ?";
+        }
         case None:
             if (m_combine == NoCombine)
             {

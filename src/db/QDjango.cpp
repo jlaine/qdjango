@@ -19,6 +19,7 @@
  */
 
 #include <QCoreApplication>
+#include <QDateTime>
 #include <QDebug>
 #include <QMetaProperty>
 #include <QSqlDriver>
@@ -35,6 +36,7 @@ static const char *connectionPrefix = "_qdjango_";
 
 QMap<QString, QDjangoMetaModel> globalMetaModels = QMap<QString, QDjangoMetaModel>();
 static QDjangoDatabase *globalDatabase = 0;
+static bool globalDebugEnabled = false;
 
 QDjangoDatabase::QDjangoDatabase(QObject *parent)
     : QObject(parent), connectionId(0)
@@ -59,6 +61,52 @@ void QDjangoDatabase::threadFinished()
 static void closeDatabase()
 {
     delete globalDatabase;
+}
+
+QDjangoQuery::QDjangoQuery(QSqlDatabase db)
+    : QSqlQuery(db)
+{
+}
+
+void QDjangoQuery::addBindValue(const QVariant &val, QSql::ParamType paramType)
+{
+    // this hack is required so that we do not store a mix of local
+    // and UTC times
+    if (val.type() == QVariant::DateTime)
+        QSqlQuery::addBindValue(val.toDateTime().toLocalTime(), paramType);
+    else
+        QSqlQuery::addBindValue(val, paramType);
+}
+
+bool QDjangoQuery::exec()
+{
+    if (globalDebugEnabled) {
+        qDebug() << "SQL query" << lastQuery();
+        QMapIterator<QString, QVariant> i(boundValues());
+        while (i.hasNext()) {
+            i.next();
+            qDebug() << "SQL   " << i.key().toAscii().data() << "="
+                     << i.value().toString().toAscii().data();
+        }
+    }
+    if (!QSqlQuery::exec()) {
+        if (globalDebugEnabled)
+            qWarning() << "SQL error" << lastError();
+        return false;
+    }
+    return true;
+}
+
+bool QDjangoQuery::exec(const QString &query)
+{
+    if (globalDebugEnabled)
+        qDebug() << "SQL query" << query;
+    if (!QSqlQuery::exec(query)) {
+        if (globalDebugEnabled)
+            qWarning() << "SQL error" << lastError();
+        return false;
+    }
+    return true;
 }
 
 /*! \mainpage
@@ -128,6 +176,24 @@ void QDjango::setDatabase(QSqlDatabase database)
     globalDatabase->reference = database;
 }
 
+/** Returns whether debugging information should be printed.
+ *
+ * \sa setDebugEnabled()
+ */
+bool QDjango::isDebugEnabled()
+{
+    return globalDebugEnabled;
+}
+
+/** Sets whether debugging information should be printed.
+ *
+ * \sa isDebugEnabled()
+ */
+void QDjango::setDebugEnabled(bool enabled)
+{
+    globalDebugEnabled = enabled;
+}
+
 /** Creates the database tables for all registered models.
  */
 bool QDjango::createTables()
@@ -186,8 +252,17 @@ QDjangoMetaField::QDjangoMetaField()
     : autoIncrement(false),
     index(false),
     maxLength(0),
+    null(false),
     unique(false)
 {
+}
+
+QVariant QDjangoMetaField::toDatabase(const QVariant &value) const
+{
+    if (type == QVariant::String && !null && value.isNull())
+        return QString("");
+    else
+        return value;
 }
 
 static QMap<QString, QString> parseOptions(const char *value)
@@ -242,6 +317,7 @@ QDjangoMetaModel::QDjangoMetaModel(const QObject *model)
         bool ignoreFieldOption = false;
         int maxLengthOption = 0;
         bool primaryKeyOption = false;
+        bool nullOption = false;
         bool uniqueOption = false;
         const int infoIndex = meta->indexOfClassInfo(meta->property(i).name());
         if (infoIndex >= 0)
@@ -259,6 +335,8 @@ QDjangoMetaModel::QDjangoMetaModel(const QObject *model)
                     ignoreFieldOption = (value.toLower() == "true" || value == "1");
                 else if (option.key() == "max_length")
                     maxLengthOption = value.toInt();
+                else if (option.key() == "null")
+                    nullOption = (value.toLower() == "true" || value == "1");
                 else if (option.key() == "primary_key")
                     primaryKeyOption = (value.toLower() == "true" || value == "1");
                 else if (option.key() == "unique")
@@ -295,6 +373,7 @@ QDjangoMetaModel::QDjangoMetaModel(const QObject *model)
         field.name = meta->property(i).name();
         field.type = meta->property(i).type();
         field.maxLength = maxLengthOption;
+        field.null = nullOption;
         if (primaryKeyOption) {
             field.autoIncrement = autoIncrementOption;
             field.unique = true;
@@ -370,6 +449,9 @@ bool QDjangoMetaModel::createTable() const
             qWarning() << "Unhandled type" << field.type << "for property" << field.name;
             continue;
         }
+
+        if (!field.null)
+            fieldSql += " NOT NULL";
 
         // primary key
         if (field.name == m_primaryKey)
@@ -555,14 +637,10 @@ QString QDjangoMetaModel::table() const
  */
 bool QDjangoMetaModel::remove(QObject *model) const
 {
-    QSqlDatabase db = QDjango::database();
-
-    QDjangoQuery query(db);
-    query.prepare(QString("DELETE FROM %1 WHERE %2 = ?").arg(
-                  db.driver()->escapeIdentifier(m_table, QSqlDriver::TableName),
-                  db.driver()->escapeIdentifier(m_primaryKey, QSqlDriver::FieldName)));
-    query.addBindValue(model->property(m_primaryKey));
-    return query.exec();
+    const QVariant pk = model->property(m_primaryKey);
+    QDjangoQuerySetPrivate qs(model->metaObject()->className());
+    qs.addFilter(QDjangoWhere("pk", QDjangoWhere::Equals, pk));
+    return qs.sqlDelete();
 }
 
 /** Saves the given QObject to the database.
@@ -576,53 +654,55 @@ bool QDjangoMetaModel::save(QObject *model) const
     QSqlDatabase db = QDjango::database();
     QSqlDriver *driver = db.driver();
 
-    QStringList fieldNames;
+    // find primary key
     QDjangoMetaField primaryKey;
-    foreach (const QDjangoMetaField &field, m_localFields)
-    {
-        if (field.name == m_primaryKey)
+    foreach (const QDjangoMetaField &field, m_localFields) {
+        if (field.name == m_primaryKey) {
             primaryKey = field;
-        fieldNames << field.name;
+            break;
+        }
     }
 
     const QString quotedTable = db.driver()->escapeIdentifier(m_table, QSqlDriver::TableName);
-    const QVariant pk = model->property(primaryKey.name);
+    const QVariant pk = model->property(m_primaryKey);
     if (!pk.isNull() && !(primaryKey.type == QVariant::Int && !pk.toInt()))
     {
         QDjangoQuery query(db);
         query.prepare(QString("SELECT 1 AS a FROM %1 WHERE %2 = ?").arg(
                       quotedTable,
-                      driver->escapeIdentifier(primaryKey.name, QSqlDriver::FieldName)));
+                      driver->escapeIdentifier(m_primaryKey, QSqlDriver::FieldName)));
         query.addBindValue(pk);
         if (query.exec() && query.next())
         {
-            // remove primary key
-            fieldNames.removeAll(primaryKey.name);
+            // prepare data
+            QVariantMap fields;
+            foreach (const QDjangoMetaField &field, m_localFields) {
+                if (field.name != m_primaryKey) {
+                    const QVariant value = model->property(field.name);
+                    fields.insert(field.name, field.toDatabase(value));
+                }
+            }
 
-            // perform update
-            QStringList fieldAssign;
-            foreach (const QString &name, fieldNames)
-                fieldAssign << driver->escapeIdentifier(name, QSqlDriver::FieldName) + " = ?";
-
-            QDjangoQuery query(db);
-            query.prepare(QString("UPDATE %1 SET %2 WHERE %3 = ?")
-                  .arg(quotedTable, fieldAssign.join(", "), primaryKey.name));
-            foreach (const QString &name, fieldNames)
-                query.addBindValue(model->property(name.toLatin1()));
-            query.addBindValue(pk);
-            return query.exec();
+            // perform UPDATE
+            QDjangoQuerySetPrivate qs(model->metaObject()->className());
+            qs.addFilter(QDjangoWhere("pk", QDjangoWhere::Equals, pk));
+            return qs.sqlUpdate(fields) == 1;
         }
     }
 
-    // remove auto-increment column
-    if (primaryKey.autoIncrement)
-        fieldNames.removeAll(primaryKey.name);
+    // prepare data
+    QVariantMap fields;
+    foreach (const QDjangoMetaField &field, m_localFields) {
+        if (!field.autoIncrement) {
+            const QVariant value = model->property(field.name);
+            fields.insert(field.name, field.toDatabase(value));
+        }
+    }
 
-    // perform insert
+    // perform INSERT
     QStringList fieldColumns;
     QStringList fieldHolders;
-    foreach (const QString &name, fieldNames)
-    {
+    foreach (const QString &name, fields.keys()) {
         fieldColumns << driver->escapeIdentifier(name, QSqlDriver::FieldName);
         fieldHolders << "?";
     }
@@ -631,22 +711,23 @@ bool QDjangoMetaModel::save(QObject *model) const
     query.prepare(QString("INSERT INTO %1 (%2) VALUES(%3)").arg(
                   quotedTable,
                   fieldColumns.join(", "), fieldHolders.join(", ")));
-    foreach (const QString &name, fieldNames)
-        query.addBindValue(model->property(name.toLatin1()));
+    foreach (const QString &name, fields.keys())
+        query.addBindValue(fields.value(name));
+    const bool ret = query.exec();
 
-    bool ret = query.exec();
+    // fetch autoincrement pk
     if (primaryKey.autoIncrement) {
         QVariant insertId;
         if (db.driverName() == "QPSQL") {
             QDjangoQuery query(db);
-            const QString seqName = driver->escapeIdentifier(m_table + "_" + primaryKey.name + "_seq", QSqlDriver::FieldName);
+            const QString seqName = driver->escapeIdentifier(m_table + "_" + m_primaryKey + "_seq", QSqlDriver::FieldName);
             if (!query.exec("SELECT CURRVAL('" + seqName + "')") || !query.next())
                 return false;
             insertId = query.value(0);
         } else {
             insertId = query.lastInsertId();
         }
-        model->setProperty(primaryKey.name, insertId);
+        model->setProperty(m_primaryKey, insertId);
     }
     return ret;
 }

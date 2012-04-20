@@ -2,11 +2,6 @@ set(QT_DONT_USE_QTGUI 1)
 set(QT_USE_QTSQL 1)
 include(${QT_USE_FILE})
 
-# Optional debugging
-if(QDJANGO_DEBUG_SQL)
-  add_definitions(-DQDJANGO_DEBUG_SQL=1)
-endif(QDJANGO_DEBUG_SQL)
-
 # QDjango database library
 set(HEADERS
     QDjango.h
