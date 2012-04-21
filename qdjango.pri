@@ -1,5 +1,5 @@
 # Common definitions
-QDJANGO_VERSION=0.1.0
+QDJANGO_VERSION=0.2.0
 
 # Determine library type (lib or staticlib)
 isEmpty(QDJANGO_LIBRARY_TYPE) {
