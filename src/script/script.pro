@@ -1,7 +1,8 @@
 include(../../qdjango.pri)
 
 TEMPLATE = lib
-CONFIG += staticlib
+CONFIG += $$QDJANGO_LIBRARY_TYPE
+DEFINES += QDJANGO_BUILD
 QT += script sql
 
 TARGET = qdjango-script
