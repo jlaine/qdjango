@@ -6,7 +6,7 @@ SUBDIRS = src
 
 android {
 } else {
-    SUBDIR += tests examples
+    SUBDIRS += tests examples
 }
 
 CONFIG += ordered
