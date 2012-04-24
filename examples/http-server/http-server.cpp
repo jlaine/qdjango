@@ -452,6 +452,8 @@ QDjangoHttpResponse* AdminController::index(const QDjangoHttpRequest &request)
 
 QDjangoHttpResponse* AdminController::staticFiles(const QDjangoHttpRequest &request, const QString &path)
 {
+    Q_UNUSED(path);
+
     return QDjangoHttpController::serveStatic(request, ":/base.css");
 }
 

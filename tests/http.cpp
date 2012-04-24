@@ -136,11 +136,15 @@ QDjangoHttpResponse *TestHttp::_q_index(const QDjangoHttpRequest &request)
 
 QDjangoHttpResponse *TestHttp::_q_error(const QDjangoHttpRequest &request)
 {
+    Q_UNUSED(request);
+
     return QDjangoHttpController::serveInternalServerError(request);
 }
 
 QDjangoHttpResponse* tst_QDjangoUrlHelper::_q_index(const QDjangoHttpRequest &request)
 {
+    Q_UNUSED(request);
+
     QDjangoHttpResponse *response = new QDjangoHttpResponse;
     response->setHeader("Content-Type", "text/plain");
     response->setBody("sub index");
@@ -149,6 +153,8 @@ QDjangoHttpResponse* tst_QDjangoUrlHelper::_q_index(const QDjangoHttpRequest &re
 
 QDjangoHttpResponse* tst_QDjangoUrlHelper::_q_test(const QDjangoHttpRequest &request)
 {
+    Q_UNUSED(request);
+
     QDjangoHttpResponse *response = new QDjangoHttpResponse;
     response->setHeader("Content-Type", "text/plain");
     response->setBody("sub test");
@@ -240,20 +246,31 @@ void tst_QDjangoUrlResolver::testReverse()
 
 QDjangoHttpResponse* tst_QDjangoUrlResolver::_q_index(const QDjangoHttpRequest &request)
 {
+    Q_UNUSED(request);
+
     return new QDjangoHttpResponse;
 }
 
 QDjangoHttpResponse* tst_QDjangoUrlResolver::_q_noArgs(const QDjangoHttpRequest &request)
 {
+    Q_UNUSED(request);
+
     return new QDjangoHttpResponse;
 }
 
 QDjangoHttpResponse* tst_QDjangoUrlResolver::_q_oneArg(const QDjangoHttpRequest &request, const QString &id)
 {
+    Q_UNUSED(request);
+    Q_UNUSED(id);
+
     return new QDjangoHttpResponse;
 }
 
 QDjangoHttpResponse* tst_QDjangoUrlResolver::_q_twoArgs(const QDjangoHttpRequest &request, const QString &id, const QString &action)
 {
+    Q_UNUSED(request);
+    Q_UNUSED(id);
+    Q_UNUSED(action);
+
     return new QDjangoHttpResponse;
 }
