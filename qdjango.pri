@@ -10,4 +10,3 @@ contains(QDJANGO_LIBRARY_TYPE,staticlib) {
 } else {
     DEFINES += QDJANGO_SHARED
 }
-DEFINES += QDJANGO_BUILD
