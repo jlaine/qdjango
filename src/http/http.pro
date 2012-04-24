@@ -1,3 +1,4 @@
+QT -= gui
 QT += network
 
 TARGET = qdjango-http

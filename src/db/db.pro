@@ -1,3 +1,4 @@
+QT -= gui
 QT += sql
 
 TARGET = qdjango-db
