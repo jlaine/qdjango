@@ -4,9 +4,7 @@ QT += script sql
 
 TARGET = qdjango-script-console
 
-INCLUDEPATH += \
-    ../../src/db \
-    ../../src/script
+INCLUDEPATH += $$QDJANGO_INCLUDEPATH
 LIBS += \
     -L../../src/db $$QDJANGO_DB_LIBS \
     -L../../src/script $$QDJANGO_SCRIPT_LIBS
