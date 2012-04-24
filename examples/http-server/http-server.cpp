@@ -339,7 +339,7 @@ QDjangoHttpResponse* ModelAdmin::addForm(const QDjangoHttpRequest &request)
 
 QDjangoHttpResponse* ModelAdmin::changeForm(const QDjangoHttpRequest &request, const QString &objectId)
 {
-    QDjangoModel *original = original = d->modelFetcher->getObject(objectId);
+    QDjangoModel *original = d->modelFetcher->getObject(objectId);
     if (!original)
         return QDjangoHttpController::serveNotFound(request);
 
@@ -396,7 +396,7 @@ QDjangoHttpResponse* ModelAdmin::changeList(const QDjangoHttpRequest &request)
 
 QDjangoHttpResponse* ModelAdmin::deleteForm(const QDjangoHttpRequest &request, const QString &objectId)
 {
-    QDjangoModel *original = original = d->modelFetcher->getObject(objectId);
+    QDjangoModel *original = d->modelFetcher->getObject(objectId);
     if (!original)
         return QDjangoHttpController::serveNotFound(request);
 
