@@ -29,6 +29,16 @@
 #include <QSqlQuery>
 #include <QVariant>
 
+#if defined(QDJANGO_SHARED)
+#  if defined(QDJANGO_BUILD)
+#    define QDJANGO_EXPORT Q_DECL_EXPORT
+#  else
+#    define QDJANGO_EXPORT Q_DECL_IMPORT
+#  endif
+#else
+#  define QDJANGO_EXPORT
+#endif
+
 /** \brief The QDjangoMetaField class holds the database schema for a field.
  *
  * \internal

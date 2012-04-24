@@ -43,7 +43,7 @@ class QDjangoMetaModel;
  *
  * \ingroup Database
  */
-class QDjango
+class QDJANGO_EXPORT QDjango
 {
 public:
     static bool createTables();

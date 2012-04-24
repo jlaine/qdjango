@@ -24,6 +24,8 @@
 #include <QObject>
 #include <QVariant>
 
+#include "QDjango_p.h"
+
 /** \brief The QDjangoModel class is the base class for all models.
  *
  *  To declare your own model, create a class which inherits QDjangoModel
@@ -68,7 +70,7 @@
  *
  * \ingroup Database
  */
-class QDjangoModel : public QObject
+class QDJANGO_EXPORT QDjangoModel : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QVariant pk READ pk WRITE setPk)
