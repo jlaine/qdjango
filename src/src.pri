@@ -5,6 +5,8 @@ CONFIG += $$QDJANGO_LIBRARY_TYPE
 DEFINES += QDJANGO_BUILD
 VERSION = $$QDJANGO_VERSION
 
+QMAKE_CLEAN += lib$${TARGET}.prl
+
 # Installation
 headers.files = $$HEADERS
 target.path = $$PREFIX/$$LIBDIR
