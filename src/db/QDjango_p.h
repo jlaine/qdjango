@@ -43,7 +43,7 @@
  *
  * \internal
  */
-class QDjangoMetaField
+class QDJANGO_EXPORT QDjangoMetaField
 {
 public:
     QDjangoMetaField();
@@ -66,7 +66,7 @@ public:
  *
  * \internal
  */
-class QDjangoMetaModel
+class QDJANGO_EXPORT QDjangoMetaModel
 {
 public:
     QDjangoMetaModel(const QObject *model = 0);
@@ -115,7 +115,7 @@ private slots:
     void threadFinished();
 };
 
-class QDjangoQuery : public QSqlQuery
+class QDJANGO_EXPORT QDjangoQuery : public QSqlQuery
 {
 public:
     QDjangoQuery(QSqlDatabase db);

@@ -60,7 +60,7 @@ private:
 
 /** \cond */
 
-class QDjangoHttpTestRequest : public QDjangoHttpRequest
+class QDJANGO_EXPORT QDjangoHttpTestRequest : public QDjangoHttpRequest
 {
 public:
     QDjangoHttpTestRequest(const QString &method, const QString &path);

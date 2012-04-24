@@ -30,13 +30,14 @@
 
 #include <QStringList>
 
+#include "QDjango_p.h"
 #include "QDjangoWhere.h"
 
 class QDjangoMetaModel;
 
 /** \internal
  */
-class QDjangoCompiler
+class QDJANGO_EXPORT QDjangoCompiler
 {
 public:
     QDjangoCompiler(const QString &modelName, const QSqlDatabase &db);
@@ -56,7 +57,7 @@ private:
 
 /** \internal
  */
-class QDjangoQuerySetPrivate
+class QDJANGO_EXPORT QDjangoQuerySetPrivate
 {
 public:
     QDjangoQuerySetPrivate(const QString &modelName);

@@ -23,6 +23,8 @@
 
 #include <QVariant>
 
+#include "QDjango_p.h"
+
 class QDjangoMetaModel;
 class QDjangoQuery;
 
@@ -36,7 +38,7 @@ class QDjangoQuery;
  *
  * \ingroup Database
  */
-class QDjangoWhere
+class QDJANGO_EXPORT QDjangoWhere
 {
 public:
     /** A comparison operation on a database column value. */
