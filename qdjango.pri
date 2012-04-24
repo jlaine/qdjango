@@ -1,9 +1,9 @@
 # Common definitions
 QDJANGO_VERSION=0.2.0
 
-# Determine library type (lib or staticlib)
+# Determine library type (shared or staticlib)
 isEmpty(QDJANGO_LIBRARY_TYPE) {
-    QDJANGO_LIBRARY_TYPE = lib
+    QDJANGO_LIBRARY_TYPE = shared
 }
 contains(QDJANGO_LIBRARY_TYPE,staticlib) {
     DEFINES += QDJANGO_STATIC
