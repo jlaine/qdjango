@@ -24,6 +24,8 @@
 #include <QObject>
 #include <QVariant>
 
+#include "QDjangoHttp_p.h"
+
 class QDjangoHttpRequest;
 class QDjangoHttpResponse;
 class QDjangoUrlResolverPrivate;
@@ -33,7 +35,7 @@ class QRegExp;
  *
  * \ingroup Http
  */
-class QDjangoUrlResolver : public QObject
+class QDJANGO_EXPORT QDjangoUrlResolver : public QObject
 {
     Q_OBJECT
 

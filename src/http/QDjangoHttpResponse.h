@@ -23,13 +23,15 @@
 
 #include <QObject>
 
+#include "QDjangoHttp_p.h"
+
 class QDjangoHttpResponsePrivate;
 
 /** \brief The QDjangoHttpResponse class represents an HTTP response.
  *
  * \ingroup Http
  */
-class QDjangoHttpResponse : public QObject
+class QDJANGO_EXPORT QDjangoHttpResponse : public QObject
 {
     Q_OBJECT
 

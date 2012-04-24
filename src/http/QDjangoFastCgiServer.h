@@ -24,6 +24,8 @@
 #include <QHostAddress>
 #include <QObject>
 
+#include "QDjangoHttp_p.h"
+
 class QDjangoFastCgiServerPrivate;
 class QDjangoHttpController;
 class QDjangoUrlResolver;
@@ -38,7 +40,7 @@ class QDjangoUrlResolver;
  * \ingroup Http
  * \sa QDjangoHttpServer
  */
-class QDjangoFastCgiServer : public QObject
+class QDJANGO_EXPORT QDjangoFastCgiServer : public QObject
 {
     Q_OBJECT
 

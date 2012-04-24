@@ -23,6 +23,8 @@
 
 #include <QString>
 
+#include "QDjangoHttp_p.h"
+
 class QDjangoHttpRequestPrivate;
 
 /** \defgroup Http
@@ -35,7 +37,7 @@ class QDjangoHttpRequestPrivate;
  *
  * \ingroup Http
  */
-class QDjangoHttpRequest
+class QDJANGO_EXPORT QDjangoHttpRequest
 {
 public:
     QDjangoHttpRequest();

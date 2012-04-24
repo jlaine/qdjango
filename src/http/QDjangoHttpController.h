@@ -24,6 +24,8 @@
 #include <QDateTime>
 #include <QString>
 
+#include "QDjangoHttp_p.h"
+
 class QDjangoHttpRequest;
 class QDjangoHttpResponse;
 class QUrl;
@@ -32,7 +34,7 @@ class QUrl;
  *
  * \ingroup Http
  */
-class QDjangoHttpController
+class QDJANGO_EXPORT QDjangoHttpController
 {
 public:
     // get basic authorization credentials
