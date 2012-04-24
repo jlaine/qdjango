@@ -9,6 +9,7 @@ contains(QDJANGO_LIBRARY_TYPE,staticlib) {
     DEFINES += QDJANGO_STATIC
 } else {
     DEFINES += QDJANGO_SHARED
+    win32:QDJANGO_LIBINFIX=0
 }
 
 # Installation prefix and library directory
