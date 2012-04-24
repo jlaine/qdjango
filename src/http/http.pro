@@ -18,10 +18,12 @@ HEADERS += \
     QDjangoHttpRequest.h \
     QDjangoHttpResponse.h \
     QDjangoHttpServer.h \
-    QDjangoHttpServer_p.h
+    QDjangoHttpServer_p.h \
+    QDjangoUrlResolver.h
 SOURCES += \
     QDjangoFastCgiServer.cpp \
     QDjangoHttpController.cpp \
     QDjangoHttpRequest.cpp \
     QDjangoHttpResponse.cpp \
-    QDjangoHttpServer.cpp
+    QDjangoHttpServer.cpp \
+    QDjangoUrlResolver.cpp
