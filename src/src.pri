@@ -5,7 +5,7 @@ CONFIG += $$QDJANGO_LIBRARY_TYPE
 DEFINES += QDJANGO_BUILD
 VERSION = $$QDJANGO_VERSION
 
-QMAKE_CLEAN += lib$${TARGET}.prl
+unix:QMAKE_CLEAN += -r pkgconfig lib$${TARGET}.prl
 
 # Installation
 headers.files = $$HEADERS
