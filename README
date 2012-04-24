@@ -38,16 +38,3 @@ $ qmake ..
 $ make
 
 See platform specific notes for applicable qmake options.
-
-Cross compiling for win32
--------------------------
-
-To cross compile for win32 on a Debian machine, install the libqt4-mingw32-dev
-package from:
-
-  http://dev.jerryweb.org/debian/pool/main/
-
-Then invoke cmake as:
-
-$ cmake .. -DCMAKE_TOOLCHAIN_FILE=../cmake/mingw32.toolchain
-
