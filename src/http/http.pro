@@ -1,12 +1,6 @@
-include(../../qdjango.pri)
-
-TEMPLATE = lib
-CONFIG += $$QDJANGO_LIBRARY_TYPE
-DEFINES += QDJANGO_BUILD
 QT += network
 
 TARGET = qdjango-http
-VERSION = $$QDJANGO_VERSION
 win32 {
     DESTDIR = $$OUT_PWD
 }
@@ -27,3 +21,7 @@ SOURCES += \
     QDjangoHttpResponse.cpp \
     QDjangoHttpServer.cpp \
     QDjangoUrlResolver.cpp
+
+# Installation
+include(../src.pri)
+headers.path = $$PREFIX/include/qdjango/http

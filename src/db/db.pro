@@ -1,12 +1,6 @@
-include(../../qdjango.pri)
-
-TEMPLATE = lib
-CONFIG += $$QDJANGO_LIBRARY_TYPE
-DEFINES += QDJANGO_BUILD
 QT += sql
 
 TARGET = qdjango-db
-VERSION = $$QDJANGO_VERSION
 win32 {
     DESTDIR = $$OUT_PWD
 }
@@ -23,3 +17,7 @@ SOURCES += \
     QDjangoModel.cpp \
     QDjangoQuerySet.cpp \
     QDjangoWhere.cpp
+
+# Installation
+include(../src.pri)
+headers.path = $$PREFIX/include/qdjango/db

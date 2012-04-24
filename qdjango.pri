@@ -10,3 +10,11 @@ contains(QDJANGO_LIBRARY_TYPE,staticlib) {
 } else {
     DEFINES += QDJANGO_SHARED
 }
+
+# Installation prefix and library directory
+isEmpty(PREFIX) {
+    unix:PREFIX=/usr/local
+}
+isEmpty(LIBDIR) {
+    LIBDIR=lib
+}
