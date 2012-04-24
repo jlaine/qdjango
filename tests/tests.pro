@@ -23,10 +23,7 @@ SOURCES += \
     shares-models.cpp \
     shares-tests.cpp
 
-INCLUDEPATH += \
-    ../src/db \
-    ../src/http \
-    ../src/script
+INCLUDEPATH += $$QDJANGO_INCLUDEPATH
 
 LIBS += \
     -L../src/db $$QDJANGO_DB_LIBS \

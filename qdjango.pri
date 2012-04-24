@@ -7,6 +7,7 @@ isEmpty(QDJANGO_LIBRARY_TYPE) {
 }
 
 # Libraries for apps which use QDjango
+QDJANGO_INCLUDEPATH = $$PWD/src/db $$PWD/src/http $$PWD/src/script
 QDJANGO_DB_LIBS = -lqdjango-db
 QDJANGO_HTTP_LIBS = -lqdjango-http
 QDJANGO_SCRIPT_LIBS = -lqdjango-script

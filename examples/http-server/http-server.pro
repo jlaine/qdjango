@@ -4,9 +4,7 @@ QT += network sql
 
 TARGET = qdjango-http-server
 
-INCLUDEPATH += \
-    ../../src/db \
-    ../../src/http
+INCLUDEPATH += $$QDJANGO_INCLUDEPATH
 LIBS += \
     -L../../src/db $$QDJANGO_DB_LIBS \
     -L../../src/http $$QDJANGO_HTTP_LIBS
