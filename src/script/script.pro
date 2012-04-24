@@ -7,9 +7,10 @@ win32 {
 
 INCLUDEPATH += ../db
 LIBS += -lqdjango-db
-HEADERS += QDjangoScript.h
+HEADERS += QDjangoScript.h QDjangoScript_p.h
 SOURCES += QDjangoScript.cpp
 
 # Installation
 include(../src.pri)
 headers.path = $$PREFIX/include/qdjango/script
+QMAKE_PKGCONFIG_INCDIR = $$headers.path

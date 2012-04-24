@@ -21,3 +21,4 @@ SOURCES += \
 # Installation
 include(../src.pri)
 headers.path = $$PREFIX/include/qdjango/db
+QMAKE_PKGCONFIG_INCDIR = $$headers.path
