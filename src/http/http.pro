@@ -1,3 +1,5 @@
+include(../../qdjango.pri)
+
 QT -= gui
 QT += network
 

@@ -1,3 +1,5 @@
+include(../../qdjango.pri)
+
 QT -= gui
 QT += script sql
 
@@ -7,7 +9,7 @@ win32 {
 }
 
 INCLUDEPATH += ../db
-LIBS += -L../db -lqdjango-db
+LIBS += -L../db -lqdjango-db$${QDJANGO_LIBINFIX}
 HEADERS += QDjangoScript.h QDjangoScript_p.h
 SOURCES += QDjangoScript.cpp
 

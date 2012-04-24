@@ -1,5 +1,3 @@
-include(../qdjango.pri)
-
 TEMPLATE = lib
 CONFIG += $$QDJANGO_LIBRARY_TYPE
 DEFINES += QDJANGO_BUILD
