@@ -22,30 +22,22 @@ Requirements
 On Debian
 ----------
 
-$ sudo aptitude install cmake libqt4-dev libqt4-sql-sqlite
+$ sudo aptitude install libqt4-dev libqt4-sql-sqlite
 
 On Mac OS X
 -----------
 
-$ sudo port install cmake qt4-mac
+$ sudo port install qt4-mac
 
 Building QDjango
 ================
 
 $ mkdir build
 $ cd build
-$ cmake ..
+$ qmake ..
 $ make
 
-See platform specific notes for applicable cmake options.
-
-On Mac OS X
------------
-
-If you are running MacOS/X and want to build specifically for i386 on an
-x86_64 machine, invoke cmake as:
-
-$ cmake .. -DCMAKE_CXX_FLAGS="-arch i386" -DLINK_FLAGS="-arch i386"
+See platform specific notes for applicable qmake options.
 
 Cross compiling for win32
 -------------------------
