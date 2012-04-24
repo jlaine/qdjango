@@ -29,6 +29,6 @@ INCLUDEPATH += \
     ../src/script
 
 LIBS += \
-    -L../src/db -lqdjango-db$${QDJANGO_LIBINFIX} \
-    -L../src/http -lqdjango-http$${QDJANGO_LIBINFIX} \
-    -L../src/script -lqdjango-script$${QDJANGO_LIBINFIX}
+    -L../src/db $$QDJANGO_DB_LIBS \
+    -L../src/http $$QDJANGO_HTTP_LIBS \
+    -L../src/script $$QDJANGO_SCRIPT_LIBS

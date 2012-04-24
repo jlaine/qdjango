@@ -8,7 +8,7 @@ INCLUDEPATH += \
     ../../src/db \
     ../../src/script
 LIBS += \
-    -L../../src/db -lqdjango-db$${QDJANGO_LIBINFIX} \
-    -L../../src/script -lqdjango-script$${QDJANGO_LIBINFIX}
+    -L../../src/db $$QDJANGO_DB_LIBS \
+    -L../../src/script $$QDJANGO_SCRIPT_LIBS
 HEADERS += ../../tests/auth-models.h
 SOURCES += script-console.cpp ../../tests/auth-models.cpp
