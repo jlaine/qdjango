@@ -16,9 +16,9 @@ contains(QDJANGO_LIBRARY_TYPE,staticlib) {
 } else {
     # Windows needs the major library version
     win32 {
-        QDJANGO_DB_LIBS = -ldjango-db0
-        QDJANGO_HTTP_LIBS = -ldjango-http0
-        QDJANGO_SCRIPT_LIBS = -ldjango-script0
+        QDJANGO_DB_LIBS = -lqdjango-db0
+        QDJANGO_HTTP_LIBS = -lqdjango-http0
+        QDJANGO_SCRIPT_LIBS = -lqdjango-script0
     }
     DEFINES += QDJANGO_SHARED
 }
