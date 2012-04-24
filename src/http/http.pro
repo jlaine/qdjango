@@ -11,6 +11,7 @@ win32 {
 HEADERS += \
     QDjangoFastCgiServer.h \
     QDjangoFastCgiServer_p.h \
+    QDjangoHttp_p.h \
     QDjangoHttpController.h \
     QDjangoHttpRequest.h \
     QDjangoHttpResponse.h \
