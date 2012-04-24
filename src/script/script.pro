@@ -12,5 +12,6 @@ win32 {
 }
 
 INCLUDEPATH += ../db
+LIBS += -lqdjango-db
 HEADERS += QDjangoScript.h
 SOURCES += QDjangoScript.cpp
