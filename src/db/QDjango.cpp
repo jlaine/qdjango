@@ -280,17 +280,27 @@ static QMap<QString, QString> parseOptions(const char *value)
     return options;
 }
 
+class QDjangoMetaModelPrivate : public QSharedData
+{
+public:
+    QList<QDjangoMetaField> localFields;
+    QMap<QByteArray, QString> foreignFields;
+    QByteArray primaryKey;
+    QString table;
+};
+
 /** Constructs a new QDjangoMetaModel by inspecting the given model instance.
  *
  * \param model
  */
 QDjangoMetaModel::QDjangoMetaModel(const QObject *model)
+    : d(new QDjangoMetaModelPrivate)
 {
     if (!model)
         return;
 
     const QMetaObject* meta = model->metaObject();
-    m_table = QString(meta->className()).toLower().toLatin1();
+    d->table = QString(meta->className()).toLower().toLatin1();
 
     // parse table options
     const int optionsIndex = meta->indexOfClassInfo("__meta__");
@@ -300,7 +310,7 @@ QDjangoMetaModel::QDjangoMetaModel(const QObject *model)
         while (option.hasNext()) {
             option.next();
             if (option.key() == "db_table")
-                m_table = option.value();
+                d->table = option.value();
         }
     }
 
@@ -353,7 +363,7 @@ QDjangoMetaModel::QDjangoMetaModel(const QObject *model)
         {
             const QByteArray fkName = meta->property(i).name();
             const QString fkModel = typeName.left(typeName.size() - 1);
-            m_foreignFields.insert(fkName, fkModel);
+            d->foreignFields.insert(fkName, fkModel);
 
             QDjangoMetaField field;
             field.name = fkName + "_id";
@@ -363,7 +373,7 @@ QDjangoMetaModel::QDjangoMetaModel(const QObject *model)
             field.type = QVariant::Int;
             field.foreignModel = fkModel;
             field.index = true;
-            m_localFields << field;
+            d->localFields << field;
             continue;
         }
 
@@ -377,25 +387,40 @@ QDjangoMetaModel::QDjangoMetaModel(const QObject *model)
         if (primaryKeyOption) {
             field.autoIncrement = autoIncrementOption;
             field.unique = true;
-            m_primaryKey = field.name;
+            d->primaryKey = field.name;
         } else if (uniqueOption) {
             field.unique = true;
         }
 
-        m_localFields << field;
+        d->localFields << field;
     }
 
     // automatic primary key
-    if (m_primaryKey.isEmpty()) {
+    if (d->primaryKey.isEmpty()) {
         QDjangoMetaField field;
         field.name = "id";
         field.type = QVariant::Int;
         field.autoIncrement = true;
         field.unique = true;
-        m_localFields.prepend(field);
-        m_primaryKey = field.name;
+        d->localFields.prepend(field);
+        d->primaryKey = field.name;
     }
  
+}
+
+QDjangoMetaModel::QDjangoMetaModel(const QDjangoMetaModel &other)
+    : d(other.d)
+{
+}
+
+QDjangoMetaModel::~QDjangoMetaModel()
+{
+}
+
+QDjangoMetaModel& QDjangoMetaModel::operator=(const QDjangoMetaModel& other)
+{
+    d = other.d;
+    return *this;
 }
 
 /** Creates the database table for this QDjangoMetaModel.
@@ -407,8 +432,8 @@ bool QDjangoMetaModel::createTable() const
     const QString driverName = db.driverName();
 
     QStringList propSql;
-    const QString quotedTable = db.driver()->escapeIdentifier(m_table, QSqlDriver::TableName);
-    foreach (const QDjangoMetaField &field, m_localFields)
+    const QString quotedTable = db.driver()->escapeIdentifier(d->table, QSqlDriver::TableName);
+    foreach (const QDjangoMetaField &field, d->localFields)
     {
         QString fieldSql = driver->escapeIdentifier(field.name, QSqlDriver::FieldName);
         if (field.type == QVariant::Bool)
@@ -454,7 +479,7 @@ bool QDjangoMetaModel::createTable() const
             fieldSql += " NOT NULL";
 
         // primary key
-        if (field.name == m_primaryKey)
+        if (field.name == d->primaryKey)
             fieldSql += " PRIMARY KEY";
 
         // auto-increment is backend specific
@@ -473,8 +498,8 @@ bool QDjangoMetaModel::createTable() const
         {
             const QDjangoMetaModel foreignMeta = QDjango::metaModel(field.foreignModel);
             fieldSql += QString(" REFERENCES %1 (%2)").arg(
-                driver->escapeIdentifier(foreignMeta.m_table, QSqlDriver::TableName),
-                driver->escapeIdentifier(foreignMeta.m_primaryKey, QSqlDriver::FieldName));
+                driver->escapeIdentifier(foreignMeta.d->table, QSqlDriver::TableName),
+                driver->escapeIdentifier(foreignMeta.d->primaryKey, QSqlDriver::FieldName));
         }
         propSql << fieldSql;
     }
@@ -487,9 +512,9 @@ bool QDjangoMetaModel::createTable() const
         return false;
 
     // create indices
-    foreach (const QDjangoMetaField &field, m_localFields) {
+    foreach (const QDjangoMetaField &field, d->localFields) {
         if (field.index && !field.unique) {
-            const QString indexName = m_table + "_" + QString::fromLatin1(field.name);
+            const QString indexName = d->table + "_" + QString::fromLatin1(field.name);
             if (!createQuery.exec(QString("CREATE INDEX %1 ON %2 (%3)").arg(
                 // FIXME : how should we escape an index name?
                 driver->escapeIdentifier(indexName, QSqlDriver::FieldName),
@@ -510,7 +535,7 @@ bool QDjangoMetaModel::dropTable() const
 
     QDjangoQuery query(db);
     return query.exec(QString("DROP TABLE %1").arg(
-        db.driver()->escapeIdentifier(m_table, QSqlDriver::TableName)));
+        db.driver()->escapeIdentifier(d->table, QSqlDriver::TableName)));
 }
 
 /** Retrieves the QDjangoModel pointed to by the given foreign-key.
@@ -526,7 +551,7 @@ QObject *QDjangoMetaModel::foreignKey(const QObject *model, const char *name) co
         return 0;
 
     // if the foreign object was not loaded yet, do it now
-    const QString foreignClass = m_foreignFields[prop];
+    const QString foreignClass = d->foreignFields[prop];
     const QDjangoMetaModel foreignMeta = QDjango::metaModel(foreignClass);
     const QVariant foreignPk = model->property(prop + "_id");
     if (foreign->property(foreignMeta.primaryKey()) != foreignPk)
@@ -561,7 +586,7 @@ void QDjangoMetaModel::setForeignKey(QObject *model, const char *name, QObject *
     model->setProperty(prop + "_ptr", qVariantFromValue(value));
     if (value)
     {
-        const QDjangoMetaModel foreignMeta = QDjango::metaModel(m_foreignFields[prop]);
+        const QDjangoMetaModel foreignMeta = QDjango::metaModel(d->foreignFields[prop]);
         model->setProperty(prop + "_id", value->property(foreignMeta.primaryKey()));
         value->setParent(model);
     } else {
@@ -574,7 +599,7 @@ void QDjangoMetaModel::setForeignKey(QObject *model, const char *name, QObject *
  */
 bool QDjangoMetaModel::isValid() const
 {
-    return !m_table.isEmpty() && !m_primaryKey.isEmpty();
+    return !d->table.isEmpty() && !d->primaryKey.isEmpty();
 }
 
 /** Loads the given properties into a model instance.
@@ -586,18 +611,18 @@ bool QDjangoMetaModel::isValid() const
 void QDjangoMetaModel::load(QObject *model, const QVariantList &properties, int &pos) const
 {
     // process local fields
-    foreach (const QDjangoMetaField &field, m_localFields)
+    foreach (const QDjangoMetaField &field, d->localFields)
         model->setProperty(field.name, properties.at(pos++));
 
     // process foreign fields
     if (pos >= properties.size())
         return;
-    foreach (const QByteArray &fkName, m_foreignFields.keys())
+    foreach (const QByteArray &fkName, d->foreignFields.keys())
     {
         QObject *object = model->property(fkName + "_ptr").value<QObject*>();
         if (object)
         {
-            const QDjangoMetaModel foreignMeta = QDjango::metaModel(m_foreignFields[fkName]);
+            const QDjangoMetaModel foreignMeta = QDjango::metaModel(d->foreignFields[fkName]);
             foreignMeta.load(object, properties, pos);
         }
     }
@@ -607,28 +632,28 @@ void QDjangoMetaModel::load(QObject *model, const QVariantList &properties, int 
  */
 QMap<QByteArray, QString> QDjangoMetaModel::foreignFields() const
 {
-    return m_foreignFields;
+    return d->foreignFields;
 }
 
 /** Returns the list of local fields.
  */
 QList<QDjangoMetaField> QDjangoMetaModel::localFields() const
 {
-    return m_localFields;
+    return d->localFields;
 }
 
 /** Returns the name of the primary key for the current QDjangoMetaModel.
  */
 QByteArray QDjangoMetaModel::primaryKey() const
 {
-    return m_primaryKey;
+    return d->primaryKey;
 }
 
 /** Returns the name of the database table.
  */
 QString QDjangoMetaModel::table() const
 {
-    return m_table;
+    return d->table;
 }
 
 /** Removes the given QObject from the database.
@@ -637,7 +662,7 @@ QString QDjangoMetaModel::table() const
  */
 bool QDjangoMetaModel::remove(QObject *model) const
 {
-    const QVariant pk = model->property(m_primaryKey);
+    const QVariant pk = model->property(d->primaryKey);
     QDjangoQuerySetPrivate qs(model->metaObject()->className());
     qs.addFilter(QDjangoWhere("pk", QDjangoWhere::Equals, pk));
     return qs.sqlDelete();
@@ -656,28 +681,28 @@ bool QDjangoMetaModel::save(QObject *model) const
 
     // find primary key
     QDjangoMetaField primaryKey;
-    foreach (const QDjangoMetaField &field, m_localFields) {
-        if (field.name == m_primaryKey) {
+    foreach (const QDjangoMetaField &field, d->localFields) {
+        if (field.name == d->primaryKey) {
             primaryKey = field;
             break;
         }
     }
 
-    const QString quotedTable = db.driver()->escapeIdentifier(m_table, QSqlDriver::TableName);
-    const QVariant pk = model->property(m_primaryKey);
+    const QString quotedTable = db.driver()->escapeIdentifier(d->table, QSqlDriver::TableName);
+    const QVariant pk = model->property(d->primaryKey);
     if (!pk.isNull() && !(primaryKey.type == QVariant::Int && !pk.toInt()))
     {
         QDjangoQuery query(db);
         query.prepare(QString("SELECT 1 AS a FROM %1 WHERE %2 = ?").arg(
                       quotedTable,
-                      driver->escapeIdentifier(m_primaryKey, QSqlDriver::FieldName)));
+                      driver->escapeIdentifier(d->primaryKey, QSqlDriver::FieldName)));
         query.addBindValue(pk);
         if (query.exec() && query.next())
         {
             // prepare data
             QVariantMap fields;
-            foreach (const QDjangoMetaField &field, m_localFields) {
-                if (field.name != m_primaryKey) {
+            foreach (const QDjangoMetaField &field, d->localFields) {
+                if (field.name != d->primaryKey) {
                     const QVariant value = model->property(field.name);
                     fields.insert(field.name, field.toDatabase(value));
                 }
@@ -692,7 +717,7 @@ bool QDjangoMetaModel::save(QObject *model) const
 
     // prepare data
     QVariantMap fields;
-    foreach (const QDjangoMetaField &field, m_localFields) {
+    foreach (const QDjangoMetaField &field, d->localFields) {
         if (!field.autoIncrement) {
             const QVariant value = model->property(field.name);
             fields.insert(field.name, field.toDatabase(value));
@@ -720,14 +745,14 @@ bool QDjangoMetaModel::save(QObject *model) const
         QVariant insertId;
         if (db.driverName() == "QPSQL") {
             QDjangoQuery query(db);
-            const QString seqName = driver->escapeIdentifier(m_table + "_" + m_primaryKey + "_seq", QSqlDriver::FieldName);
+            const QString seqName = driver->escapeIdentifier(d->table + "_" + d->primaryKey + "_seq", QSqlDriver::FieldName);
             if (!query.exec("SELECT CURRVAL('" + seqName + "')") || !query.next())
                 return false;
             insertId = query.value(0);
         } else {
             insertId = query.lastInsertId();
         }
-        model->setProperty(m_primaryKey, insertId);
+        model->setProperty(d->primaryKey, insertId);
     }
     return ret;
 }

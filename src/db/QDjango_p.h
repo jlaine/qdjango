@@ -24,6 +24,7 @@
 #include <QMap>
 #include <QMutex>
 #include <QObject>
+#include <QSharedDataPointer>
 #include <QSqlDatabase>
 #include <QSqlError>
 #include <QSqlQuery>
@@ -38,6 +39,8 @@
 #else
 #  define QDJANGO_EXPORT
 #endif
+
+class QDjangoMetaModelPrivate;
 
 /** \brief The QDjangoMetaField class holds the database schema for a field.
  *
@@ -70,6 +73,10 @@ class QDJANGO_EXPORT QDjangoMetaModel
 {
 public:
     QDjangoMetaModel(const QObject *model = 0);
+    QDjangoMetaModel(const QDjangoMetaModel &other);
+    ~QDjangoMetaModel();
+    QDjangoMetaModel& operator=(const QDjangoMetaModel &other);
+
     bool isValid() const;
 
     bool createTable() const;
@@ -88,10 +95,7 @@ public:
     QString table() const;
 
 private:
-    QList<QDjangoMetaField> m_localFields;
-    QMap<QByteArray, QString> m_foreignFields;
-    QByteArray m_primaryKey;
-    QString m_table;
+    QSharedDataPointer<QDjangoMetaModelPrivate> d;
 };
 
 /** \brief The QDjangoDatabase class represents a set of connections to a
