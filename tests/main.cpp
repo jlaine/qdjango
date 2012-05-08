@@ -276,7 +276,6 @@ void tst_QDjangoCompiler::resolve()
 void tst_QDjangoMetaModel::initTestCase()
 {
     metaModel = QDjango::registerModel<Object>();
-    QCOMPARE(metaModel.isValid(), true);
     QCOMPARE(metaModel.createTable(), true);
 }
 

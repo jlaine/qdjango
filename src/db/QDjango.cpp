@@ -600,14 +600,6 @@ void QDjangoMetaModel::setForeignKey(QObject *model, const char *name, QObject *
     }
 }
 
-
-/** Returns true if the current QDjangoMetaModel is valid, false otherwise.
- */
-bool QDjangoMetaModel::isValid() const
-{
-    return !d->table.isEmpty() && !d->primaryKey.isEmpty();
-}
-
 /** Loads the given properties into a model instance.
  *
  * \param model

@@ -77,8 +77,6 @@ public:
     ~QDjangoMetaModel();
     QDjangoMetaModel& operator=(const QDjangoMetaModel &other);
 
-    bool isValid() const;
-
     bool createTable() const;
     bool dropTable() const;
 

@@ -32,7 +32,6 @@ template<class T>
 void init()
 {
     const QDjangoMetaModel metaModel = QDjango::registerModel<T>();
-    QCOMPARE(metaModel.isValid(), true);
     QCOMPARE(metaModel.createTable(), true);
 }
 

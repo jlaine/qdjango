@@ -38,7 +38,6 @@ void TestScript::cleanupTestCase()
 void TestScript::initTestCase()
 {
     metaModel = QDjango::registerModel<User>();
-    QCOMPARE(metaModel.isValid(), true);
     QCOMPARE(metaModel.createTable(), true);
 
     engine = new QScriptEngine(this);
