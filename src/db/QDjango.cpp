@@ -408,15 +408,21 @@ QDjangoMetaModel::QDjangoMetaModel(const QObject *model)
  
 }
 
+/** Constructs a copy of \a other.
+ */
 QDjangoMetaModel::QDjangoMetaModel(const QDjangoMetaModel &other)
     : d(other.d)
 {
 }
 
+/** Destroys the meta model.
+ */
 QDjangoMetaModel::~QDjangoMetaModel()
 {
 }
 
+/** Assigns \a other to this meta model.
+ */
 QDjangoMetaModel& QDjangoMetaModel::operator=(const QDjangoMetaModel& other)
 {
     d = other.d;
