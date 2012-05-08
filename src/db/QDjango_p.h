@@ -40,62 +40,6 @@
 #  define QDJANGO_EXPORT
 #endif
 
-class QDjangoMetaModelPrivate;
-
-/** \brief The QDjangoMetaField class holds the database schema for a field.
- *
- * \internal
- */
-class QDJANGO_EXPORT QDjangoMetaField
-{
-public:
-    QDjangoMetaField();
-    QVariant toDatabase(const QVariant &value) const;
-
-    QByteArray name;
-    QVariant::Type type;
-    bool autoIncrement;
-    bool index;
-    int maxLength;
-    bool null;
-    bool unique;
-    QString foreignModel;
-};
-
-/** \brief The QDjangoMetaModel class holds the database schema for a model.
- *
- *  It manages table creation and deletion operations as well as row
- *  serialisation, deserialisation and deletion operations.
- *
- * \internal
- */
-class QDJANGO_EXPORT QDjangoMetaModel
-{
-public:
-    QDjangoMetaModel(const QObject *model = 0);
-    QDjangoMetaModel(const QDjangoMetaModel &other);
-    ~QDjangoMetaModel();
-    QDjangoMetaModel& operator=(const QDjangoMetaModel &other);
-
-    bool createTable() const;
-    bool dropTable() const;
-
-    void load(QObject *model, const QVariantList &props, int &pos) const;
-    bool remove(QObject *model) const;
-    bool save(QObject *model) const;
-
-    QObject *foreignKey(const QObject *model, const char *name) const;
-    void setForeignKey(QObject *model, const char *name, QObject *value) const;
-
-    QList<QDjangoMetaField> localFields() const;
-    QMap<QByteArray, QString> foreignFields() const;
-    QByteArray primaryKey() const;
-    QString table() const;
-
-private:
-    QSharedDataPointer<QDjangoMetaModelPrivate> d;
-};
-
 /** \brief The QDjangoDatabase class represents a set of connections to a
  *  database.
  *

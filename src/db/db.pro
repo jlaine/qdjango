@@ -11,6 +11,7 @@ win32 {
 HEADERS += \
     QDjango.h \
     QDjango_p.h \
+    QDjangoMetaModel.h \
     QDjangoModel.h \
     QDjangoQuerySet.h \
     QDjangoQuerySet_p.h \

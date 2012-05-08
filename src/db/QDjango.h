@@ -21,14 +21,12 @@
 #ifndef QDJANGO_H
 #define QDJANGO_H
 
-#include "QDjango_p.h"
+#include "QDjangoMetaModel.h"
 
 class QObject;
 class QSqlDatabase;
 class QSqlQuery;
 class QString;
-
-class QDjangoMetaModel;
 
 /** \defgroup Database
  *
