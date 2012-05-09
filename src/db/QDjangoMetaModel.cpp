@@ -68,10 +68,9 @@ public:
     QString table;
 };
 
-/** Constructs a new QDjangoMetaModel by inspecting the given model instance.
- *
- * \param model
- */
+/*!
+    Constructs a new QDjangoMetaModel by inspecting the given \a model instance.
+*/
 QDjangoMetaModel::QDjangoMetaModel(const QObject *model)
     : d(new QDjangoMetaModelPrivate)
 {
@@ -187,29 +186,33 @@ QDjangoMetaModel::QDjangoMetaModel(const QObject *model)
  
 }
 
-/** Constructs a copy of \a other.
- */
+/*!
+    Constructs a copy of \a other.
+*/
 QDjangoMetaModel::QDjangoMetaModel(const QDjangoMetaModel &other)
     : d(other.d)
 {
 }
 
-/** Destroys the meta model.
- */
+/*!
+    Destroys the meta model.
+*/
 QDjangoMetaModel::~QDjangoMetaModel()
 {
 }
 
-/** Assigns \a other to this meta model.
- */
+/*!
+    Assigns \a other to this meta model.
+*/
 QDjangoMetaModel& QDjangoMetaModel::operator=(const QDjangoMetaModel& other)
 {
     d = other.d;
     return *this;
 }
 
-/** Creates the database table for this QDjangoMetaModel.
- */
+/*!
+    Creates the database table for this QDjangoMetaModel.
+*/
 bool QDjangoMetaModel::createTable() const
 {
     QSqlDatabase db = QDjango::database();
@@ -312,8 +315,9 @@ bool QDjangoMetaModel::createTable() const
     return true;
 }
 
-/** Drops the database table for this QDjangoMetaModel.
- */
+/*!
+    Drops the database table for this QDjangoMetaModel.
+*/
 bool QDjangoMetaModel::dropTable() const
 {
     QSqlDatabase db = QDjango::database();
@@ -323,11 +327,12 @@ bool QDjangoMetaModel::dropTable() const
         db.driver()->escapeIdentifier(d->table, QSqlDriver::TableName)));
 }
 
-/** Retrieves the QDjangoModel pointed to by the given foreign-key.
- *
- * \param model
- * \param name
- */
+/*!
+    Retrieves the QDjangoModel pointed to by the given foreign-key.
+
+    \param model
+    \param name
+*/
 QObject *QDjangoMetaModel::foreignKey(const QObject *model, const char *name) const
 {
     const QByteArray prop(name);
@@ -350,14 +355,15 @@ QObject *QDjangoMetaModel::foreignKey(const QObject *model, const char *name) co
     return foreign;
 }
 
-/** Sets the QDjangoModel pointed to by the given foreign-key.
- *
- * \param model
- * \param name
- * \param value
- *
- * \note The \c model will take ownership of the given \c value.
- */
+/*!
+    Sets the QDjangoModel pointed to by the given foreign-key.
+
+    \param model
+    \param name
+    \param value
+
+    \note The \c model will take ownership of the given \c value.
+*/
 void QDjangoMetaModel::setForeignKey(QObject *model, const char *name, QObject *value) const
 {
     const QByteArray prop(name);
@@ -379,12 +385,9 @@ void QDjangoMetaModel::setForeignKey(QObject *model, const char *name, QObject *
     }
 }
 
-/** Loads the given properties into a model instance.
- *
- * \param model
- * \param properties
- * \param pos
- */
+/*!
+    Loads the given properties into a \a model instance.
+*/
 void QDjangoMetaModel::load(QObject *model, const QVariantList &properties, int &pos) const
 {
     // process local fields
@@ -405,38 +408,41 @@ void QDjangoMetaModel::load(QObject *model, const QVariantList &properties, int 
     }
 }
 
-/** Returns the foreign field mapping.
- */
+/*!
+    Returns the foreign field mapping.
+*/
 QMap<QByteArray, QString> QDjangoMetaModel::foreignFields() const
 {
     return d->foreignFields;
 }
 
-/** Returns the list of local fields.
- */
+/*!
+    Returns the list of local fields.
+*/
 QList<QDjangoMetaField> QDjangoMetaModel::localFields() const
 {
     return d->localFields;
 }
 
-/** Returns the name of the primary key for the current QDjangoMetaModel.
- */
+/*!
+    Returns the name of the primary key for the current QDjangoMetaModel.
+*/
 QByteArray QDjangoMetaModel::primaryKey() const
 {
     return d->primaryKey;
 }
 
-/** Returns the name of the database table.
- */
+/*!
+    Returns the name of the database table.
+*/
 QString QDjangoMetaModel::table() const
 {
     return d->table;
 }
 
-/** Removes the given QObject from the database.
- *
- * \param model
- */
+/*!
+    Removes the given \a model instance from the database.
+*/
 bool QDjangoMetaModel::remove(QObject *model) const
 {
     const QVariant pk = model->property(d->primaryKey);
@@ -445,12 +451,11 @@ bool QDjangoMetaModel::remove(QObject *model) const
     return qs.sqlDelete();
 }
 
-/** Saves the given QObject to the database.
- *
- * \param model
- *
- * \return true if saving succeeded, false otherwise
- */
+/*!
+    Saves the given \a model instance to the database.
+
+    \return true if saving succeeded, false otherwise
+*/
 bool QDjangoMetaModel::save(QObject *model) const
 {
     QSqlDatabase db = QDjango::database();
@@ -533,5 +538,4 @@ bool QDjangoMetaModel::save(QObject *model) const
     }
     return ret;
 }
-
 

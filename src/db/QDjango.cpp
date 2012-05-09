@@ -110,27 +110,28 @@ bool QDjangoQuery::exec(const QString &query)
 
 /// \endcond
 
-/*! \mainpage
- *
- * QDjango is a simple yet powerful Object Relation Mapper (ORM) built
- * on top of the Qt library. Where possible it tries to follow django's
- * ORM API, hence its name.
- *
- * \sa QDjango
- * \sa QDjangoModel
- * \sa QDjangoWhere
- * \sa QDjangoQuerySet
- */
+/*!
+    \mainpage
 
+    QDjango is a simple yet powerful Object Relation Mapper (ORM) built
+    on top of the Qt library. Where possible it tries to follow django's
+    ORM API, hence its name.
 
-/** Returns the database used by QDjango.
- *
- *  If you call this method from any thread but the application's main thread,
- *  a new connection to the database will be created. The connection will
- *  automatically be torn down once the thread finishes.
- *
- *  \sa setDatabase()
- */
+    \sa QDjango
+    \sa QDjangoModel
+    \sa QDjangoWhere
+    \sa QDjangoQuerySet
+*/
+
+/*!
+    Returns the database used by QDjango.
+
+    If you call this method from any thread but the application's main thread,
+    a new connection to the database will be created. The connection will
+    automatically be torn down once the thread finishes.
+
+    \sa setDatabase()
+*/
 QSqlDatabase QDjango::database()
 {
     Q_ASSERT(globalDatabase != 0);
@@ -154,12 +155,13 @@ QSqlDatabase QDjango::database()
     return db;
 }
 
-/** Sets the database used by QDjango.
- *
- *  You must call this method from your application's main thread.
- *
- *  \sa database()
- */
+/*!
+    Sets the database used by QDjango.
+
+    You must call this method from your application's main thread.
+
+    \sa database()
+*/
 void QDjango::setDatabase(QSqlDatabase database)
 {
     if (database.driverName() != QLatin1String("QSQLITE") &&
@@ -177,26 +179,29 @@ void QDjango::setDatabase(QSqlDatabase database)
     globalDatabase->reference = database;
 }
 
-/** Returns whether debugging information should be printed.
- *
- * \sa setDebugEnabled()
- */
+/*!
+    Returns whether debugging information should be printed.
+
+    \sa setDebugEnabled()
+*/
 bool QDjango::isDebugEnabled()
 {
     return globalDebugEnabled;
 }
 
-/** Sets whether debugging information should be printed.
- *
- * \sa isDebugEnabled()
- */
+/*!
+    Sets whether debugging information should be printed.
+
+    \sa isDebugEnabled()
+*/
 void QDjango::setDebugEnabled(bool enabled)
 {
     globalDebugEnabled = enabled;
 }
 
-/** Creates the database tables for all registered models.
- */
+/*!
+    Creates the database tables for all registered models.
+*/
 bool QDjango::createTables()
 {
     bool ret = true;
@@ -206,8 +211,9 @@ bool QDjango::createTables()
     return ret;
 }
 
-/** Drops the database tables for all registered models.
- */
+/*!
+    Drops the database tables for all registered models.
+*/
 bool QDjango::dropTables()
 {
     bool ret = true;
@@ -217,9 +223,8 @@ bool QDjango::dropTables()
     return ret;
 }
 
-/** Returns the QDjangoMetaModel with the given name.
- *
- * \param name
+/*!
+    Returns the QDjangoMetaModel with the given \a name.
  */
 QDjangoMetaModel QDjango::metaModel(const QString &name)
 {
@@ -234,8 +239,9 @@ QDjangoMetaModel QDjango::registerModel(const QObject *model)
     return globalMetaModels[name];
 }
 
-/** Returns the empty SQL limit clause.
- */
+/*!
+    Returns the empty SQL limit clause.
+*/
 QString QDjango::noLimitSql()
 {
     const QString driverName = QDjango::database().driverName();
