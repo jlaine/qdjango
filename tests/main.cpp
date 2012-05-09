@@ -482,6 +482,17 @@ void tst_QDjangoQuerySetPrivate::initTestCase()
     QCOMPARE(metaModel.createTable(), true);
 }
 
+void tst_QDjangoQuerySetPrivate::deleteQuery()
+{
+    QDjangoQuerySetPrivate qs("Object");
+    qs.addFilter(QDjangoWhere("pk", QDjangoWhere::Equals, 1));
+    QDjangoQuery query = qs.deleteQuery();
+
+    QCOMPARE(query.lastQuery(), QLatin1String("DELETE FROM \"foo_table\" WHERE \"foo_table\".\"id\" = ?"));
+    QCOMPARE(query.boundValues().size(), 1);
+    QCOMPARE(query.boundValue(0), QVariant(1));
+}
+
 void tst_QDjangoQuerySetPrivate::insertQuery()
 {
     QVariantMap data;

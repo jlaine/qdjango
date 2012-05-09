@@ -217,24 +217,8 @@ bool QDjangoQuerySetPrivate::sqlDelete()
     if (lowMark || highMark)
         return false;
 
-    QSqlDatabase db = QDjango::database();
-
-    // build query
-    QDjangoCompiler compiler(m_modelName, db);
-    QDjangoWhere resolvedWhere(whereClause);
-    compiler.resolve(resolvedWhere);
-
-    const QString where = resolvedWhere.sql(db);
-    const QString limit = compiler.orderLimitSql(orderBy, lowMark, highMark);
-    QString sql = "DELETE FROM " + compiler.fromSql();
-    if (!where.isEmpty())
-        sql += " WHERE " + where;
-    sql += limit;
-    QDjangoQuery query(db);
-    query.prepare(sql);
-    resolvedWhere.bindValues(query);
-
     // execute query
+    QDjangoQuery query(deleteQuery());
     if (!query.exec())
         return false;
 
@@ -331,6 +315,28 @@ bool QDjangoQuerySetPrivate::sqlLoad(QObject *model, int index)
     int pos = 0;
     metaModel.load(model, properties.at(index), pos);
     return true;
+}
+
+QDjangoQuery QDjangoQuerySetPrivate::deleteQuery() const
+{
+    QSqlDatabase db = QDjango::database();
+
+    // build query
+    QDjangoCompiler compiler(m_modelName, db);
+    QDjangoWhere resolvedWhere(whereClause);
+    compiler.resolve(resolvedWhere);
+
+    const QString where = resolvedWhere.sql(db);
+    const QString limit = compiler.orderLimitSql(orderBy, lowMark, highMark);
+    QString sql = "DELETE FROM " + compiler.fromSql();
+    if (!where.isEmpty())
+        sql += " WHERE " + where;
+    sql += limit;
+    QDjangoQuery query(db);
+    query.prepare(sql);
+    resolvedWhere.bindValues(query);
+
+    return query;
 }
 
 QDjangoQuery QDjangoQuerySetPrivate::insertQuery(const QVariantMap &fields) const
