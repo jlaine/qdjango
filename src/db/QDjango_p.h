@@ -24,7 +24,6 @@
 #include <QMap>
 #include <QMutex>
 #include <QObject>
-#include <QSharedDataPointer>
 #include <QSqlDatabase>
 #include <QSqlError>
 #include <QSqlQuery>

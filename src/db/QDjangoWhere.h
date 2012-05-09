@@ -21,6 +21,7 @@
 #ifndef QDJANGO_WHERE_H
 #define QDJANGO_WHERE_H
 
+#include <QSharedDataPointer>
 #include <QVariant>
 
 #include "QDjango_p.h"
