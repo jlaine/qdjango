@@ -75,6 +75,7 @@ public:
     QList<QVariantList> sqlValuesList(const QStringList &fields);
 
     // SQL queries
+    QDjangoQuery insertQuery(const QVariantMap &fields) const;
     QDjangoQuery updateQuery(const QVariantMap &fields) const;
 
     // reference counter

@@ -286,30 +286,16 @@ bool QDjangoQuerySetPrivate::sqlFetch()
 
 bool QDjangoQuerySetPrivate::sqlInsert(const QVariantMap &fields, QVariant *insertId)
 {
-    QSqlDatabase db = QDjango::database();
-    const QDjangoMetaModel metaModel = QDjango::metaModel(m_modelName);
-
-    // perform INSERT
-    QStringList fieldColumns;
-    QStringList fieldHolders;
-    foreach (const QString &name, fields.keys()) {
-        const QDjangoMetaField field = metaModel.localField(name);
-        fieldColumns << db.driver()->escapeIdentifier(field.column(), QSqlDriver::FieldName);
-        fieldHolders << "?";
-    }
-
-    QDjangoQuery query(db);
-    query.prepare(QString("INSERT INTO %1 (%2) VALUES(%3)").arg(
-                  db.driver()->escapeIdentifier(metaModel.table(), QSqlDriver::TableName),
-                  fieldColumns.join(", "), fieldHolders.join(", ")));
-    foreach (const QString &name, fields.keys())
-        query.addBindValue(fields.value(name));
+    // execute query
+    QDjangoQuery query(insertQuery(fields));
     if (!query.exec())
         return false;
 
     // fetch autoincrement pk
     if (insertId) {
+        QSqlDatabase db = QDjango::database();
         if (db.driverName() == "QPSQL") {
+            const QDjangoMetaModel metaModel = QDjango::metaModel(m_modelName);
             QDjangoQuery query(db);
             const QDjangoMetaField primaryKey = metaModel.localField("pk");
             const QString seqName = db.driver()->escapeIdentifier(metaModel.table() + "_" + primaryKey.column() + "_seq", QSqlDriver::FieldName);
@@ -347,10 +333,33 @@ bool QDjangoQuerySetPrivate::sqlLoad(QObject *model, int index)
     return true;
 }
 
+QDjangoQuery QDjangoQuerySetPrivate::insertQuery(const QVariantMap &fields) const
+{
+    QSqlDatabase db = QDjango::database();
+    const QDjangoMetaModel metaModel = QDjango::metaModel(m_modelName);
+
+    // perform INSERT
+    QStringList fieldColumns;
+    QStringList fieldHolders;
+    foreach (const QString &name, fields.keys()) {
+        const QDjangoMetaField field = metaModel.localField(name);
+        fieldColumns << db.driver()->escapeIdentifier(field.column(), QSqlDriver::FieldName);
+        fieldHolders << "?";
+    }
+
+    QDjangoQuery query(db);
+    query.prepare(QString("INSERT INTO %1 (%2) VALUES(%3)").arg(
+                  db.driver()->escapeIdentifier(metaModel.table(), QSqlDriver::TableName),
+                  fieldColumns.join(", "), fieldHolders.join(", ")));
+    foreach (const QString &name, fields.keys())
+        query.addBindValue(fields.value(name));
+    return query;
+}
+
 QDjangoQuery QDjangoQuerySetPrivate::updateQuery(const QVariantMap &fields) const
 {
-    const QDjangoMetaModel metaModel = QDjango::metaModel(m_modelName);
     QSqlDatabase db = QDjango::database();
+    const QDjangoMetaModel metaModel = QDjango::metaModel(m_modelName);
 
     // build query
     QDjangoCompiler compiler(m_modelName, db);

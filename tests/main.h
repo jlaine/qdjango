@@ -170,6 +170,7 @@ class tst_QDjangoQuerySetPrivate : public QObject
 
 private slots:
     void initTestCase();
+    void insertQuery();
     void updateQuery();
     void cleanupTestCase();
 

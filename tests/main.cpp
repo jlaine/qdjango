@@ -482,6 +482,19 @@ void tst_QDjangoQuerySetPrivate::initTestCase()
     QCOMPARE(metaModel.createTable(), true);
 }
 
+void tst_QDjangoQuerySetPrivate::insertQuery()
+{
+    QVariantMap data;
+    data.insert("foo", 2);
+
+    QDjangoQuerySetPrivate qs("Object");
+    QDjangoQuery query = qs.insertQuery(data);
+
+    QCOMPARE(query.lastQuery(), QLatin1String("INSERT INTO \"foo_table\" (\"foo\") VALUES(?)"));
+    QCOMPARE(query.boundValues().size(), 1);
+    QCOMPARE(query.boundValue(0), QVariant(2));
+}
+
 void tst_QDjangoQuerySetPrivate::updateQuery()
 {
     QVariantMap data;
