@@ -24,12 +24,16 @@
 #include "QDjangoWhere.h"
 #include "QDjangoWhere_p.h"
 
+/// \cond
+
 QDjangoWherePrivate::QDjangoWherePrivate()
     : operation(QDjangoWhere::None)
     , combine(NoCombine)
     , negate(false)
 {
 }
+
+/// \endcond
 
 /** Constructs an empty QDjangoWhere, which expresses no constraint.
  */

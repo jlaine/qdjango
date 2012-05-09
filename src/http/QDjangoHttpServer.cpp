@@ -38,6 +38,8 @@
 // maximum request body size is 10 MB
 #define MAX_BODY_SIZE (10 * 1024 * 1024)
 
+/// \cond
+
 /** Constructs a new HTTP connection.
  */
 QDjangoHttpConnection::QDjangoHttpConnection(QTcpSocket *device, QDjangoHttpServer *server)
@@ -215,8 +217,8 @@ void QDjangoHttpConnection::_q_writeResponse()
     }
 }
 
-/** \internal
- */
+/// \endcond
+
 class QDjangoHttpServerPrivate
 {
 public:

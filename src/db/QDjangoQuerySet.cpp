@@ -25,6 +25,8 @@
 #include "QDjangoQuerySet.h"
 #include "QDjangoWhere_p.h"
 
+/// \cond
+
 QDjangoCompiler::QDjangoCompiler(const QString &modelName, const QSqlDatabase &db)
 {
     driver = db.driver();
@@ -428,3 +430,4 @@ QList<QVariantList> QDjangoQuerySetPrivate::sqlValuesList(const QStringList &fie
     return values;
 }
 
+/// \endcond

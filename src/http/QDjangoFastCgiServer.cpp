@@ -70,17 +70,7 @@ static void qDebug(FCGI_Header *header, const char *dir)
 }
 #endif
 
-class QDjangoFastCgiServerPrivate
-{
-public:
-    QDjangoFastCgiServerPrivate(QDjangoFastCgiServer *qq);
-    QLocalServer *localServer;
-    QTcpServer *tcpServer;
-    QDjangoUrlResolver *urlResolver;
-
-private:
-    QDjangoFastCgiServer *q;
-};
+/// \cond
 
 QDjangoFastCgiConnection::QDjangoFastCgiConnection(QIODevice *device, QDjangoFastCgiServer *server)
     : QObject(server),
@@ -313,6 +303,20 @@ void QDjangoFastCgiConnection::_q_readyRead()
         }
     }
 }
+
+/// \endcond
+
+class QDjangoFastCgiServerPrivate
+{
+public:
+    QDjangoFastCgiServerPrivate(QDjangoFastCgiServer *qq);
+    QLocalServer *localServer;
+    QTcpServer *tcpServer;
+    QDjangoUrlResolver *urlResolver;
+
+private:
+    QDjangoFastCgiServer *q;
+};
 
 QDjangoFastCgiServerPrivate::QDjangoFastCgiServerPrivate(QDjangoFastCgiServer *qq)
     : localServer(0),
