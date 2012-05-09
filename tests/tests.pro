@@ -1,5 +1,6 @@
 include(../qdjango.pri)
 
+QT -= gui
 QT += script sql network testlib
 
 TARGET = qdjango-tests
