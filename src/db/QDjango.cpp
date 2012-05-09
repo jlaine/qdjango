@@ -35,6 +35,8 @@ QMap<QString, QDjangoMetaModel> globalMetaModels = QMap<QString, QDjangoMetaMode
 static QDjangoDatabase *globalDatabase = 0;
 static bool globalDebugEnabled = false;
 
+/// \cond
+
 QDjangoDatabase::QDjangoDatabase(QObject *parent)
     : QObject(parent), connectionId(0)
 {
@@ -105,6 +107,8 @@ bool QDjangoQuery::exec(const QString &query)
     }
     return true;
 }
+
+/// \endcond
 
 /*! \mainpage
  *
