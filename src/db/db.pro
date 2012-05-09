@@ -18,6 +18,7 @@ HEADERS += \
     QDjangoWhere.h
 SOURCES += \
     QDjango.cpp \
+    QDjangoMetaModel.cpp \
     QDjangoModel.cpp \
     QDjangoQuerySet.cpp \
     QDjangoWhere.cpp
