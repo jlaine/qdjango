@@ -559,26 +559,16 @@ bool QDjangoMetaModel::remove(QObject *model) const
 */
 bool QDjangoMetaModel::save(QObject *model) const
 {
-    QSqlDatabase db = QDjango::database();
-    QSqlDriver *driver = db.driver();
-
     // find primary key
-    QDjangoMetaField primaryKey;
-    foreach (const QDjangoMetaField &field, d->localFields) {
-        if (field.d->name == d->primaryKey) {
-            primaryKey = field;
-            break;
-        }
-    }
-
-    const QString quotedTable = db.driver()->escapeIdentifier(d->table, QSqlDriver::TableName);
+    const QDjangoMetaField primaryKey = localField("pk");
     const QVariant pk = model->property(d->primaryKey);
     if (!pk.isNull() && !(primaryKey.d->type == QVariant::Int && !pk.toInt()))
     {
+        QSqlDatabase db = QDjango::database();
         QDjangoQuery query(db);
         query.prepare(QString("SELECT 1 AS a FROM %1 WHERE %2 = ?").arg(
-                      quotedTable,
-                      driver->escapeIdentifier(d->primaryKey, QSqlDriver::FieldName)));
+                      db.driver()->escapeIdentifier(d->table, QSqlDriver::FieldName),
+                      db.driver()->escapeIdentifier(primaryKey.column(), QSqlDriver::FieldName)));
         query.addBindValue(pk);
         if (query.exec() && query.next())
         {
@@ -603,40 +593,19 @@ bool QDjangoMetaModel::save(QObject *model) const
     foreach (const QDjangoMetaField &field, d->localFields) {
         if (!field.d->autoIncrement) {
             const QVariant value = model->property(field.d->name);
-            fields.insert(field.column(), field.toDatabase(value));
+            fields.insert(field.name(), field.toDatabase(value));
         }
     }
 
     // perform INSERT
-    QStringList fieldColumns;
-    QStringList fieldHolders;
-    foreach (const QString &name, fields.keys()) {
-        fieldColumns << driver->escapeIdentifier(name, QSqlDriver::FieldName);
-        fieldHolders << "?";
-    }
-
-    QDjangoQuery query(db);
-    query.prepare(QString("INSERT INTO %1 (%2) VALUES(%3)").arg(
-                  quotedTable,
-                  fieldColumns.join(", "), fieldHolders.join(", ")));
-    foreach (const QString &name, fields.keys())
-        query.addBindValue(fields.value(name));
-    const bool ret = query.exec();
+    QVariant insertId;
+    QDjangoQuerySetPrivate qs(model->metaObject()->className());
+    if (!qs.sqlInsert(fields, &insertId))
+        return false;
 
     // fetch autoincrement pk
-    if (primaryKey.d->autoIncrement) {
-        QVariant insertId;
-        if (db.driverName() == "QPSQL") {
-            QDjangoQuery query(db);
-            const QString seqName = driver->escapeIdentifier(d->table + "_" + d->primaryKey + "_seq", QSqlDriver::FieldName);
-            if (!query.exec("SELECT CURRVAL('" + seqName + "')") || !query.next())
-                return false;
-            insertId = query.value(0);
-        } else {
-            insertId = query.lastInsertId();
-        }
+    if (primaryKey.d->autoIncrement)
         model->setProperty(d->primaryKey, insertId);
-    }
-    return ret;
+    return true;
 }
 

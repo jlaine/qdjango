@@ -104,7 +104,7 @@ QString QDjangoCompiler::fromSql()
             .arg(driver->escapeIdentifier(modelRefs[name].second.table(), QSqlDriver::TableName))
             .arg(modelRefs[name].first)
             .arg(modelRefs[name].first)
-            .arg(driver->escapeIdentifier(modelRefs[name].second.primaryKey(), QSqlDriver::FieldName))
+            .arg(driver->escapeIdentifier(modelRefs[name].second.localField("pk").column(), QSqlDriver::FieldName))
             .arg(databaseColumn(name + "_id"));
     }
     return from;
@@ -281,6 +281,45 @@ bool QDjangoQuerySetPrivate::sqlFetch()
         properties.append(props);
     }
     hasResults = true;
+    return true;
+}
+
+bool QDjangoQuerySetPrivate::sqlInsert(const QVariantMap &fields, QVariant *insertId)
+{
+    QSqlDatabase db = QDjango::database();
+    const QDjangoMetaModel metaModel = QDjango::metaModel(m_modelName);
+
+    // perform INSERT
+    QStringList fieldColumns;
+    QStringList fieldHolders;
+    foreach (const QString &name, fields.keys()) {
+        const QDjangoMetaField field = metaModel.localField(name);
+        fieldColumns << db.driver()->escapeIdentifier(field.column(), QSqlDriver::FieldName);
+        fieldHolders << "?";
+    }
+
+    QDjangoQuery query(db);
+    query.prepare(QString("INSERT INTO %1 (%2) VALUES(%3)").arg(
+                  db.driver()->escapeIdentifier(metaModel.table(), QSqlDriver::TableName),
+                  fieldColumns.join(", "), fieldHolders.join(", ")));
+    foreach (const QString &name, fields.keys())
+        query.addBindValue(fields.value(name));
+    if (!query.exec())
+        return false;
+
+    // fetch autoincrement pk
+    if (insertId) {
+        if (db.driverName() == "QPSQL") {
+            QDjangoQuery query(db);
+            const QDjangoMetaField primaryKey = metaModel.localField("pk");
+            const QString seqName = db.driver()->escapeIdentifier(metaModel.table() + "_" + primaryKey.column() + "_seq", QSqlDriver::FieldName);
+            if (!query.exec("SELECT CURRVAL('" + seqName + "')") || !query.next())
+                return false;
+            *insertId = query.value(0);
+        } else {
+            *insertId = query.lastInsertId();
+        }
+    }
     return true;
 }
 

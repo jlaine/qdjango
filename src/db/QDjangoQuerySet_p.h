@@ -68,6 +68,7 @@ public:
     int sqlCount() const;
     bool sqlDelete();
     bool sqlFetch();
+    bool sqlInsert(const QVariantMap &fields, QVariant *insertId = 0);
     bool sqlLoad(QObject *model, int index);
     int sqlUpdate(const QVariantMap &fields);
     QList<QVariantMap> sqlValues(const QStringList &fields);
