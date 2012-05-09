@@ -33,6 +33,7 @@ public:
     QDjangoMetaFieldPrivate();
 
     bool autoIncrement;
+    QString db_column;
     QString foreignModel;
     bool index;
     int maxLength;
@@ -88,7 +89,7 @@ QDjangoMetaField& QDjangoMetaField::operator=(const QDjangoMetaField& other)
 */
 QString QDjangoMetaField::column() const
 {
-    return QString::fromLatin1(d->name);
+    return d->db_column;
 }
 
 /*!
@@ -167,6 +168,7 @@ QDjangoMetaModel::QDjangoMetaModel(const QObject *model)
 
         // parse field options
         bool autoIncrementOption = false;
+        QString dbColumnOption;
         bool dbIndexOption = false;
         bool ignoreFieldOption = false;
         int maxLengthOption = 0;
@@ -183,6 +185,8 @@ QDjangoMetaModel::QDjangoMetaModel(const QObject *model)
                 const QString value = option.value();
                 if (option.key() == "auto_increment")
                     autoIncrementOption = (value.toLower() == "true" || value == "1");
+                else if (option.key() == "db_column")
+                    dbColumnOption = value;
                 else if (option.key() == "db_index")
                     dbIndexOption = (value.toLower() == "true" || value == "1");
                 else if (option.key() == "ignore_field")
@@ -216,6 +220,7 @@ QDjangoMetaModel::QDjangoMetaModel(const QObject *model)
             // it is already registered?
             field.d->type = QVariant::Int;
             field.d->foreignModel = fkModel;
+            field.d->db_column = dbColumnOption.isEmpty() ? QString::fromLatin1(field.d->name) : dbColumnOption;
             field.d->index = true;
             d->localFields << field;
             continue;
@@ -223,9 +228,10 @@ QDjangoMetaModel::QDjangoMetaModel(const QObject *model)
 
         // local field
         QDjangoMetaField field;
-        field.d->index = dbIndexOption;
         field.d->name = meta->property(i).name();
         field.d->type = meta->property(i).type();
+        field.d->db_column = dbColumnOption.isEmpty() ? QString::fromLatin1(field.d->name) : dbColumnOption;
+        field.d->index = dbIndexOption;
         field.d->maxLength = maxLengthOption;
         field.d->null = nullOption;
         if (primaryKeyOption) {
@@ -244,6 +250,7 @@ QDjangoMetaModel::QDjangoMetaModel(const QObject *model)
         QDjangoMetaField field;
         field.d->name = "id";
         field.d->type = QVariant::Int;
+        field.d->db_column = "id";
         field.d->autoIncrement = true;
         field.d->unique = true;
         d->localFields.prepend(field);
