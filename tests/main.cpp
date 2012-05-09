@@ -476,6 +476,44 @@ void tst_QDjangoModel::cleanupTestCase()
     QCOMPARE(QDjango::registerModel<Item>().dropTable(), true);
 }
 
+void tst_QDjangoQuerySetPrivate::initTestCase()
+{
+    metaModel = QDjango::registerModel<Object>();
+    QCOMPARE(metaModel.createTable(), true);
+}
+
+void tst_QDjangoQuerySetPrivate::updateQuery()
+{
+    QVariantMap data;
+    data.insert("foo", 2);
+
+    {
+        QDjangoQuerySetPrivate qs("Object");
+        qs.addFilter(QDjangoWhere("pk", QDjangoWhere::Equals, 1));
+        QDjangoQuery query = qs.updateQuery(data);
+
+        QCOMPARE(query.lastQuery(), QLatin1String("UPDATE \"foo_table\" SET \"foo\" = ? WHERE \"foo_table\".\"id\" = ?"));
+        QCOMPARE(query.boundValues().size(), 2);
+        QCOMPARE(query.boundValue(0), QVariant(2));
+        QCOMPARE(query.boundValue(1), QVariant(1));
+    }
+
+    {
+        QDjangoQuerySetPrivate qs("Object");
+        qs.addFilter(QDjangoWhere("zzz", QDjangoWhere::Equals, 3));
+        QDjangoQuery query = qs.updateQuery(data);
+
+        QCOMPARE(query.lastQuery(), QLatin1String("UPDATE \"foo_table\" SET \"foo\" = ? WHERE \"foo_table\".\"zzz_column\" = ?"));
+        QCOMPARE(query.boundValue(0), QVariant(2));
+        QCOMPARE(query.boundValue(1), QVariant(3));
+    }
+}
+
+void tst_QDjangoQuerySetPrivate::cleanupTestCase()
+{
+    metaModel.dropTable();
+}
+
 /** Test empty where clause.
  */
 void tst_QDjangoWhere::emptyWhere()
@@ -798,6 +836,9 @@ int main(int argc, char *argv[])
 
         tst_QDjangoMetaModel testMetaModel;
         errors += QTest::qExec(&testMetaModel);
+
+        tst_QDjangoQuerySetPrivate testQuerySetPrivate;
+        errors += QTest::qExec(&testQuerySetPrivate);
 
         tst_QDjangoModel testModel;
         errors += QTest::qExec(&testModel);

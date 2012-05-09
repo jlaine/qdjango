@@ -162,6 +162,21 @@ private slots:
     void cleanupTestCase();
 };
 
+/** Test QDjangoQuerySetPrivate class.
+ */
+class tst_QDjangoQuerySetPrivate : public QObject
+{
+    Q_OBJECT
+
+private slots:
+    void initTestCase();
+    void updateQuery();
+    void cleanupTestCase();
+
+private:
+    QDjangoMetaModel metaModel;
+};
+
 /** Test QDjangoWhere class.
  */
 class tst_QDjangoWhere : public QObject

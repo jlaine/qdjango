@@ -347,18 +347,8 @@ bool QDjangoQuerySetPrivate::sqlLoad(QObject *model, int index)
     return true;
 }
 
-int QDjangoQuerySetPrivate::sqlUpdate(const QVariantMap &fields)
+QDjangoQuery QDjangoQuerySetPrivate::updateQuery(const QVariantMap &fields) const
 {
-    // UPDATE on an empty queryset doesn't need a query
-    if (whereClause.isNone() || fields.isEmpty())
-        return 0;
-
-    // FIXME : it is not possible to update entries once a limit has been set
-    // because SQLite does not support limits on UPDATE unless compiled with the
-    // SQLITE_ENABLE_UPDATE_DELETE_LIMIT option
-    if (lowMark || highMark)
-        return -1;
-
     const QDjangoMetaModel metaModel = QDjango::metaModel(m_modelName);
     QSqlDatabase db = QDjango::database();
 
@@ -388,7 +378,23 @@ int QDjangoQuerySetPrivate::sqlUpdate(const QVariantMap &fields)
         query.addBindValue(fields.value(name));
     resolvedWhere.bindValues(query);
 
+    return query;
+}
+
+int QDjangoQuerySetPrivate::sqlUpdate(const QVariantMap &fields)
+{
+    // UPDATE on an empty queryset doesn't need a query
+    if (whereClause.isNone() || fields.isEmpty())
+        return 0;
+
+    // FIXME : it is not possible to update entries once a limit has been set
+    // because SQLite does not support limits on UPDATE unless compiled with the
+    // SQLITE_ENABLE_UPDATE_DELETE_LIMIT option
+    if (lowMark || highMark)
+        return -1;
+
     // execute query
+    QDjangoQuery query(updateQuery(fields));
     if (!query.exec())
         return -1;
 

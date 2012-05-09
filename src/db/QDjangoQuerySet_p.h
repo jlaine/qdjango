@@ -74,6 +74,9 @@ public:
     QList<QVariantMap> sqlValues(const QStringList &fields);
     QList<QVariantList> sqlValuesList(const QStringList &fields);
 
+    // SQL queries
+    QDjangoQuery updateQuery(const QVariantMap &fields) const;
+
     // reference counter
     QAtomicInt counter;
 
