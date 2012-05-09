@@ -285,26 +285,38 @@ void tst_QDjangoMetaModel::options()
     QCOMPARE(metaModel.table(), QLatin1String("foo_table"));
     QCOMPARE(metaModel.primaryKey(), QByteArray("id"));
     QCOMPARE(localFields.size(), 4);
-    QCOMPARE(localFields[0].name, QByteArray("id"));
+    QCOMPARE(localFields[0].name(), QLatin1String("id"));
+    QCOMPARE(localFields[0].column(), QLatin1String("id"));
+#if 0
     QCOMPARE(localFields[0].autoIncrement, true);
     QCOMPARE(localFields[0].maxLength, 0);
     QCOMPARE(localFields[0].index, false);
     QCOMPARE(localFields[0].unique, true);
-    QCOMPARE(localFields[1].name, QByteArray("foo"));
+#endif
+    QCOMPARE(localFields[1].name(), QLatin1String("foo"));
+    QCOMPARE(localFields[1].column(), QLatin1String("foo"));
+#if 0
     QCOMPARE(localFields[1].autoIncrement, false);
     QCOMPARE(localFields[1].index, false);
     QCOMPARE(localFields[1].maxLength, 255);
     QCOMPARE(localFields[1].unique, false);
-    QCOMPARE(localFields[2].name, QByteArray("bar"));
+#endif
+    QCOMPARE(localFields[2].name(), QLatin1String("bar"));
+    QCOMPARE(localFields[2].column(), QLatin1String("bar"));
+#if 0
     QCOMPARE(localFields[2].autoIncrement, false);
     QCOMPARE(localFields[2].index, true);
     QCOMPARE(localFields[2].maxLength, 0);
     QCOMPARE(localFields[2].unique, false);
-    QCOMPARE(localFields[3].name, QByteArray("zoo"));
+#endif
+    QCOMPARE(localFields[3].name(), QLatin1String("zoo"));
+    QCOMPARE(localFields[3].column(), QLatin1String("zoo"));
+#if 0
     QCOMPARE(localFields[3].autoIncrement, false);
     QCOMPARE(localFields[3].index, false);
     QCOMPARE(localFields[3].maxLength, 0);
     QCOMPARE(localFields[3].unique, true);
+#endif
 }
 
 void tst_QDjangoMetaModel::save()

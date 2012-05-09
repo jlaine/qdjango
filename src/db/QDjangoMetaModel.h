@@ -27,6 +27,7 @@
 
 #include "QDjango_p.h"
 
+class QDjangoMetaFieldPrivate;
 class QDjangoMetaModelPrivate;
 
 /** \brief The QDjangoMetaField class holds the database schema for a field.
@@ -37,16 +38,17 @@ class QDJANGO_EXPORT QDjangoMetaField
 {
 public:
     QDjangoMetaField();
+    QDjangoMetaField(const QDjangoMetaField &other);
+    ~QDjangoMetaField();
+    QDjangoMetaField& operator=(const QDjangoMetaField &other);
+
+    QString column() const;
+    QString name() const;
     QVariant toDatabase(const QVariant &value) const;
 
-    QByteArray name;
-    QVariant::Type type;
-    bool autoIncrement;
-    bool index;
-    int maxLength;
-    bool null;
-    bool unique;
-    QString foreignModel;
+private:
+    QSharedDataPointer<QDjangoMetaFieldPrivate> d;
+    friend class QDjangoMetaModel;
 };
 
 /** \brief The QDjangoMetaModel class holds the database schema for a model.

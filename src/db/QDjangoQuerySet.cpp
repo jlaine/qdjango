@@ -79,24 +79,24 @@ QString QDjangoCompiler::databaseColumn(const QString &name)
 
 QStringList QDjangoCompiler::fieldNames(bool recurse, QDjangoMetaModel *metaModel, const QString &modelPath)
 {
-    QStringList fields;
+    QStringList columns;
     if (!metaModel)
         metaModel = &baseModel;
 
     // store reference
     const QString tableName = referenceModel(modelPath, metaModel);
     foreach (const QDjangoMetaField &field, metaModel->localFields())
-        fields << tableName + "." + driver->escapeIdentifier(field.name, QSqlDriver::FieldName);
+        columns << tableName + "." + driver->escapeIdentifier(field.column(), QSqlDriver::FieldName);
     if (!recurse)
-        return fields;
+        return columns;
 
     // recurse for foreign keys
     const QString pathPrefix = modelPath.isEmpty() ? QString() : (modelPath + "__");
     foreach (const QByteArray &fkName, metaModel->foreignFields().keys()) {
         QDjangoMetaModel metaForeign = QDjango::metaModel(metaModel->foreignFields()[fkName]);
-        fields += fieldNames(recurse, &metaForeign, pathPrefix + fkName);
+        columns += fieldNames(recurse, &metaForeign, pathPrefix + fkName);
     }
-    return fields;
+    return columns;
 }
 
 QString QDjangoCompiler::fromSql()
@@ -261,10 +261,10 @@ bool QDjangoQuerySetPrivate::sqlFetch()
     QDjangoWhere resolvedWhere(whereClause);
     compiler.resolve(resolvedWhere);
 
-    const QStringList fields = compiler.fieldNames(selectRelated);
+    const QStringList columns = compiler.fieldNames(selectRelated);
     const QString where = resolvedWhere.sql(db);
     const QString limit = compiler.orderLimitSql(orderBy, lowMark, highMark);
-    QString sql = "SELECT " + fields.join(", ") + " FROM " + compiler.fromSql();
+    QString sql = "SELECT " + columns.join(", ") + " FROM " + compiler.fromSql();
     if (!where.isEmpty())
         sql += " WHERE " + where;
     sql += limit;
@@ -279,7 +279,7 @@ bool QDjangoQuerySetPrivate::sqlFetch()
     // store results
     while (query.next()) {
         QVariantList props;
-        for (int i = 0; i < fields.size(); ++i)
+        for (int i = 0; i < columns.size(); ++i)
             props << query.value(i);
         properties.append(props);
     }
@@ -368,12 +368,12 @@ QList<QVariantMap> QDjangoQuerySetPrivate::sqlValues(const QStringList &fields)
     QMap<QString, int> fieldPos;
     if (fields.isEmpty()) {
         for (int i = 0; i < localFields.size(); ++i)
-            fieldPos.insert(QString::fromAscii(localFields[i].name), i);
+            fieldPos.insert(localFields[i].name(), i);
     } else {
         foreach (const QString &name, fields) {
             int pos = 0;
             foreach (const QDjangoMetaField &field, localFields) {
-                if (field.name == name)
+                if (field.name() == name)
                     break;
                 pos++;
             }
@@ -411,7 +411,7 @@ QList<QVariantList> QDjangoQuerySetPrivate::sqlValuesList(const QStringList &fie
         foreach (const QString &name, fields) {
             int pos = 0;
             foreach (const QDjangoMetaField &field, localFields) {
-                if (field.name == name)
+                if (field.name() == name)
                     break;
                 pos++;
             }
