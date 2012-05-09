@@ -70,11 +70,8 @@ QString QDjangoCompiler::databaseColumn(const QString &name)
         bits.takeFirst();
     }
 
-    QString fieldName = bits.join("__");
-    if (fieldName == QLatin1String("pk"))
-        fieldName = model.primaryKey();
-
-    return modelRef + "." + driver->escapeIdentifier(fieldName, QSqlDriver::FieldName);
+    const QDjangoMetaField field = model.localField(bits.join("__"));
+    return modelRef + "." + driver->escapeIdentifier(field.column(), QSqlDriver::FieldName);
 }
 
 QStringList QDjangoCompiler::fieldNames(bool recurse, QDjangoMetaModel *metaModel, const QString &modelPath)
@@ -316,6 +313,7 @@ int QDjangoQuerySetPrivate::sqlUpdate(const QVariantMap &fields)
     if (lowMark || highMark)
         return -1;
 
+    const QDjangoMetaModel metaModel = QDjango::metaModel(m_modelName);
     QSqlDatabase db = QDjango::database();
 
     // build query
@@ -327,8 +325,10 @@ int QDjangoQuerySetPrivate::sqlUpdate(const QVariantMap &fields)
 
     // add SET
     QStringList fieldAssign;
-    foreach (const QString &name, fields.keys())
-        fieldAssign << db.driver()->escapeIdentifier(name, QSqlDriver::FieldName) + " = ?";
+    foreach (const QString &name, fields.keys()) {
+        const QDjangoMetaField field = metaModel.localField(name);
+        fieldAssign << db.driver()->escapeIdentifier(field.column(), QSqlDriver::FieldName) + " = ?";
+    }
     sql += " SET " + fieldAssign.join(", ");
 
     // add WHERE

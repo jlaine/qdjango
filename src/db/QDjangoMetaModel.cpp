@@ -93,6 +93,14 @@ QString QDjangoMetaField::column() const
 }
 
 /*!
+    Returns true if this is a valid field.
+*/
+bool QDjangoMetaField::isValid() const
+{
+    return !d->name.isEmpty();
+}
+
+/*!
     Returns name of this meta field.
 */
 QString QDjangoMetaField::name() const
@@ -364,9 +372,10 @@ bool QDjangoMetaModel::createTable() const
         if (!field.d->foreignModel.isEmpty())
         {
             const QDjangoMetaModel foreignMeta = QDjango::metaModel(field.d->foreignModel);
+            const QDjangoMetaField foreignField = foreignMeta.localField("pk");
             fieldSql += QString(" REFERENCES %1 (%2)").arg(
                 driver->escapeIdentifier(foreignMeta.d->table, QSqlDriver::TableName),
-                driver->escapeIdentifier(foreignMeta.d->primaryKey, QSqlDriver::FieldName));
+                driver->escapeIdentifier(foreignField.column(), QSqlDriver::FieldName));
         }
         propSql << fieldSql;
     }
@@ -493,6 +502,19 @@ void QDjangoMetaModel::load(QObject *model, const QVariantList &properties, int 
 QMap<QByteArray, QString> QDjangoMetaModel::foreignFields() const
 {
     return d->foreignFields;
+}
+
+/*!
+    Return the local field with the specified \a name.
+*/
+QDjangoMetaField QDjangoMetaModel::localField(const QString &name) const
+{
+    const QString fieldName = (name == "pk") ? d->primaryKey : name;
+    foreach (const QDjangoMetaField &field, d->localFields) {
+        if (field.d->name == fieldName)
+            return field;
+    }
+    return QDjangoMetaField();
 }
 
 /*!

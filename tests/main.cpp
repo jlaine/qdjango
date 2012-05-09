@@ -50,10 +50,11 @@ static QString escapeTable(const QSqlDatabase &db, const QString &name)
 }
 
 Object::Object(QObject *parent)
-    : QObject(parent),
-    m_bar(0),
-    m_wiz(0),
-    m_zoo(0)
+    : QObject(parent)
+    , m_bar(0)
+    , m_wiz(0)
+    , m_zoo(0)
+    , m_zzz(0)
 {
 }
 
@@ -95,6 +96,16 @@ int Object::zoo() const
 void Object::setZoo(int zoo)
 {
     m_zoo = zoo;
+}
+
+int Object::zzz() const
+{
+    return m_zzz;
+}
+
+void Object::setZzz(int zzz)
+{
+    m_zzz = zzz;
 }
 
 Item::Item(QObject *parent)
@@ -284,7 +295,7 @@ void tst_QDjangoMetaModel::options()
     const QList<QDjangoMetaField> localFields = metaModel.localFields();
     QCOMPARE(metaModel.table(), QLatin1String("foo_table"));
     QCOMPARE(metaModel.primaryKey(), QByteArray("id"));
-    QCOMPARE(localFields.size(), 4);
+    QCOMPARE(localFields.size(), 5);
     QCOMPARE(localFields[0].name(), QLatin1String("id"));
     QCOMPARE(localFields[0].column(), QLatin1String("id"));
 #if 0
@@ -317,6 +328,8 @@ void tst_QDjangoMetaModel::options()
     QCOMPARE(localFields[3].maxLength, 0);
     QCOMPARE(localFields[3].unique, true);
 #endif
+    QCOMPARE(localFields[4].name(), QLatin1String("zzz"));
+    QCOMPARE(localFields[4].column(), QLatin1String("zzz_column"));
 }
 
 void tst_QDjangoMetaModel::save()

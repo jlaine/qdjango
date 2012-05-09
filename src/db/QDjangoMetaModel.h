@@ -43,6 +43,7 @@ public:
     QDjangoMetaField& operator=(const QDjangoMetaField &other);
 
     QString column() const;
+    bool isValid() const;
     QString name() const;
     QVariant toDatabase(const QVariant &value) const;
 
@@ -76,6 +77,7 @@ public:
     QObject *foreignKey(const QObject *model, const char *name) const;
     void setForeignKey(QObject *model, const char *name, QObject *value) const;
 
+    QDjangoMetaField localField(const QString &name) const;
     QList<QDjangoMetaField> localFields() const;
     QMap<QByteArray, QString> foreignFields() const;
     QByteArray primaryKey() const;
