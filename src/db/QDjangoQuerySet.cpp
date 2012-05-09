@@ -320,6 +320,13 @@ bool QDjangoQuerySetPrivate::sqlInsert(const QVariantMap &fields, QVariant *inse
             *insertId = query.lastInsertId();
         }
     }
+
+    // invalidate cache
+    if (hasResults) {
+        properties.clear();
+        hasResults = false;
+    }
+
     return true;
 }
 
