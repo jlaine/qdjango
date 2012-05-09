@@ -22,10 +22,11 @@
 
 #include "QDjango.h"
 #include "QDjangoWhere.h"
+#include "QDjangoWhere_p.h"
 
 QDjangoWherePrivate::QDjangoWherePrivate()
     : operation(QDjangoWhere::None)
-    , combine(QDjangoWhere::NoCombine)
+    , combine(NoCombine)
     , negate(false)
 {
 }
@@ -138,7 +139,7 @@ QDjangoWhere QDjangoWhere::operator&&(const QDjangoWhere &other) const
         return *this;
 
     QDjangoWhere result;
-    result.d->combine = AndCombine;
+    result.d->combine = QDjangoWherePrivate::AndCombine;
     result.d->children << *this << other;
     return result;
 }
@@ -156,7 +157,7 @@ QDjangoWhere QDjangoWhere::operator||(const QDjangoWhere &other) const
         return other;
 
     QDjangoWhere result;
-    result.d->combine = OrCombine;
+    result.d->combine = QDjangoWherePrivate::OrCombine;
     result.d->children << *this << other;
     return result;
 }
@@ -209,14 +210,14 @@ void QDjangoWhere::bindValues(QDjangoQuery &query) const
  */
 bool QDjangoWhere::isAll() const
 {
-    return d->combine == NoCombine && d->operation == None && d->negate == false;
+    return d->combine == QDjangoWherePrivate::NoCombine && d->operation == None && d->negate == false;
 }
 
 /** Returns true if the current QDjangoWhere expressed an impossible constraint.
  */
 bool QDjangoWhere::isNone() const
 {
-    return d->combine == NoCombine && d->operation == None && d->negate == true;
+    return d->combine == QDjangoWherePrivate::NoCombine && d->operation == None && d->negate == true;
 }
 
 /** Returns the SQL code corresponding for the current QDjangoWhere.
@@ -257,7 +258,7 @@ QString QDjangoWhere::sql(const QSqlDatabase &db) const
                 return d->key + " " + op + " ?";
         }
         case None:
-            if (d->combine == NoCombine)
+            if (d->combine == QDjangoWherePrivate::NoCombine)
             {
                 return d->negate ? QString("1 != 0") : QString();
             } else {
@@ -271,9 +272,9 @@ QString QDjangoWhere::sql(const QSqlDatabase &db) const
                         bits << QString("(%1)").arg(atom);
                 }
                 QString combined;
-                if (d->combine == AndCombine)
+                if (d->combine == QDjangoWherePrivate::AndCombine)
                     combined = bits.join(" AND ");
-                else if (d->combine == OrCombine)
+                else if (d->combine == QDjangoWherePrivate::OrCombine)
                     combined = bits.join(" OR ");
                 if (d->negate)
                     combined = QString("NOT (%1)").arg(combined);

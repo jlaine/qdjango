@@ -18,8 +18,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef QDJANGO_QUERY_H
-#define QDJANGO_QUERY_H
+#ifndef QDJANGO_WHERE_H
+#define QDJANGO_WHERE_H
 
 #include <QVariant>
 
@@ -88,30 +88,7 @@ public:
 
 private:
     QSharedDataPointer<QDjangoWherePrivate> d;
-    enum Combine
-    {
-        NoCombine,
-        AndCombine,
-        OrCombine,
-    };
-
     friend class QDjangoCompiler;
-    friend class QDjangoQuerySetPrivate;
-    friend class QDjangoWherePrivate;
-};
-
-class QDjangoWherePrivate : public QSharedData
-{
-public:
-    QDjangoWherePrivate();
-
-    QString key;
-    QDjangoWhere::Operation operation;
-    QVariant data;
-
-    QList<QDjangoWhere> children;
-    QDjangoWhere::Combine combine;
-    bool negate;
 };
 
 #endif

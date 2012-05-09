@@ -23,6 +23,7 @@
 
 #include "QDjango.h"
 #include "QDjangoQuerySet.h"
+#include "QDjangoWhere_p.h"
 
 QDjangoCompiler::QDjangoCompiler(const QString &modelName, const QSqlDatabase &db)
 {
