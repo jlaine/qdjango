@@ -59,9 +59,9 @@ signals:
     void requestFinished(QDjangoHttpRequest *request, QDjangoHttpResponse *response);
 
 private slots:
-    void bytesWritten(qint64 bytes);
-    void handleData();
-    void writeResponse();
+    void _q_bytesWritten(qint64 bytes);
+    void _q_readyRead();
+    void _q_writeResponse();
 
 private:
     Q_DISABLE_COPY(QDjangoHttpConnection)

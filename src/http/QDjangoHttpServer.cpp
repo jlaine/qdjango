@@ -53,7 +53,7 @@ QDjangoHttpConnection::QDjangoHttpConnection(QTcpSocket *device, QDjangoHttpServ
 
     m_socket->setParent(this);
     check = connect(m_socket, SIGNAL(bytesWritten(qint64)),
-                    this, SLOT(bytesWritten(qint64)));
+                    this, SLOT(_q_bytesWritten(qint64)));
     Q_ASSERT(check);
 
     check = connect(m_socket, SIGNAL(disconnected()),
@@ -61,7 +61,7 @@ QDjangoHttpConnection::QDjangoHttpConnection(QTcpSocket *device, QDjangoHttpServ
     Q_ASSERT(check);
 
     check = connect(m_socket, SIGNAL(readyRead()),
-                    this, SLOT(handleData()));
+                    this, SLOT(_q_readyRead()));
     Q_ASSERT(check);
 }
 
@@ -82,12 +82,12 @@ QDjangoHttpConnection::~QDjangoHttpConnection()
  *
  * @param bytes
  */
-void QDjangoHttpConnection::bytesWritten(qint64 bytes)
+void QDjangoHttpConnection::_q_bytesWritten(qint64 bytes)
 {
     Q_UNUSED(bytes);
     if (!m_socket->bytesToWrite()) {
         if (!m_pendingJobs.isEmpty()) {
-            writeResponse();
+            _q_writeResponse();
         } else if (m_closeAfterResponse) {
 #ifdef QDJANGO_DEBUG_HTTP
             qDebug("Closing connection");
@@ -100,7 +100,7 @@ void QDjangoHttpConnection::bytesWritten(qint64 bytes)
 
 /** Handle incoming data on the socket.
  */
-void QDjangoHttpConnection::handleData()
+void QDjangoHttpConnection::_q_readyRead()
 {
     QDjangoHttpRequest *request = m_pendingRequest;
     if (!request) {
@@ -183,11 +183,11 @@ void QDjangoHttpConnection::handleData()
     if (!keepAlive)
         m_closeAfterResponse = true;
 
-    connect(response, SIGNAL(ready()), this, SLOT(writeResponse()));
-    writeResponse();
+    connect(response, SIGNAL(ready()), this, SLOT(_q_writeResponse()));
+    _q_writeResponse();
 }
 
-void QDjangoHttpConnection::writeResponse()
+void QDjangoHttpConnection::_q_writeResponse()
 {
     while (!m_pendingJobs.isEmpty() &&
             m_pendingJobs.first().second->isReady()) {
