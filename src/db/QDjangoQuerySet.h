@@ -599,7 +599,7 @@ int QDjangoQuerySet<T>::size()
 }
 
 /** Performs an SQL update query for the specified \a fields and returns the
- *  number of rows affected.
+ *  number of rows affected, or -1 if the update failed.
  */
 template <class T>
 int QDjangoQuerySet<T>::update(const QVariantMap &fields)

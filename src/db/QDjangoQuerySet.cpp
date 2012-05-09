@@ -314,7 +314,7 @@ int QDjangoQuerySetPrivate::sqlUpdate(const QVariantMap &fields)
     // because SQLite does not support limits on UPDATE unless compiled with the
     // SQLITE_ENABLE_UPDATE_DELETE_LIMIT option
     if (lowMark || highMark)
-        return 0;
+        return -1;
 
     QSqlDatabase db = QDjango::database();
 
@@ -344,7 +344,7 @@ int QDjangoQuerySetPrivate::sqlUpdate(const QVariantMap &fields)
 
     // execute query
     if (!query.exec())
-        return 0;
+        return -1;
 
     // invalidate cache
     if (hasResults) {

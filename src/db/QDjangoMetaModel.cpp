@@ -493,7 +493,7 @@ bool QDjangoMetaModel::save(QObject *model) const
             // perform UPDATE
             QDjangoQuerySetPrivate qs(model->metaObject()->className());
             qs.addFilter(QDjangoWhere("pk", QDjangoWhere::Equals, pk));
-            return qs.sqlUpdate(fields) == 1;
+            return qs.sqlUpdate(fields) != -1;
         }
     }
 

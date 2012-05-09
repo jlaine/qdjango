@@ -314,6 +314,10 @@ void tst_QDjangoMetaModel::save()
     obj.setBar(1234);
     QCOMPARE(metaModel.save(&obj), true);
     QCOMPARE(obj.property("id"), QVariant(1));
+
+    // save again
+    QCOMPARE(metaModel.save(&obj), true);
+    QCOMPARE(obj.property("id"), QVariant(1));
 }
 
 void tst_QDjangoMetaModel::cleanupTestCase()
