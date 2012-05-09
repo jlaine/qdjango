@@ -27,6 +27,7 @@
 
 class QDjangoMetaModel;
 class QDjangoQuery;
+class QDjangoWherePrivate;
 
 /** \brief The QDjangoWhere class expresses an SQL constraint.
  *
@@ -71,8 +72,11 @@ public:
     };
 
     QDjangoWhere();
+    QDjangoWhere(const QDjangoWhere &other);
     QDjangoWhere(const QString &key, QDjangoWhere::Operation operation, QVariant value);
+    ~QDjangoWhere();
 
+    QDjangoWhere& operator=(const QDjangoWhere &other);
     QDjangoWhere operator!() const;
     QDjangoWhere operator&&(const QDjangoWhere &other) const;
     QDjangoWhere operator||(const QDjangoWhere &other) const;
@@ -83,6 +87,7 @@ public:
     QString sql(const QSqlDatabase &db) const;
 
 private:
+    QSharedDataPointer<QDjangoWherePrivate> d;
     enum Combine
     {
         NoCombine,
@@ -90,16 +95,23 @@ private:
         OrCombine,
     };
 
-    QString m_key;
-    QDjangoWhere::Operation m_operation;
-    QVariant m_data;
-
-    QList<QDjangoWhere> m_children;
-    QDjangoWhere::Combine m_combine;
-    bool m_negate;
-
     friend class QDjangoCompiler;
     friend class QDjangoQuerySetPrivate;
+    friend class QDjangoWherePrivate;
+};
+
+class QDjangoWherePrivate : public QSharedData
+{
+public:
+    QDjangoWherePrivate();
+
+    QString key;
+    QDjangoWhere::Operation operation;
+    QVariant data;
+
+    QList<QDjangoWhere> children;
+    QDjangoWhere::Combine combine;
+    bool negate;
 };
 
 #endif

@@ -146,12 +146,12 @@ QString QDjangoCompiler::orderLimitSql(const QStringList orderBy, int lowMark, i
 void QDjangoCompiler::resolve(QDjangoWhere &where)
 {
     // resolve column
-    if (where.m_operation != QDjangoWhere::None)
-        where.m_key = databaseColumn(where.m_key);
+    if (where.d->operation != QDjangoWhere::None)
+        where.d->key = databaseColumn(where.d->key);
 
     // recurse into children
-    for (int i = 0; i < where.m_children.size(); i++)
-        resolve(where.m_children[i]);
+    for (int i = 0; i < where.d->children.size(); i++)
+        resolve(where.d->children[i]);
 }
 
 QDjangoQuerySetPrivate::QDjangoQuerySetPrivate(const QString &modelName)

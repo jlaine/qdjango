@@ -23,13 +23,24 @@
 #include "QDjango.h"
 #include "QDjangoWhere.h"
 
+QDjangoWherePrivate::QDjangoWherePrivate()
+    : operation(QDjangoWhere::None)
+    , combine(QDjangoWhere::NoCombine)
+    , negate(false)
+{
+}
 
 /** Constructs an empty QDjangoWhere, which expresses no constraint.
  */
 QDjangoWhere::QDjangoWhere()
-    : m_operation(None)
-    , m_combine(NoCombine)
-    , m_negate(false)
+{
+    d = new QDjangoWherePrivate;
+}
+
+/** Constructs a copy of \a other.
+ */
+QDjangoWhere::QDjangoWhere(const QDjangoWhere &other)
+    : d(other.d)
 {
 }
 
@@ -40,12 +51,25 @@ QDjangoWhere::QDjangoWhere()
  * \param value
  */
 QDjangoWhere::QDjangoWhere(const QString &key, QDjangoWhere::Operation operation, QVariant value)
-    : m_key(key)
-    , m_operation(operation)
-    , m_data(value)
-    , m_combine(NoCombine)
-    , m_negate(false)
 {
+    d = new QDjangoWherePrivate;
+    d->key = key;
+    d->operation = operation;
+    d->data = value;
+}
+
+/** Destroys a QDjangoWhere.
+ */
+QDjangoWhere::~QDjangoWhere()
+{
+}
+
+/** Assigns \a other to this QDjangoWhere.
+ */
+QDjangoWhere& QDjangoWhere::operator=(const QDjangoWhere& other)
+{
+    d = other.d;
+    return *this;
 }
 
 /** Negates the current QDjangoWhere.
@@ -53,61 +77,49 @@ QDjangoWhere::QDjangoWhere(const QString &key, QDjangoWhere::Operation operation
 QDjangoWhere QDjangoWhere::operator!() const
 {
     QDjangoWhere result;
-    result.m_key = m_key;
-    result.m_data = m_data;
-    result.m_combine = m_combine;
-    result.m_negate = !m_negate;
-    if (m_children.isEmpty())
+    result.d = d;
+    if (d->children.isEmpty())
     {
-        switch (m_operation)
+        switch (d->operation)
         {
         case None:
         case IsIn:
         case StartsWith:
         case EndsWith:
         case Contains:
-            result.m_operation = m_operation;
+            result.d->negate = !d->negate;
             break;
         case IsNull:
             // simplify !(is null) to is not null
-            result.m_operation = m_operation;
-            result.m_negate = m_negate;
-            result.m_data = !m_data.toBool();
+            result.d->data = !d->data.toBool();
             break;
         case Equals:
             // simplify !(a = b) to a != b
-            result.m_operation = NotEquals;
-            result.m_negate = m_negate;
+            result.d->operation = NotEquals;
             break;
         case NotEquals:
             // simplify !(a != b) to a = b
-            result.m_operation = Equals;
-            result.m_negate = m_negate;
+            result.d->operation = Equals;
             break;
         case GreaterThan:
             // simplify !(a > b) to a <= b
-            result.m_operation = LessOrEquals;
-            result.m_negate = m_negate;
+            result.d->operation = LessOrEquals;
             break;
         case LessThan:
             // simplify !(a < b) to a >= b
-            result.m_operation = GreaterOrEquals;
-            result.m_negate = m_negate;
+            result.d->operation = GreaterOrEquals;
             break;
         case GreaterOrEquals:
             // simplify !(a >= b) to a < b
-            result.m_operation = LessThan;
-            result.m_negate = m_negate;
+            result.d->operation = LessThan;
             break;
         case LessOrEquals:
             // simplify !(a <= b) to a > b
-            result.m_operation = GreaterThan;
-            result.m_negate = m_negate;
+            result.d->operation = GreaterThan;
             break;
         }
     } else {
-        result.m_children = m_children;
-        result.m_operation = m_operation;
+        result.d->negate = !d->negate;
     }
     
     return result;
@@ -126,8 +138,8 @@ QDjangoWhere QDjangoWhere::operator&&(const QDjangoWhere &other) const
         return *this;
 
     QDjangoWhere result;
-    result.m_combine = AndCombine;
-    result.m_children << *this << other;
+    result.d->combine = AndCombine;
+    result.d->children << *this << other;
     return result;
 }
 
@@ -144,8 +156,8 @@ QDjangoWhere QDjangoWhere::operator||(const QDjangoWhere &other) const
         return other;
 
     QDjangoWhere result;
-    result.m_combine = OrCombine;
-    result.m_children << *this << other;
+    result.d->combine = OrCombine;
+    result.d->children << *this << other;
     return result;
 }
 
@@ -155,41 +167,41 @@ QDjangoWhere QDjangoWhere::operator||(const QDjangoWhere &other) const
  */
 void QDjangoWhere::bindValues(QDjangoQuery &query) const
 {
-    if (m_operation == QDjangoWhere::IsIn)
+    if (d->operation == QDjangoWhere::IsIn)
     {
-        const QList<QVariant> values = m_data.toList();
+        const QList<QVariant> values = d->data.toList();
         for (int i = 0; i < values.size(); i++)
             query.addBindValue(values[i]);
     }
-    else if (m_operation == QDjangoWhere::IsNull)
+    else if (d->operation == QDjangoWhere::IsNull)
     {
         // no data to bind
     }
-    else if (m_operation == QDjangoWhere::StartsWith)
+    else if (d->operation == QDjangoWhere::StartsWith)
     {
-        QString escaped = m_data.toString();
+        QString escaped = d->data.toString();
         escaped.replace("%", "\\%");
         escaped.replace("_", "\\_");
         query.addBindValue(escaped + "%");
     }
-    else if (m_operation == QDjangoWhere::EndsWith)
+    else if (d->operation == QDjangoWhere::EndsWith)
     {
-        QString escaped = m_data.toString();
+        QString escaped = d->data.toString();
         escaped.replace("%", "\\%");
         escaped.replace("_", "\\_");
         query.addBindValue("%" + escaped);
     }
-    else if (m_operation == QDjangoWhere::Contains)
+    else if (d->operation == QDjangoWhere::Contains)
     {
-        QString escaped = m_data.toString();
+        QString escaped = d->data.toString();
         escaped.replace("%", "\\%");
         escaped.replace("_", "\\_");
         query.addBindValue("%" + escaped + "%");
     }
-    else if (m_operation != QDjangoWhere::None)
-        query.addBindValue(m_data);
+    else if (d->operation != QDjangoWhere::None)
+        query.addBindValue(d->data);
     else
-        foreach (const QDjangoWhere &child, m_children)
+        foreach (const QDjangoWhere &child, d->children)
             child.bindValues(query);
 }
 
@@ -197,73 +209,73 @@ void QDjangoWhere::bindValues(QDjangoQuery &query) const
  */
 bool QDjangoWhere::isAll() const
 {
-    return m_combine == NoCombine && m_operation == None && m_negate == false;
+    return d->combine == NoCombine && d->operation == None && d->negate == false;
 }
 
 /** Returns true if the current QDjangoWhere expressed an impossible constraint.
  */
 bool QDjangoWhere::isNone() const
 {
-    return m_combine == NoCombine && m_operation == None && m_negate == true;
+    return d->combine == NoCombine && d->operation == None && d->negate == true;
 }
 
 /** Returns the SQL code corresponding for the current QDjangoWhere.
  */
 QString QDjangoWhere::sql(const QSqlDatabase &db) const
 {
-    switch (m_operation)
+    switch (d->operation)
     {
         case Equals:
-            return m_key + " = ?";
+            return d->key + " = ?";
         case NotEquals:
-            return m_key + " != ?";
+            return d->key + " != ?";
         case GreaterThan:
-            return m_key + " > ?";
+            return d->key + " > ?";
         case LessThan:
-            return m_key + " < ?";
+            return d->key + " < ?";
         case GreaterOrEquals:
-            return m_key + " >= ?";
+            return d->key + " >= ?";
         case LessOrEquals:
-            return m_key + " <= ?";
+            return d->key + " <= ?";
         case IsIn:
         {
             QStringList bits;
-            for (int i = 0; i < m_data.toList().size(); i++)
+            for (int i = 0; i < d->data.toList().size(); i++)
                 bits << "?";
-            return m_key + (m_negate ? " NOT IN " : " IN ") + "(" + bits.join(", ") + ")";
+            return d->key + (d->negate ? " NOT IN " : " IN ") + "(" + bits.join(", ") + ")";
         }
         case IsNull:
-            return m_key + (m_data.toBool() ? " IS NULL" : " IS NOT NULL");
+            return d->key + (d->data.toBool() ? " IS NULL" : " IS NOT NULL");
         case StartsWith:
         case EndsWith:
         case Contains:
         {
-            const QString op = m_negate ? "NOT LIKE" : "LIKE";
+            const QString op = d->negate ? "NOT LIKE" : "LIKE";
             if (db.driverName() == "QSQLITE" || db.driverName() == "QSQLITE2")
-                return m_key + " " + op + " ? ESCAPE '\\'";
+                return d->key + " " + op + " ? ESCAPE '\\'";
             else
-                return m_key + " " + op + " ?";
+                return d->key + " " + op + " ?";
         }
         case None:
-            if (m_combine == NoCombine)
+            if (d->combine == NoCombine)
             {
-                return m_negate ? QString("1 != 0") : QString();
+                return d->negate ? QString("1 != 0") : QString();
             } else {
                 QStringList bits;
-                foreach (const QDjangoWhere &child, m_children)
+                foreach (const QDjangoWhere &child, d->children)
                 {
                     QString atom = child.sql(db);
-                    if (child.m_children.isEmpty())
+                    if (child.d->children.isEmpty())
                         bits << atom;
                     else
                         bits << QString("(%1)").arg(atom);
                 }
                 QString combined;
-                if (m_combine == AndCombine)
+                if (d->combine == AndCombine)
                     combined = bits.join(" AND ");
-                else if (m_combine == OrCombine)
+                else if (d->combine == OrCombine)
                     combined = bits.join(" OR ");
-                if (m_negate)
+                if (d->negate)
                     combined = QString("NOT (%1)").arg(combined);
                 return combined;
             }
