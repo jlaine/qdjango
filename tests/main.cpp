@@ -290,6 +290,35 @@ void tst_QDjangoMetaModel::initTestCase()
     QCOMPARE(metaModel.createTable(), true);
 }
 
+void tst_QDjangoMetaModel::localField_data()
+{
+    QTest::addColumn<QString>("lookup");
+    QTest::addColumn<bool>("isValid");
+    QTest::addColumn<QString>("name");
+    QTest::addColumn<QString>("column");
+
+    QTest::newRow("pk") << "pk" << true << "id" << "id";
+    QTest::newRow("id") << "id" << true << "id" << "id";
+    QTest::newRow("foo") << "foo" << true << "foo" << "foo";
+    QTest::newRow("bar") << "bar" << true << "bar" << "bar";
+    QTest::newRow("zoo") << "zoo" << true << "zoo" << "zoo";
+    QTest::newRow("zzz") << "zzz" << true << "zzz" << "zzz_column";
+    QTest::newRow("unknown") << "unknown" << false << "" << "";
+}
+
+void tst_QDjangoMetaModel::localField()
+{
+    QFETCH(QString, lookup);
+    QFETCH(bool, isValid);
+    QFETCH(QString, name);
+    QFETCH(QString, column);
+
+    QDjangoMetaField field = metaModel.localField(lookup);
+    QCOMPARE(field.isValid(), isValid);
+    QCOMPARE(field.name(), name);
+    QCOMPARE(field.column(), column);
+}
+
 void tst_QDjangoMetaModel::options()
 {
     const QList<QDjangoMetaField> localFields = metaModel.localFields();

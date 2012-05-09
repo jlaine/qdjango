@@ -138,6 +138,8 @@ class tst_QDjangoMetaModel : public QObject
 
 private slots:
     void initTestCase();
+    void localField_data();
+    void localField();
     void options();
     void save();
     void cleanupTestCase();
