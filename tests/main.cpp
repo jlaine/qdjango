@@ -49,6 +49,17 @@ static QString escapeTable(const QSqlDatabase &db, const QString &name)
     return db.driver()->escapeIdentifier(name, QSqlDriver::TableName);
 }
 
+QString normalizeSql(const QSqlDatabase &db, const QString &sql)
+{
+    const QString driverName = db.driverName();
+    QString modSql(sql);
+    if (driverName == "QMYSQL")
+        modSql.replace("`", "\"");
+    else if (driverName == "QSQLITE" || driverName == "QSQLITE2")
+        modSql.replace("LIKE ? ESCAPE '\\'", "LIKE ?");
+    return modSql;
+}
+
 Object::Object(QObject *parent)
     : QObject(parent)
     , m_bar(0)
@@ -488,7 +499,7 @@ void tst_QDjangoQuerySetPrivate::deleteQuery()
     qs.addFilter(QDjangoWhere("pk", QDjangoWhere::Equals, 1));
     QDjangoQuery query = qs.deleteQuery();
 
-    QCOMPARE(query.lastQuery(), QLatin1String("DELETE FROM \"foo_table\" WHERE \"foo_table\".\"id\" = ?"));
+    QCOMPARE(normalizeSql(QDjango::database(), query.lastQuery()), QLatin1String("DELETE FROM \"foo_table\" WHERE \"foo_table\".\"id\" = ?"));
     QCOMPARE(query.boundValues().size(), 1);
     QCOMPARE(query.boundValue(0), QVariant(1));
 }
@@ -501,7 +512,7 @@ void tst_QDjangoQuerySetPrivate::insertQuery()
     QDjangoQuerySetPrivate qs("Object");
     QDjangoQuery query = qs.insertQuery(data);
 
-    QCOMPARE(query.lastQuery(), QLatin1String("INSERT INTO \"foo_table\" (\"foo\") VALUES(?)"));
+    QCOMPARE(normalizeSql(QDjango::database(), query.lastQuery()), QLatin1String("INSERT INTO \"foo_table\" (\"foo\") VALUES(?)"));
     QCOMPARE(query.boundValues().size(), 1);
     QCOMPARE(query.boundValue(0), QVariant(2));
 }
@@ -516,7 +527,7 @@ void tst_QDjangoQuerySetPrivate::updateQuery()
         qs.addFilter(QDjangoWhere("pk", QDjangoWhere::Equals, 1));
         QDjangoQuery query = qs.updateQuery(data);
 
-        QCOMPARE(query.lastQuery(), QLatin1String("UPDATE \"foo_table\" SET \"foo\" = ? WHERE \"foo_table\".\"id\" = ?"));
+        QCOMPARE(normalizeSql(QDjango::database(), query.lastQuery()), QLatin1String("UPDATE \"foo_table\" SET \"foo\" = ? WHERE \"foo_table\".\"id\" = ?"));
         QCOMPARE(query.boundValues().size(), 2);
         QCOMPARE(query.boundValue(0), QVariant(2));
         QCOMPARE(query.boundValue(1), QVariant(1));
@@ -527,7 +538,7 @@ void tst_QDjangoQuerySetPrivate::updateQuery()
         qs.addFilter(QDjangoWhere("zzz", QDjangoWhere::Equals, 3));
         QDjangoQuery query = qs.updateQuery(data);
 
-        QCOMPARE(query.lastQuery(), QLatin1String("UPDATE \"foo_table\" SET \"foo\" = ? WHERE \"foo_table\".\"zzz_column\" = ?"));
+        QCOMPARE(normalizeSql(QDjango::database(), query.lastQuery()), QLatin1String("UPDATE \"foo_table\" SET \"foo\" = ? WHERE \"foo_table\".\"zzz_column\" = ?"));
         QCOMPARE(query.boundValue(0), QVariant(2));
         QCOMPARE(query.boundValue(1), QVariant(3));
     }

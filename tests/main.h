@@ -23,17 +23,15 @@
 
 #include <QObject>
 
+QString normalizeSql(const QSqlDatabase &db, const QString &sql);
+
 #define CHECKWHERE(_where, s, v) { \
     QSqlDatabase _sql_db(QDjango::database()); \
     QDjangoQuery _sql_query(_sql_db); \
-    QString _sql_string = _where.sql(_sql_db); \
-    if (_sql_db.driverName() == "QMYSQL") \
-        _sql_string = _sql_string.replace("`", "\""); \
-    else if (_sql_db.driverName() == "QSQLITE" || _sql_db.driverName() == "QSQLITE2") \
-        _sql_string = _sql_string.replace("LIKE ? ESCAPE '\\'", "LIKE ?"); \
-    const QVariantList _sql_values = v; \
+    _sql_query.prepare(_where.sql(_sql_db)); \
     _where.bindValues(_sql_query); \
-    QCOMPARE(_sql_string, s); \
+    const QVariantList _sql_values = v; \
+    QCOMPARE(normalizeSql(_sql_db, _sql_query.lastQuery()), s); \
     QCOMPARE(_sql_query.boundValues().size(), _sql_values.size()); \
     for(int _i = 0; _i < _sql_values.size(); ++_i) QCOMPARE(_sql_query.boundValue(_i), _sql_values[_i]); \
     }
