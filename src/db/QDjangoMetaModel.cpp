@@ -227,6 +227,7 @@ QDjangoMetaModel::QDjangoMetaModel(const QObject *model)
             field.d->foreignModel = fkModel;
             field.d->db_column = dbColumnOption.isEmpty() ? QString::fromLatin1(field.d->name) : dbColumnOption;
             field.d->index = true;
+            field.d->null = nullOption;
             d->localFields << field;
             continue;
         }
