@@ -1,0 +1,6 @@
+QDjango 0.2.6 (UNRELEASED)
+ * Store 0 integer foreign keys as NULL if field has null option.
+
+QDjango 0.2.5 (2012-05-16)
+ * Build a shared library by default.
+
