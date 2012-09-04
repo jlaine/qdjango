@@ -202,8 +202,13 @@ void QDjangoHttpConnection::_q_writeResponse()
         response->setHeader("Connection", m_closeAfterResponse ? "close" : "keep-alive");
 
         /* Send response */
-        m_socket->write(response->d->header.toString().toUtf8());
-        m_socket->write(response->d->body);
+        QString httpHeader = QString("HTTP/1.1 %1 %2\r\n").arg(response->d->statusCode).arg(response->d->reasonPhrase);
+        QList<QPair<QString, QString> >::ConstIterator it = response->d->headers.constBegin();
+        while (it != response->d->headers.constEnd()) {
+            httpHeader += (*it).first + QLatin1String(": ") + (*it).second + QLatin1String("\r\n");
+            ++it;
+        }
+        m_socket->write(httpHeader.toUtf8() + "\r\n" + response->d->body);
 
         /* Emit signal */
         emit requestFinished(request, response);

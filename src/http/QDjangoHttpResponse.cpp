@@ -59,7 +59,14 @@ void QDjangoHttpResponse::setBody(const QByteArray &body)
  */
 QString QDjangoHttpResponse::header(const QString &key) const
 {
-    return d->header.value(key);
+    QString lowercaseKey = key.toLower();
+    QList<QPair<QString, QString> >::ConstIterator it = d->headers.constBegin();
+    while (it != d->headers.constEnd()) {
+        if ((*it).first.toLower() == lowercaseKey)
+            return (*it).second;
+        ++it;
+    }
+    return QString();
 }
 
 /** Sets the specified HTTP response header.
@@ -69,7 +76,17 @@ QString QDjangoHttpResponse::header(const QString &key) const
  */
 void QDjangoHttpResponse::setHeader(const QString &key, const QString &value)
 {
-    d->header.setValue(key, value);
+    QString lowercaseKey = key.toLower();
+    QList<QPair<QString, QString> >::Iterator it = d->headers.begin();
+    while (it != d->headers.end()) {
+        if ((*it).first.toLower() == lowercaseKey) {
+            (*it).second = value;
+            return;
+        }
+        ++it;
+    }
+    // not found so add
+    d->headers.append(qMakePair(key, value));
 }
 
 /** Returns true if the response is ready to be sent.
@@ -88,7 +105,7 @@ bool QDjangoHttpResponse::isReady() const
  */
 int QDjangoHttpResponse::statusCode() const
 {
-    return d->header.statusCode();
+    return d->statusCode;
 }
 
 /** Sets the code for the HTTP response status line.
@@ -97,40 +114,41 @@ int QDjangoHttpResponse::statusCode() const
  */
 void QDjangoHttpResponse::setStatusCode(int code)
 {
+    d->statusCode = code;
     switch(code)
     {
     case OK:
-        d->header.setStatusLine(code, "OK");
+        d->reasonPhrase = "OK";
         break;
     case MovedPermanently:
-        d->header.setStatusLine(code, "Moved Permanently");
+        d->reasonPhrase = "Moved Permanently";
         break;
     case Found:
-        d->header.setStatusLine(code, "Found");
+        d->reasonPhrase = "Found";
         break;
     case NotModified:
-        d->header.setStatusLine(code, "Not Modified");
+        d->reasonPhrase = "Not Modified";
         break;
     case BadRequest:
-        d->header.setStatusLine(code, "Bad Request");
+        d->reasonPhrase = "Bad Request";
         break;
     case AuthorizationRequired:
-        d->header.setStatusLine(code, "Authorization Required");
+        d->reasonPhrase = "Authorization Required";
         break;
     case Forbidden:
-        d->header.setStatusLine(code, "Forbidden");
+        d->reasonPhrase = "Forbidden";
         break;
     case NotFound:
-        d->header.setStatusLine(code, "Not Found");
+        d->reasonPhrase = "Not Found";
         break;
     case MethodNotAllowed:
-        d->header.setStatusLine(code, "Method Not Allowed");
+        d->reasonPhrase = "Method Not Allowed";
         break;
     case InternalServerError:
-        d->header.setStatusLine(code, "Internal Server Error");
+        d->reasonPhrase = "Internal Server Error";
         break;
     default:
-        d->header.setStatusLine(code);
+        d->reasonPhrase = "";
         break;
     }
 }

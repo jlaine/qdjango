@@ -25,14 +25,17 @@
 // This file is not part of the QDjango API.
 //
 
-#include <QHttpResponseHeader>
+#include <QPair>
+#include <QString>
 
 /** \internal
  */
 class QDjangoHttpResponsePrivate
 {
 public:    
-    QHttpResponseHeader header;
+    int statusCode;
+    QString reasonPhrase;
+    QList<QPair<QString, QString> > headers;
     QByteArray body;
 };
 

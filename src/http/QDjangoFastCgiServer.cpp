@@ -103,16 +103,13 @@ QDjangoFastCgiConnection::~QDjangoFastCgiConnection()
 void QDjangoFastCgiConnection::writeResponse(quint16 requestId, QDjangoHttpResponse *response)
 {
     // serialise HTTP response
-    QByteArray data;
-    QHttpResponseHeader httpHeader = response->d->header;
-    httpHeader.setValue("Status", QString("%1 %2").arg(QString::number(httpHeader.statusCode()), httpHeader.reasonPhrase()));
-    const QList<QPair<QString, QString> > httpHeaderValues = httpHeader.values();
-    QList<QPair<QString, QString> >::ConstIterator it = httpHeaderValues.constBegin();
-    while (it != httpHeaderValues.constEnd()) {
-        data += (*it).first + QLatin1String(": ") + (*it).second + QLatin1String("\r\n");
+    QString httpHeader = QString("Status: %1 %2\r\n").arg(response->d->statusCode).arg(response->d->reasonPhrase);
+    QList<QPair<QString, QString> >::ConstIterator it = response->d->headers.constBegin();
+    while (it != response->d->headers.constEnd()) {
+        httpHeader += (*it).first + QLatin1String(": ") + (*it).second + QLatin1String("\r\n");
         ++it;
     }
-    data += QLatin1String("\r\n") + response->d->body;
+    const QByteArray data = httpHeader.toUtf8() + "\r\n" + response->d->body;
 
     const char *ptr = data.constData();
     FCGI_Header *header = (FCGI_Header*)m_outputBuffer;
