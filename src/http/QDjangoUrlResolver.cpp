@@ -159,8 +159,12 @@ bool QDjangoUrlResolver::set(const QRegExp &path, QObject *receiver, const char 
     QByteArray needle(member);
     needle += '(';
     for (int i = metaObject->methodOffset(); i < metaObject->methodCount(); ++i) {
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+        if (metaObject->method(i).name() == member) {
+#else
         const QByteArray signature = metaObject->method(i).signature();
         if (signature.startsWith(needle)) {
+#endif
 
             // check parameter types
             const QList<QByteArray> ptypes = metaObject->method(i).parameterTypes();
