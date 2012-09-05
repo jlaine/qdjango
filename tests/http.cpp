@@ -99,7 +99,9 @@ void TestHttp::testPost()
     QFETCH(QByteArray, body);
 
     QNetworkAccessManager network;
-    QNetworkReply *reply = network.post(QNetworkRequest(QUrl("http://127.0.0.1:8123" + path)), data);
+    QNetworkRequest req(QUrl("http://127.0.0.1:8123" + path));
+    req.setRawHeader("Content-Type", "application/x-www-form-urlencoded");
+    QNetworkReply *reply = network.post(req, data);
 
     QEventLoop loop;
     QObject::connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
