@@ -17,6 +17,7 @@
 
 #include <QCoreApplication>
 #include <QDateTime>
+#include <QStringList>
 #include <QTcpServer>
 #include <QTcpSocket>
 #include <QUrl>
@@ -105,25 +106,61 @@ void QDjangoHttpConnection::_q_readyRead()
     if (!request) {
         request = new QDjangoHttpRequest;
         m_requestBytesRemaining = 0;
-        m_requestHeaderBuffer.clear();
+        m_requestHeaderLine = 0;
         m_requestHeaderReceived = false;
+        m_requestHeaders.clear();
+        m_requestMajorVersion = 0;
+        m_requestMinorVersion = 0;
+        m_requestPath.clear();
     }
 
     // Read request header
     while (!m_requestHeaderReceived && m_socket->canReadLine()) {
-        const QByteArray line = m_socket->readLine();
-        m_requestHeaderBuffer += line;
-        if (line == "\r\n") {
-            m_requestHeader = QHttpRequestHeader(QString::fromUtf8(m_requestHeaderBuffer));
-            request->d->method = m_requestHeader.method();
-            request->d->path = QUrl(m_requestHeader.path()).path();
-            const int bytes = m_requestHeader.value("Content-Length").toInt();
-            if (bytes < 0 || bytes > MAX_BODY_SIZE) {
+        const QString line = QString::fromUtf8(m_socket->readLine());
+
+        if (!m_requestHeaderLine++) {
+            bool ok = false;
+            QStringList lst = line.simplified().split(QLatin1String(" "));
+            if (lst.count() > 0) {
+                request->d->method = lst[0];
+                if (lst.count() > 1) {
+                    m_requestPath = lst[1];
+                    request->d->path = QUrl(m_requestPath).path();
+                    if (lst.count() > 2) {
+                        QString v = lst[2];
+                        if (v.length() >= 8 && v.left(5) == QLatin1String("HTTP/") &&
+                            v[5].isDigit() && v[6] == QLatin1Char('.') && v[7].isDigit()) {
+                            m_requestMajorVersion = v[5].toLatin1() - '0';
+                            m_requestMinorVersion = v[7].toLatin1() - '0';
+                            ok = true;
+                        }
+                    }
+                }
+            }
+            if (!ok) {
+                qWarning("Invalid HTTP request");
+                m_socket->close();
+                return;
+            }
+        } else if (line != "\r\n") {
+            int i = line.indexOf(QLatin1Char(':'));
+            if (i == -1) {
+                qWarning("Invalid HTTP request header");
+                m_socket->close();
+                return;
+            }
+            const QString key = line.left(i).trimmed();
+            const QString value = line.mid(i + 1).trimmed();
+            m_requestHeaders.append(qMakePair(key, value));
+
+            if (key.toLower() == "content-length") {
+                m_requestBytesRemaining = value.toInt();
+            }
+        } else {
+            if (m_requestBytesRemaining < 0 || m_requestBytesRemaining > MAX_BODY_SIZE) {
                 qWarning("Invalid Content-Length");
                 m_socket->close();
                 return;
-            } else {
-                m_requestBytesRemaining = bytes;
             }
             m_requestHeaderReceived = true;
         }
@@ -151,28 +188,30 @@ void QDjangoHttpConnection::_q_readyRead()
 
     /* Map meta-information */
     QString metaKey;
-    foreach (const QString &key, m_requestHeader.keys()) {
-        if (key == "Content-Length")
+    QList<QPair<QString, QString> >::ConstIterator it = m_requestHeaders.constBegin();
+    while (it != m_requestHeaders.constEnd()) {
+        if (it->first == "Content-Length")
             metaKey = "CONTENT_LENGTH";
-        else if (key == "Content-Type")
+        else if (it->first == "Content-Type")
             metaKey = "CONTENT_TYPE";
         else {
-            metaKey = "HTTP_" + key.toUpper();
+            metaKey = "HTTP_" + it->first.toUpper();
             metaKey.replace('-', '_');
         }
-        request->d->meta.insert(metaKey, m_requestHeader.value(key));
+        request->d->meta.insert(metaKey, it->second);
+        ++it;
     }
-    request->d->meta.insert("QUERY_STRING", QUrl(m_requestHeader.path()).encodedQuery());
+    request->d->meta.insert("QUERY_STRING", QUrl(m_requestPath).encodedQuery());
     request->d->meta.insert("REMOTE_ADDR", m_socket->peerAddress().toString());
     request->d->meta.insert("REQUEST_METHOD", request->method());
     request->d->meta.insert("SERVER_NAME", m_socket->localAddress().toString());
     request->d->meta.insert("SERVER_PORT", QString::number(m_socket->localPort()));
 
     /* Process request */
-    bool keepAlive = m_requestHeader.majorVersion() >= 1 && m_requestHeader.minorVersion() >= 1;
-    if (m_requestHeader.value("Connection").toLower() == QLatin1String("keep-alive"))
+    bool keepAlive = m_requestMajorVersion >= 1 && m_requestMinorVersion >= 1;
+    if (request->d->meta.value("HTTP_CONNECTION").toLower() == QLatin1String("keep-alive"))
         keepAlive = true;
-    else if (m_requestHeader.value("Connection").toLower() == QLatin1String("close"))
+    else if (request->d->meta.value("HTTP_CONNECTION").toLower() == QLatin1String("close"))
         keepAlive = false;
 
     QDjangoHttpResponse *response = m_server->urls()->respond(*request, request->path());

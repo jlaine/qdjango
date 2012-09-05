@@ -25,9 +25,10 @@
 // This file is not part of the QDjango API.
 //
 
-#include <QHttpRequestHeader>
 #include <QObject>
+#include <QList>
 #include <QPair>
+#include <QString>
 
 class QDjangoHttpRequest;
 class QDjangoHttpResponse;
@@ -71,9 +72,12 @@ private:
 
     // request parsing
     qint64 m_requestBytesRemaining;
-    QHttpRequestHeader m_requestHeader;
-    QByteArray m_requestHeaderBuffer;
+    int m_requestHeaderLine;
     bool m_requestHeaderReceived;
+    QList<QPair<QString, QString> > m_requestHeaders;
+    int m_requestMajorVersion;
+    int m_requestMinorVersion;
+    QString m_requestPath;
 };
 
 #endif
