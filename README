@@ -34,4 +34,10 @@ $ cd build
 $ qmake ..
 $ make
 
-See platform specific notes for applicable qmake options.
+You can pass the following arguments to qmake:
+
+  PREFIX=<prefix>                 to change the install prefix
+                                  default:
+                                      unix:  /usr/local on unix
+                                      other: $$[QT_INSTALL_PREFIX]
+  QDJANGO_LIBRARY_TYPE=staticlib  to build a static version of QDjango
