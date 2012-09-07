@@ -1,4 +1,4 @@
-QDjango 0.2.6 (UNRELEASED)
+QDjango 0.2.6 (2012-09-07)
  * Store 0 integer foreign keys as NULL if field has null option.
  * Make it possible to build with Qt5:
    - Stop using deprecated QHttpRequestHeader and QHttpResponseHeader classes.

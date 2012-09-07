@@ -1,5 +1,5 @@
 # Common definitions
-QDJANGO_VERSION=0.2.5
+QDJANGO_VERSION=0.2.6
 
 # Determine library type (shared or staticlib)
 isEmpty(QDJANGO_LIBRARY_TYPE) {
@@ -29,6 +29,8 @@ isEmpty(PREFIX) {
         PREFIX = /usr
     } else:unix {
         PREFIX = /usr/local
+    } else {
+        PREFIX = $$[QT_INSTALL_PREFIX]
     }
 }
 isEmpty(LIBDIR) {
