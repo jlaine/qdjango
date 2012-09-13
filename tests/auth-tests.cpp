@@ -542,7 +542,7 @@ void TestUser::valuesList()
 void TestUser::constIterator()
 {
     loadFixtures();
-    QVERIFY(not QTest::currentTestFailed());
+    QVERIFY(!QTest::currentTestFailed());
 
     const QDjangoQuerySet<User> users = QDjangoQuerySet<User>().orderBy(QStringList("username"));
     const QDjangoQuerySet<User>::ConstIterator first = users.constBegin();
