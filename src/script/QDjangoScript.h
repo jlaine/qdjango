@@ -34,7 +34,7 @@ Q_DECLARE_METATYPE(QDjangoWhere)
  *
  * \ingroup Script
  */
-class QDjangoScript
+class QDJANGO_EXPORT QDjangoScript
 {
 public:
     template <class T>
