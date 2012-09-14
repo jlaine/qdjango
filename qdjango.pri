@@ -3,7 +3,11 @@ QDJANGO_VERSION=0.2.6
 
 # Determine library type (shared or staticlib)
 isEmpty(QDJANGO_LIBRARY_TYPE) {
-    QDJANGO_LIBRARY_TYPE = shared
+    android {
+        QDJANGO_LIBRARY_TYPE = staticlib
+    } else {
+        QDJANGO_LIBRARY_TYPE = shared
+    }
 }
 
 # Libraries for apps which use QDjango
