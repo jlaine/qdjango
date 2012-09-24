@@ -203,7 +203,8 @@ void tst_QDjangoUrlResolver::testRespond()
     QFETCH(int, err);
     QFETCH(QString, body);
 
-    QDjangoHttpResponse *response = urlResolver->respond(QDjangoHttpTestRequest("GET", path), path);
+    QDjangoHttpTestRequest request("GET", path);
+    QDjangoHttpResponse *response = urlResolver->respond(request, path);
     QVERIFY(response);
     QCOMPARE(int(response->statusCode()), err);
 }
