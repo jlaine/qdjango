@@ -297,10 +297,25 @@ QDjangoMetaModel& QDjangoMetaModel::operator=(const QDjangoMetaModel& other)
 */
 bool QDjangoMetaModel::createTable() const
 {
+    QDjangoQuery createQuery(QDjango::database());
+    foreach (const QString &sql, createTableSql()) {
+        if (!createQuery.exec(sql))
+            return false;
+    }
+    return true;
+}
+
+/*!
+    Returns the SQL queries to create the database table for this
+    QDjangoMetaModel.
+*/
+QStringList QDjangoMetaModel::createTableSql() const
+{
     QSqlDatabase db = QDjango::database();
     QSqlDriver *driver = db.driver();
     const QString driverName = db.driverName();
 
+    QStringList queries;
     QStringList propSql;
     const QString quotedTable = db.driver()->escapeIdentifier(d->table, QSqlDriver::TableName);
     foreach (const QDjangoMetaField &field, d->localFields)
@@ -308,43 +323,46 @@ bool QDjangoMetaModel::createTable() const
         QString fieldSql = driver->escapeIdentifier(field.column(), QSqlDriver::FieldName);
         switch (field.d->type) {
         case QVariant::Bool:
-            fieldSql += " BOOLEAN";
+            if (driverName == QLatin1String("QPSQL"))
+                fieldSql += " boolean";
+            else
+                fieldSql += " bool";
             break;
         case QVariant::ByteArray:
             if (driverName == QLatin1String("QPSQL"))
-                fieldSql += " BYTEA";
+                fieldSql += " bytea";
             else {
-                fieldSql += " BLOB";
+                fieldSql += " blob";
                 if (field.d->maxLength > 0)
                     fieldSql += QString("(%1)").arg(field.d->maxLength);
             }
             break;
         case QVariant::Date:
-            fieldSql += " DATE";
+            fieldSql += " date";
             break;
         case QVariant::DateTime:
             if (driverName == QLatin1String("QPSQL"))
-                fieldSql += " TIMESTAMP";
+                fieldSql += " timestamp";
             else
-                fieldSql += " DATETIME";
+                fieldSql += " datetime";
             break;
         case QVariant::Double:
-            fieldSql += " REAL";
+            fieldSql += " real";
             break;
         case QVariant::Int:
-            fieldSql += " INTEGER";
+            fieldSql += " integer";
             break;
         case QVariant::LongLong:
-            fieldSql += " BIGINT";
+            fieldSql += " bigint";
             break;
         case QVariant::String:
             if (field.d->maxLength > 0)
-                fieldSql += QString(" VARCHAR(%1)").arg(field.d->maxLength);
+                fieldSql += QString(" varchar(%1)").arg(field.d->maxLength);
             else
-                fieldSql += " TEXT";
+                fieldSql += " text";
             break;
         case QVariant::Time:
-            fieldSql += " TIME";
+            fieldSql += " time";
             break;
         default:
             qWarning() << "Unhandled type" << field.d->type << "for property" << field.d->name;
@@ -366,7 +384,7 @@ bool QDjangoMetaModel::createTable() const
             else if (driverName == QLatin1String("QMYSQL"))
                 fieldSql += QLatin1String(" AUTO_INCREMENT");
             else if (driverName == QLatin1String("QPSQL"))
-                fieldSql = driver->escapeIdentifier(field.column(), QSqlDriver::FieldName) + " SERIAL PRIMARY KEY";
+                fieldSql = driver->escapeIdentifier(field.column(), QSqlDriver::FieldName) + " serial PRIMARY KEY";
         }
 
         // foreign key
@@ -382,26 +400,23 @@ bool QDjangoMetaModel::createTable() const
     }
 
     // create table
-    QDjangoQuery createQuery(db);
-    if (!createQuery.exec(QString("CREATE TABLE %1 (%2)").arg(
+    queries << QString("CREATE TABLE %1 (%2)").arg(
             quotedTable,
-            propSql.join(", "))))
-        return false;
+            propSql.join(", "));
 
     // create indices
     foreach (const QDjangoMetaField &field, d->localFields) {
         if (field.d->index && !field.d->unique) {
             const QString indexName = d->table + "_" + field.column();
-            if (!createQuery.exec(QString("CREATE INDEX %1 ON %2 (%3)").arg(
+            queries << QString("CREATE INDEX %1 ON %2 (%3)").arg(
                 // FIXME : how should we escape an index name?
                 driver->escapeIdentifier(indexName, QSqlDriver::FieldName),
                 quotedTable,
-                driver->escapeIdentifier(field.column(), QSqlDriver::FieldName))))
-                return false;
+                driver->escapeIdentifier(field.column(), QSqlDriver::FieldName));
         }
     }
 
-    return true;
+    return queries;
 }
 
 /*!

@@ -65,6 +65,7 @@ public:
     QDjangoMetaModel& operator=(const QDjangoMetaModel &other);
 
     bool createTable() const;
+    QStringList createTableSql() const;
     bool dropTable() const;
 
     void load(QObject *model, const QVariantList &props, int &pos) const;
