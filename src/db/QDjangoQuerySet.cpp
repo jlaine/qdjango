@@ -24,7 +24,7 @@
 
 /// \cond
 
-QDjangoCompiler::QDjangoCompiler(const QString &modelName, const QSqlDatabase &db)
+QDjangoCompiler::QDjangoCompiler(const char *modelName, const QSqlDatabase &db)
 {
     driver = db.driver();
     baseModel = QDjango::metaModel(modelName);
@@ -38,7 +38,7 @@ QString QDjangoCompiler::referenceModel(const QString &modelPath, QDjangoMetaMod
     if (modelRefs.contains(modelPath))
         return modelRefs.value(modelPath).first;
 
-    const QString modelRef = "T" + QString::number(modelRefs.size());
+    const QString modelRef = QLatin1String("T") + QString::number(modelRefs.size());
     modelRefs.insert(modelPath, qMakePair(modelRef, *metaModel));
     return modelRef;
 }
@@ -49,7 +49,7 @@ QString QDjangoCompiler::databaseColumn(const QString &name)
     QString modelPath;
     QString modelRef = referenceModel(QString(), &model);
 
-    QStringList bits = name.split("__");
+    QStringList bits = name.split(QLatin1String("__"));
     while (bits.size() > 1) {
         const QByteArray fk = bits.first().toLatin1();
         if (!model.foreignFields().contains(fk))
@@ -59,7 +59,7 @@ QString QDjangoCompiler::databaseColumn(const QString &name)
 
         // store reference
         if (!modelPath.isEmpty())
-            modelPath += "__";
+            modelPath += QLatin1String("__");
         modelPath += bits.first();
         modelRef = referenceModel(modelPath, &foreignModel);
 
@@ -67,8 +67,8 @@ QString QDjangoCompiler::databaseColumn(const QString &name)
         bits.takeFirst();
     }
 
-    const QDjangoMetaField field = model.localField(bits.join("__"));
-    return modelRef + "." + driver->escapeIdentifier(field.column(), QSqlDriver::FieldName);
+    const QDjangoMetaField field = model.localField(bits.join(QLatin1String("__")));
+    return modelRef + QLatin1Char('.') + driver->escapeIdentifier(field.column(), QSqlDriver::FieldName);
 }
 
 QStringList QDjangoCompiler::fieldNames(bool recurse, QDjangoMetaModel *metaModel, const QString &modelPath)
@@ -80,15 +80,15 @@ QStringList QDjangoCompiler::fieldNames(bool recurse, QDjangoMetaModel *metaMode
     // store reference
     const QString tableName = referenceModel(modelPath, metaModel);
     foreach (const QDjangoMetaField &field, metaModel->localFields())
-        columns << tableName + "." + driver->escapeIdentifier(field.column(), QSqlDriver::FieldName);
+        columns << tableName + QLatin1Char('.') + driver->escapeIdentifier(field.column(), QSqlDriver::FieldName);
     if (!recurse)
         return columns;
 
     // recurse for foreign keys
-    const QString pathPrefix = modelPath.isEmpty() ? QString() : (modelPath + "__");
+    const QString pathPrefix = modelPath.isEmpty() ? QString() : (modelPath + QLatin1String("__"));
     foreach (const QByteArray &fkName, metaModel->foreignFields().keys()) {
         QDjangoMetaModel metaForeign = QDjango::metaModel(metaModel->foreignFields()[fkName]);
-        columns += fieldNames(recurse, &metaForeign, pathPrefix + fkName);
+        columns += fieldNames(recurse, &metaForeign, pathPrefix + QString::fromLatin1(fkName));
     }
     return columns;
 }
@@ -97,12 +97,12 @@ QString QDjangoCompiler::fromSql()
 {
     QString from = driver->escapeIdentifier(baseModel.table(), QSqlDriver::TableName);
     foreach (const QString &name, modelRefs.keys()) {
-        from += QString(" INNER JOIN %1 %2 ON %3.%4 = %5")
+        from += QString::fromLatin1(" INNER JOIN %1 %2 ON %3.%4 = %5")
             .arg(driver->escapeIdentifier(modelRefs[name].second.table(), QSqlDriver::TableName))
             .arg(modelRefs[name].first)
             .arg(modelRefs[name].first)
-            .arg(driver->escapeIdentifier(modelRefs[name].second.localField("pk").column(), QSqlDriver::FieldName))
-            .arg(databaseColumn(name + "_id"));
+            .arg(driver->escapeIdentifier(modelRefs[name].second.localField(QLatin1String("pk")).column(), QSqlDriver::FieldName))
+            .arg(databaseColumn(name + QLatin1String("_id")));
     }
     return from;
 }
@@ -115,27 +115,27 @@ QString QDjangoCompiler::orderLimitSql(const QStringList orderBy, int lowMark, i
     QStringList bits;
     QString field;
     foreach (field, orderBy) {
-        QString order = "ASC";
-        if (field.startsWith("-")) {
-            order = "DESC";
+        QString order = QLatin1String("ASC");
+        if (field.startsWith(QLatin1Char('-'))) {
+            order = QLatin1String("DESC");
             field = field.mid(1);
-        } else if (field.startsWith("+")) {
+        } else if (field.startsWith(QLatin1Char('+'))) {
             field = field.mid(1);
         }
-        bits.append(QString("%1 %2").arg(databaseColumn(field), order));
+        bits.append(databaseColumn(field) + QLatin1Char(' ') + order);
     }
     if (!bits.isEmpty())
-        limit += " ORDER BY " + bits.join(", ");
+        limit += QLatin1String(" ORDER BY ") + bits.join(QLatin1String(", "));
 
     // limits
     if (highMark > 0)
-        limit += QString(" LIMIT %1").arg(highMark - lowMark);
+        limit += QLatin1String(" LIMIT ") + QString::number(highMark - lowMark);
     if (lowMark > 0)
     {
         // no-limit is backend specific
         if (highMark <= 0)
             limit += QDjango::noLimitSql();
-        limit += QString(" OFFSET %1").arg(lowMark);
+        limit += QLatin1String(" OFFSET ") + QString::number(lowMark);
     }
     return limit;
 }
@@ -188,9 +188,9 @@ int QDjangoQuerySetPrivate::sqlCount() const
 
     const QString where = resolvedWhere.sql(db);
     const QString limit = compiler.orderLimitSql(QStringList(), lowMark, highMark);
-    QString sql = "SELECT COUNT(*) FROM " + compiler.fromSql();
+    QString sql = QLatin1String("SELECT COUNT(*) FROM ") + compiler.fromSql();
     if (!where.isEmpty())
-        sql += " WHERE " + where;
+        sql += QLatin1String(" WHERE ") + where;
     sql += limit;
     QDjangoQuery query(db);
     query.prepare(sql);
@@ -242,9 +242,9 @@ bool QDjangoQuerySetPrivate::sqlFetch()
     const QStringList columns = compiler.fieldNames(selectRelated);
     const QString where = resolvedWhere.sql(db);
     const QString limit = compiler.orderLimitSql(orderBy, lowMark, highMark);
-    QString sql = "SELECT " + columns.join(", ") + " FROM " + compiler.fromSql();
+    QString sql = QLatin1String("SELECT ") + columns.join(QLatin1String(", ")) + QLatin1String(" FROM ") + compiler.fromSql();
     if (!where.isEmpty())
-        sql += " WHERE " + where;
+        sql += QLatin1String(" WHERE ") + where;
     sql += limit;
     QDjangoQuery query(db);
     query.prepare(sql);
@@ -275,12 +275,12 @@ bool QDjangoQuerySetPrivate::sqlInsert(const QVariantMap &fields, QVariant *inse
     // fetch autoincrement pk
     if (insertId) {
         QSqlDatabase db = QDjango::database();
-        if (db.driverName() == "QPSQL") {
+        if (db.driverName() == QLatin1String("QPSQL")) {
             const QDjangoMetaModel metaModel = QDjango::metaModel(m_modelName);
             QDjangoQuery query(db);
-            const QDjangoMetaField primaryKey = metaModel.localField("pk");
-            const QString seqName = db.driver()->escapeIdentifier(metaModel.table() + "_" + primaryKey.column() + "_seq", QSqlDriver::FieldName);
-            if (!query.exec("SELECT CURRVAL('" + seqName + "')") || !query.next())
+            const QDjangoMetaField primaryKey = metaModel.localField(QLatin1String("pk"));
+            const QString seqName = db.driver()->escapeIdentifier(metaModel.table() + QLatin1Char('_') + primaryKey.column() + QLatin1String("_seq"), QSqlDriver::FieldName);
+            if (!query.exec(QLatin1String("SELECT CURRVAL('") + seqName + QLatin1String("')")) || !query.next())
                 return false;
             *insertId = query.value(0);
         } else {
@@ -325,9 +325,9 @@ QDjangoQuery QDjangoQuerySetPrivate::deleteQuery() const
 
     const QString where = resolvedWhere.sql(db);
     const QString limit = compiler.orderLimitSql(orderBy, lowMark, highMark);
-    QString sql = "DELETE FROM " + compiler.fromSql();
+    QString sql = QLatin1String("DELETE FROM ") + compiler.fromSql();
     if (!where.isEmpty())
-        sql += " WHERE " + where;
+        sql += QLatin1String(" WHERE ") + where;
     sql += limit;
     QDjangoQuery query(db);
     query.prepare(sql);
@@ -347,13 +347,13 @@ QDjangoQuery QDjangoQuerySetPrivate::insertQuery(const QVariantMap &fields) cons
     foreach (const QString &name, fields.keys()) {
         const QDjangoMetaField field = metaModel.localField(name);
         fieldColumns << db.driver()->escapeIdentifier(field.column(), QSqlDriver::FieldName);
-        fieldHolders << "?";
+        fieldHolders << QLatin1String("?");
     }
 
     QDjangoQuery query(db);
-    query.prepare(QString("INSERT INTO %1 (%2) VALUES(%3)").arg(
+    query.prepare(QString::fromLatin1("INSERT INTO %1 (%2) VALUES(%3)").arg(
                   db.driver()->escapeIdentifier(metaModel.table(), QSqlDriver::TableName),
-                  fieldColumns.join(", "), fieldHolders.join(", ")));
+                  fieldColumns.join(QLatin1String(", ")), fieldHolders.join(QLatin1String(", "))));
     foreach (const QString &name, fields.keys())
         query.addBindValue(fields.value(name));
     return query;
@@ -369,20 +369,20 @@ QDjangoQuery QDjangoQuerySetPrivate::updateQuery(const QVariantMap &fields) cons
     QDjangoWhere resolvedWhere(whereClause);
     compiler.resolve(resolvedWhere);
 
-    QString sql = "UPDATE " + compiler.fromSql();
+    QString sql = QLatin1String("UPDATE ") + compiler.fromSql();
 
     // add SET
     QStringList fieldAssign;
     foreach (const QString &name, fields.keys()) {
         const QDjangoMetaField field = metaModel.localField(name);
-        fieldAssign << db.driver()->escapeIdentifier(field.column(), QSqlDriver::FieldName) + " = ?";
+        fieldAssign << db.driver()->escapeIdentifier(field.column(), QSqlDriver::FieldName) + QLatin1String(" = ?");
     }
-    sql += " SET " + fieldAssign.join(", ");
+    sql += QLatin1String(" SET ") + fieldAssign.join(QLatin1String(", "));
 
     // add WHERE
     const QString where = resolvedWhere.sql(db);
     if (!where.isEmpty())
-        sql += " WHERE " + where;
+        sql += QLatin1String(" WHERE ") + where;
 
     QDjangoQuery query(db);
     query.prepare(sql);

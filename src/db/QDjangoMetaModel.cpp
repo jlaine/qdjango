@@ -31,7 +31,7 @@ public:
 
     bool autoIncrement;
     QString db_column;
-    QString foreignModel;
+    QByteArray foreignModel;
     bool index;
     int maxLength;
     QByteArray name;
@@ -143,7 +143,7 @@ class QDjangoMetaModelPrivate : public QSharedData
 {
 public:
     QList<QDjangoMetaField> localFields;
-    QMap<QByteArray, QString> foreignFields;
+    QMap<QByteArray, QByteArray> foreignFields;
     QByteArray primaryKey;
     QString table;
 };
@@ -223,7 +223,7 @@ QDjangoMetaModel::QDjangoMetaModel(const QObject *model)
         // foreign field
         if (typeName.endsWith(QLatin1Char('*'))) {
             const QByteArray fkName = meta->property(i).name();
-            const QString fkModel = typeName.left(typeName.size() - 1);
+            const QByteArray fkModel = typeName.left(typeName.size() - 1).toLatin1();
             d->foreignFields.insert(fkName, fkModel);
 
             QDjangoMetaField field;
@@ -453,12 +453,12 @@ QObject *QDjangoMetaModel::foreignKey(const QObject *model, const char *name) co
         return 0;
 
     // if the foreign object was not loaded yet, do it now
-    const QString foreignClass = d->foreignFields[prop];
+    const QByteArray foreignClass = d->foreignFields[prop];
     const QDjangoMetaModel foreignMeta = QDjango::metaModel(foreignClass);
     const QVariant foreignPk = model->property(prop + "_id");
     if (foreign->property(foreignMeta.primaryKey()) != foreignPk)
     {
-        QDjangoQuerySetPrivate qs(foreignClass.toLatin1());
+        QDjangoQuerySetPrivate qs(foreignClass);
         qs.addFilter(QDjangoWhere(QLatin1String("pk"), QDjangoWhere::Equals, foreignPk));
         qs.sqlFetch();
         if (qs.properties.size() != 1 || !qs.sqlLoad(foreign, 0))
@@ -523,7 +523,7 @@ void QDjangoMetaModel::load(QObject *model, const QVariantList &properties, int 
 /*!
     Returns the foreign field mapping.
 */
-QMap<QByteArray, QString> QDjangoMetaModel::foreignFields() const
+QMap<QByteArray, QByteArray> QDjangoMetaModel::foreignFields() const
 {
     return d->foreignFields;
 }

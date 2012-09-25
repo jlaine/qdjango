@@ -77,7 +77,7 @@ public:
 
     QDjangoMetaField localField(const QString &name) const;
     QList<QDjangoMetaField> localFields() const;
-    QMap<QByteArray, QString> foreignFields() const;
+    QMap<QByteArray, QByteArray> foreignFields() const;
     QByteArray primaryKey() const;
     QString table() const;
 

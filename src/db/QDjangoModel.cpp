@@ -98,6 +98,6 @@ QString QDjangoModel::toString() const
 {
     const QDjangoMetaModel metaModel = QDjango::metaModel(metaObject()->className());
     const QByteArray pkName = metaModel.primaryKey();
-    return QString("%1(%2=%3)").arg(metaObject()->className(), QString::fromLatin1(pkName), property(pkName).toString());
+    return QString::fromLatin1("%1(%2=%3)").arg(QString::fromLatin1(metaObject()->className()), QString::fromLatin1(pkName), property(pkName).toString());
 }
 

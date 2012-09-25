@@ -37,7 +37,7 @@ class QDjangoMetaModel;
 class QDJANGO_EXPORT QDjangoCompiler
 {
 public:
-    QDjangoCompiler(const QString &modelName, const QSqlDatabase &db);
+    QDjangoCompiler(const char *modelName, const QSqlDatabase &db);
     QString fromSql();
     QStringList fieldNames(bool recurse, QDjangoMetaModel *metaModel = 0, const QString &modelPath = QString());
     QString orderLimitSql(const QStringList orderBy, int lowMark, int highMark);
@@ -90,7 +90,7 @@ public:
 private:
     Q_DISABLE_COPY(QDjangoQuerySetPrivate)
 
-    QString m_modelName;
+    QByteArray m_modelName;
 
     friend class QDjangoMetaModel;
 };

@@ -58,7 +58,7 @@ private:
     static QString noLimitSql();
 
     static QDjangoMetaModel registerModel(const QObject *model);
-    static QDjangoMetaModel metaModel(const QString &name);
+    static QDjangoMetaModel metaModel(const char *name);
 
     friend class QDjangoCompiler;
     friend class QDjangoModel;

@@ -28,7 +28,7 @@
 
 static const char *connectionPrefix = "_qdjango_";
 
-QMap<QString, QDjangoMetaModel> globalMetaModels = QMap<QString, QDjangoMetaModel>();
+QMap<QByteArray, QDjangoMetaModel> globalMetaModels = QMap<QByteArray, QDjangoMetaModel>();
 static QDjangoDatabase *globalDatabase = 0;
 static bool globalDebugEnabled = false;
 
@@ -202,7 +202,7 @@ void QDjango::setDebugEnabled(bool enabled)
 bool QDjango::createTables()
 {
     bool ret = true;
-    foreach (const QString &key, globalMetaModels.keys())
+    foreach (const QByteArray &key, globalMetaModels.keys())
         if (!globalMetaModels[key].createTable())
             ret = false;
     return ret;
@@ -214,7 +214,7 @@ bool QDjango::createTables()
 bool QDjango::dropTables()
 {
     bool ret = true;
-    foreach (const QString &key, globalMetaModels.keys())
+    foreach (const QByteArray &key, globalMetaModels.keys())
         if (!globalMetaModels[key].dropTable())
             ret = false;
     return ret;
@@ -223,14 +223,14 @@ bool QDjango::dropTables()
 /*!
     Returns the QDjangoMetaModel with the given \a name.
  */
-QDjangoMetaModel QDjango::metaModel(const QString &name)
+QDjangoMetaModel QDjango::metaModel(const char *name)
 {
     return globalMetaModels.value(name);
 }
 
 QDjangoMetaModel QDjango::registerModel(const QObject *model)
 {
-    const QString name = model->metaObject()->className();
+    const QByteArray name = model->metaObject()->className();
     if (!globalMetaModels.contains(name))
         globalMetaModels.insert(name, QDjangoMetaModel(model));
     return globalMetaModels[name];
