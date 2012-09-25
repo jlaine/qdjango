@@ -380,6 +380,9 @@ QStringList QDjangoMetaModel::createTableSql() const
         if (field.d->autoIncrement) {
             if (driverName == QLatin1String("QSQLITE") ||
                 driverName == QLatin1String("QSQLITE2"))
+                // NOTE: django does not add this option for sqlite, but there
+                // is a ticket asking for it to do so:
+                // https://code.djangoproject.com/ticket/10164
                 fieldSql += QLatin1String(" AUTOINCREMENT");
             else if (driverName == QLatin1String("QMYSQL"))
                 fieldSql += QLatin1String(" AUTO_INCREMENT");
