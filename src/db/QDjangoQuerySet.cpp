@@ -67,7 +67,7 @@ QString QDjangoCompiler::databaseColumn(const QString &name)
         bits.takeFirst();
     }
 
-    const QDjangoMetaField field = model.localField(bits.join(QLatin1String("__")));
+    const QDjangoMetaField field = model.localField(bits.join(QLatin1String("__")).toLatin1());
     return modelRef + QLatin1Char('.') + driver->escapeIdentifier(field.column(), QSqlDriver::FieldName);
 }
 
@@ -101,7 +101,7 @@ QString QDjangoCompiler::fromSql()
             .arg(driver->escapeIdentifier(modelRefs[name].second.table(), QSqlDriver::TableName))
             .arg(modelRefs[name].first)
             .arg(modelRefs[name].first)
-            .arg(driver->escapeIdentifier(modelRefs[name].second.localField(QLatin1String("pk")).column(), QSqlDriver::FieldName))
+            .arg(driver->escapeIdentifier(modelRefs[name].second.localField("pk").column(), QSqlDriver::FieldName))
             .arg(databaseColumn(name + QLatin1String("_id")));
     }
     return from;
@@ -278,7 +278,7 @@ bool QDjangoQuerySetPrivate::sqlInsert(const QVariantMap &fields, QVariant *inse
         if (db.driverName() == QLatin1String("QPSQL")) {
             const QDjangoMetaModel metaModel = QDjango::metaModel(m_modelName);
             QDjangoQuery query(db);
-            const QDjangoMetaField primaryKey = metaModel.localField(QLatin1String("pk"));
+            const QDjangoMetaField primaryKey = metaModel.localField("pk");
             const QString seqName = db.driver()->escapeIdentifier(metaModel.table() + QLatin1Char('_') + primaryKey.column() + QLatin1String("_seq"), QSqlDriver::FieldName);
             if (!query.exec(QLatin1String("SELECT CURRVAL('") + seqName + QLatin1String("')")) || !query.next())
                 return false;
@@ -345,7 +345,7 @@ QDjangoQuery QDjangoQuerySetPrivate::insertQuery(const QVariantMap &fields) cons
     QStringList fieldColumns;
     QStringList fieldHolders;
     foreach (const QString &name, fields.keys()) {
-        const QDjangoMetaField field = metaModel.localField(name);
+        const QDjangoMetaField field = metaModel.localField(name.toLatin1());
         fieldColumns << db.driver()->escapeIdentifier(field.column(), QSqlDriver::FieldName);
         fieldHolders << QLatin1String("?");
     }
@@ -374,7 +374,7 @@ QDjangoQuery QDjangoQuerySetPrivate::updateQuery(const QVariantMap &fields) cons
     // add SET
     QStringList fieldAssign;
     foreach (const QString &name, fields.keys()) {
-        const QDjangoMetaField field = metaModel.localField(name);
+        const QDjangoMetaField field = metaModel.localField(name.toLatin1());
         fieldAssign << db.driver()->escapeIdentifier(field.column(), QSqlDriver::FieldName) + QLatin1String(" = ?");
     }
     sql += QLatin1String(" SET ") + fieldAssign.join(QLatin1String(", "));

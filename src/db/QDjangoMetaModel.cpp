@@ -399,7 +399,7 @@ QStringList QDjangoMetaModel::createTableSql() const
         if (!field.d->foreignModel.isEmpty())
         {
             const QDjangoMetaModel foreignMeta = QDjango::metaModel(field.d->foreignModel);
-            const QDjangoMetaField foreignField = foreignMeta.localField(QLatin1String("pk"));
+            const QDjangoMetaField foreignField = foreignMeta.localField("pk");
             fieldSql += QString::fromLatin1(" REFERENCES %1 (%2)").arg(
                 driver->escapeIdentifier(foreignMeta.d->table, QSqlDriver::TableName),
                 driver->escapeIdentifier(foreignField.column(), QSqlDriver::FieldName));
@@ -531,9 +531,9 @@ QMap<QByteArray, QByteArray> QDjangoMetaModel::foreignFields() const
 /*!
     Return the local field with the specified \a name.
 */
-QDjangoMetaField QDjangoMetaModel::localField(const QString &name) const
+QDjangoMetaField QDjangoMetaModel::localField(const char *name) const
 {
-    const QByteArray fieldName = (name == QLatin1String("pk")) ? d->primaryKey : name.toLatin1();
+    const QByteArray fieldName = strcmp(name, "pk") ? QByteArray(name) : d->primaryKey;
     foreach (const QDjangoMetaField &field, d->localFields) {
         if (field.d->name == fieldName)
             return field;
@@ -584,7 +584,7 @@ bool QDjangoMetaModel::remove(QObject *model) const
 bool QDjangoMetaModel::save(QObject *model) const
 {
     // find primary key
-    const QDjangoMetaField primaryKey = localField(QLatin1String("pk"));
+    const QDjangoMetaField primaryKey = localField("pk");
     const QVariant pk = model->property(d->primaryKey);
     if (!pk.isNull() && !(primaryKey.d->type == QVariant::Int && !pk.toInt()))
     {
