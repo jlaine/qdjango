@@ -47,7 +47,7 @@ QByteArray QDjangoHttpRequest::body() const
 QString QDjangoHttpRequest::get(const QString &key) const
 {
     QUrl url;
-    url.setEncodedQuery(d->meta.value("QUERY_STRING").toLatin1());
+    url.setEncodedQuery(d->meta.value(QLatin1String("QUERY_STRING")).toLatin1());
     return url.queryItemValue(key);
 }
 

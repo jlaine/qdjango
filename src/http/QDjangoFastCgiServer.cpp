@@ -103,7 +103,7 @@ QDjangoFastCgiConnection::~QDjangoFastCgiConnection()
 void QDjangoFastCgiConnection::writeResponse(quint16 requestId, QDjangoHttpResponse *response)
 {
     // serialise HTTP response
-    QString httpHeader = QString("Status: %1 %2\r\n").arg(response->d->statusCode).arg(response->d->reasonPhrase);
+    QString httpHeader = QString::fromLatin1("Status: %1 %2\r\n").arg(response->d->statusCode).arg(response->d->reasonPhrase);
     QList<QPair<QString, QString> >::ConstIterator it = response->d->headers.constBegin();
     while (it != response->d->headers.constEnd()) {
         httpHeader += (*it).first + QLatin1String(": ") + (*it).second + QLatin1String("\r\n");
@@ -260,9 +260,9 @@ void QDjangoFastCgiConnection::_q_readyRead()
                 p += valueLength;
 
                 if (name == "PATH_INFO") {
-                    m_pendingRequest->d->path = value;
+                    m_pendingRequest->d->path = QString::fromUtf8(value);
                 } else if (name == "REQUEST_METHOD") {
-                    m_pendingRequest->d->method = value;
+                    m_pendingRequest->d->method = QString::fromUtf8(value);
                 }
                 m_pendingRequest->d->meta.insert(QString::fromLatin1(name), QString::fromUtf8(value));
             }

@@ -23,7 +23,7 @@
 QDjangoHttpResponse::QDjangoHttpResponse()
     : d(new QDjangoHttpResponsePrivate)
 {
-    setHeader("Content-Length", "0");
+    setHeader(QLatin1String("Content-Length"), QLatin1String("0"));
     setStatusCode(QDjangoHttpResponse::OK);
 }
 
@@ -50,7 +50,7 @@ QByteArray QDjangoHttpResponse::body() const
 void QDjangoHttpResponse::setBody(const QByteArray &body)
 {
     d->body = body;
-    setHeader("Content-Length", QString::number(d->body.size()));
+    setHeader(QLatin1String("Content-Length"), QString::number(d->body.size()));
 }
 
 /** Returns the specified HTTP response header.
@@ -118,37 +118,37 @@ void QDjangoHttpResponse::setStatusCode(int code)
     switch(code)
     {
     case OK:
-        d->reasonPhrase = "OK";
+        d->reasonPhrase = QLatin1String("OK");
         break;
     case MovedPermanently:
-        d->reasonPhrase = "Moved Permanently";
+        d->reasonPhrase = QLatin1String("Moved Permanently");
         break;
     case Found:
-        d->reasonPhrase = "Found";
+        d->reasonPhrase = QLatin1String("Found");
         break;
     case NotModified:
-        d->reasonPhrase = "Not Modified";
+        d->reasonPhrase = QLatin1String("Not Modified");
         break;
     case BadRequest:
-        d->reasonPhrase = "Bad Request";
+        d->reasonPhrase = QLatin1String("Bad Request");
         break;
     case AuthorizationRequired:
-        d->reasonPhrase = "Authorization Required";
+        d->reasonPhrase = QLatin1String("Authorization Required");
         break;
     case Forbidden:
-        d->reasonPhrase = "Forbidden";
+        d->reasonPhrase = QLatin1String("Forbidden");
         break;
     case NotFound:
-        d->reasonPhrase = "Not Found";
+        d->reasonPhrase = QLatin1String("Not Found");
         break;
     case MethodNotAllowed:
-        d->reasonPhrase = "Method Not Allowed";
+        d->reasonPhrase = QLatin1String("Method Not Allowed");
         break;
     case InternalServerError:
-        d->reasonPhrase = "Internal Server Error";
+        d->reasonPhrase = QLatin1String("Internal Server Error");
         break;
     default:
-        d->reasonPhrase = "";
+        d->reasonPhrase = QLatin1String("");
         break;
     }
 }

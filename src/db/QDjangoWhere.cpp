@@ -21,6 +21,14 @@
 #include "QDjangoWhere.h"
 #include "QDjangoWhere_p.h"
 
+static QString escapeLike(const QString &data)
+{
+    QString escaped = data;
+    escaped.replace(QLatin1String("%"), QLatin1String("\\%"));
+    escaped.replace(QLatin1String("_"), QLatin1String("\\_"));
+    return escaped;
+}
+
 /// \cond
 
 QDjangoWherePrivate::QDjangoWherePrivate()
@@ -181,24 +189,15 @@ void QDjangoWhere::bindValues(QDjangoQuery &query) const
     }
     else if (d->operation == QDjangoWhere::StartsWith)
     {
-        QString escaped = d->data.toString();
-        escaped.replace("%", "\\%");
-        escaped.replace("_", "\\_");
-        query.addBindValue(escaped + "%");
+        query.addBindValue(escapeLike(d->data.toString()) + QLatin1String("%"));
     }
     else if (d->operation == QDjangoWhere::EndsWith)
     {
-        QString escaped = d->data.toString();
-        escaped.replace("%", "\\%");
-        escaped.replace("_", "\\_");
-        query.addBindValue("%" + escaped);
+        query.addBindValue(QLatin1String("%") + escapeLike(d->data.toString()));
     }
     else if (d->operation == QDjangoWhere::Contains)
     {
-        QString escaped = d->data.toString();
-        escaped.replace("%", "\\%");
-        escaped.replace("_", "\\_");
-        query.addBindValue("%" + escaped + "%");
+        query.addBindValue(QLatin1String("%") + escapeLike(d->data.toString()) + QLatin1String("%"));
     }
     else if (d->operation != QDjangoWhere::None)
         query.addBindValue(d->data);
@@ -228,40 +227,43 @@ QString QDjangoWhere::sql(const QSqlDatabase &db) const
     switch (d->operation)
     {
         case Equals:
-            return d->key + " = ?";
+            return d->key + QLatin1String(" = ?");
         case NotEquals:
-            return d->key + " != ?";
+            return d->key + QLatin1String(" != ?");
         case GreaterThan:
-            return d->key + " > ?";
+            return d->key + QLatin1String(" > ?");
         case LessThan:
-            return d->key + " < ?";
+            return d->key + QLatin1String(" < ?");
         case GreaterOrEquals:
-            return d->key + " >= ?";
+            return d->key + QLatin1String(" >= ?");
         case LessOrEquals:
-            return d->key + " <= ?";
+            return d->key + QLatin1String(" <= ?");
         case IsIn:
         {
             QStringList bits;
             for (int i = 0; i < d->data.toList().size(); i++)
-                bits << "?";
-            return d->key + (d->negate ? " NOT IN " : " IN ") + "(" + bits.join(", ") + ")";
+                bits << QLatin1String("?");
+            if (d->negate)
+                return d->key + QString::fromLatin1(" NOT IN (%1)").arg(bits.join(QLatin1String(", ")));
+            else
+                return d->key + QString::fromLatin1(" IN (%1)").arg(bits.join(QLatin1String(", ")));
         }
         case IsNull:
-            return d->key + (d->data.toBool() ? " IS NULL" : " IS NOT NULL");
+            return d->key + QLatin1String(d->data.toBool() ? " IS NULL" : " IS NOT NULL");
         case StartsWith:
         case EndsWith:
         case Contains:
         {
-            const QString op = d->negate ? "NOT LIKE" : "LIKE";
-            if (db.driverName() == "QSQLITE" || db.driverName() == "QSQLITE2")
-                return d->key + " " + op + " ? ESCAPE '\\'";
+            const QString op = QLatin1String(d->negate ? "NOT LIKE" : "LIKE");
+            if (db.driverName() == QLatin1String("QSQLITE") || db.driverName() == QLatin1String("QSQLITE2"))
+                return d->key + QLatin1String(" ") + op + QLatin1String(" ? ESCAPE '\\'");
             else
-                return d->key + " " + op + " ?";
+                return d->key + QLatin1String(" ") + op + QLatin1String(" ?");
         }
         case None:
             if (d->combine == QDjangoWherePrivate::NoCombine)
             {
-                return d->negate ? QString("1 != 0") : QString();
+                return d->negate ? QLatin1String("1 != 0") : QString();
             } else {
                 QStringList bits;
                 foreach (const QDjangoWhere &child, d->children)
@@ -270,15 +272,15 @@ QString QDjangoWhere::sql(const QSqlDatabase &db) const
                     if (child.d->children.isEmpty())
                         bits << atom;
                     else
-                        bits << QString("(%1)").arg(atom);
+                        bits << QString::fromLatin1("(%1)").arg(atom);
                 }
                 QString combined;
                 if (d->combine == QDjangoWherePrivate::AndCombine)
-                    combined = bits.join(" AND ");
+                    combined = bits.join(QLatin1String(" AND "));
                 else if (d->combine == QDjangoWherePrivate::OrCombine)
-                    combined = bits.join(" OR ");
+                    combined = bits.join(QLatin1String(" OR "));
                 if (d->negate)
-                    combined = QString("NOT (%1)").arg(combined);
+                    combined = QString::fromLatin1("NOT (%1)").arg(combined);
                 return combined;
             }
     }

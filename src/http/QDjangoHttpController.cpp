@@ -33,11 +33,11 @@
  */
 bool QDjangoHttpController::getBasicAuth(const QDjangoHttpRequest &request, QString &username, QString &password)
 {
-    QRegExp authRx("^Basic (.+)$");
-    const QString authHeader = request.meta("HTTP_AUTHORIZATION");
+    QRegExp authRx(QLatin1String("^Basic (.+)$"));
+    const QString authHeader = request.meta(QLatin1String("HTTP_AUTHORIZATION"));
     if (authRx.exactMatch(authHeader)) {
         const QString authValue = QString::fromUtf8(QByteArray::fromBase64(authRx.cap(1).toAscii()));
-        const QStringList bits = authValue.split(":");
+        const QStringList bits = authValue.split(QLatin1Char(':'));
         if (bits.size() == 2 && !bits[0].isEmpty() && !bits[1].isEmpty()) {
             username = bits[0];
             password = bits[1];
@@ -52,7 +52,7 @@ bool QDjangoHttpController::getBasicAuth(const QDjangoHttpRequest &request, QStr
 QString QDjangoHttpController::httpDateTime(const QDateTime &dt)
 {
     if (dt.isValid())
-        return dt.toUTC().toString("ddd, dd MMM yyyy HH:mm:ss") + " GMT";
+        return dt.toUTC().toString(QLatin1String("ddd, dd MMM yyyy HH:mm:ss")) + QLatin1String(" GMT");
     return QString();
 }
 
@@ -60,7 +60,7 @@ QString QDjangoHttpController::httpDateTime(const QDateTime &dt)
  */
 QDateTime QDjangoHttpController::httpDateTime(const QString &str)
 {
-    QDateTime dt = QDateTime::fromString(str.left(25), "ddd, dd MMM yyyy HH:mm:ss");
+    QDateTime dt = QDateTime::fromString(str.left(25), QLatin1String("ddd, dd MMM yyyy HH:mm:ss"));
     dt.setTimeSpec(Qt::UTC);
     return dt;
 }
@@ -70,9 +70,9 @@ QDjangoHttpResponse *QDjangoHttpController::serveError(const QDjangoHttpRequest 
     Q_UNUSED(request);
 
     QDjangoHttpResponse *response = new QDjangoHttpResponse;
-    response->setHeader("Content-Type", "text/html; charset=utf-8");
+    response->setHeader(QLatin1String("Content-Type"), QLatin1String("text/html; charset=utf-8"));
     response->setStatusCode(code);
-    response->setBody(QString("<html>"
+    response->setBody(QString::fromLatin1("<html>"
         "<head><title>Error</title></head>"
         "<body><p>%1</p></body>"
         "</html>").arg(text).toUtf8());
@@ -90,7 +90,7 @@ QDjangoHttpResponse *QDjangoHttpController::serveAuthorizationRequired(const QDj
 
     QDjangoHttpResponse *response = new QDjangoHttpResponse;
     response->setStatusCode(QDjangoHttpResponse::AuthorizationRequired);
-    response->setHeader("WWW-Authenticate", QString("Basic realm=\"%1\"").arg(realm));
+    response->setHeader(QLatin1String("WWW-Authenticate"), QString::fromLatin1("Basic realm=\"%1\"").arg(realm));
     return response;
 }
 
@@ -100,7 +100,7 @@ QDjangoHttpResponse *QDjangoHttpController::serveAuthorizationRequired(const QDj
  */
 QDjangoHttpResponse *QDjangoHttpController::serveBadRequest(const QDjangoHttpRequest &request)
 {
-    return serveError(request, QDjangoHttpResponse::BadRequest, "Your browser sent a malformed request.");
+    return serveError(request, QDjangoHttpResponse::BadRequest, QLatin1String("Your browser sent a malformed request."));
 }
 
 /** Respond to an HTTP \a request with an internal server error.
@@ -109,7 +109,7 @@ QDjangoHttpResponse *QDjangoHttpController::serveBadRequest(const QDjangoHttpReq
  */
 QDjangoHttpResponse *QDjangoHttpController::serveInternalServerError(const QDjangoHttpRequest &request)
 {
-    return serveError(request, QDjangoHttpResponse::InternalServerError, "An internal server error was encountered.");
+    return serveError(request, QDjangoHttpResponse::InternalServerError, QLatin1String("An internal server error was encountered."));
 }
 
 /** Respond to an HTTP \a request with a not found error.
@@ -118,7 +118,7 @@ QDjangoHttpResponse *QDjangoHttpController::serveInternalServerError(const QDjan
  */
 QDjangoHttpResponse *QDjangoHttpController::serveNotFound(const QDjangoHttpRequest &request)
 {
-    return serveError(request, QDjangoHttpResponse::NotFound, "The document you requested was not found.");
+    return serveError(request, QDjangoHttpResponse::NotFound, QLatin1String("The document you requested was not found."));
 }
 
 /** Respond to an HTTP \a request with a redirect.
@@ -131,8 +131,8 @@ QDjangoHttpResponse *QDjangoHttpController::serveRedirect(const QDjangoHttpReque
 {
     const QString urlString = url.toString();
     QDjangoHttpResponse *response = serveError(request, permanent ? QDjangoHttpResponse::MovedPermanently : QDjangoHttpResponse::Found,
-        QString("You are being redirect to <a href=\"%1\">%2</a>").arg(urlString, urlString));
-    response->setHeader("Location", urlString.toUtf8());
+        QString::fromLatin1("You are being redirect to <a href=\"%1\">%2</a>").arg(urlString, urlString));
+    response->setHeader(QLatin1String("Location"), urlString);
     return response;
 }
 
@@ -154,17 +154,17 @@ QDjangoHttpResponse *QDjangoHttpController::serveStatic(const QDjangoHttpRequest
 
     // determine last modified date
     QDateTime lastModified = info.lastModified();
-    if (docPath.startsWith(":/"))
+    if (docPath.startsWith(QLatin1String(":/")))
         lastModified = QFileInfo(qApp->applicationFilePath()).lastModified();
     if (lastModified.isValid())
-        response->setHeader("Last-Modified", httpDateTime(lastModified));
+        response->setHeader(QLatin1String("Last-Modified"), httpDateTime(lastModified));
 
     // cache expiry
     if (expires.isValid())
-        response->setHeader("Expires", httpDateTime(expires));
+        response->setHeader(QLatin1String("Expires"), httpDateTime(expires));
 
     // handle if-modified-since
-    const QDateTime ifModifiedSince = httpDateTime(request.meta("HTTP_IF_MODIFIED_SINCE"));
+    const QDateTime ifModifiedSince = httpDateTime(request.meta(QLatin1String("HTTP_IF_MODIFIED_SINCE")));
     if (lastModified.isValid() && ifModifiedSince.isValid() && lastModified <= ifModifiedSince)
     {
         response->setStatusCode(304);
@@ -172,16 +172,18 @@ QDjangoHttpResponse *QDjangoHttpController::serveStatic(const QDjangoHttpRequest
     }
 
     // determine content type
-    QString mimeType("application/octet-stream");
-    if (fileName.endsWith(".css"))
-        mimeType = "text/css";
-    else if (fileName.endsWith(".html"))
-        mimeType = "text/html";
-    else if (fileName.endsWith(".js"))
-        mimeType = "application/javascript";
-    else if (fileName.endsWith(".png"))
-        mimeType = "image/png";
-    response->setHeader("Content-Type", mimeType);
+    QString mimeType;
+    if (fileName.endsWith(QLatin1String(".css")))
+        mimeType = QLatin1String("text/css");
+    else if (fileName.endsWith(QLatin1String(".html")))
+        mimeType = QLatin1String("text/html");
+    else if (fileName.endsWith(QLatin1String(".js")))
+        mimeType = QLatin1String("application/javascript");
+    else if (fileName.endsWith(QLatin1String(".png")))
+        mimeType = QLatin1String("image/png");
+    else
+        mimeType = QLatin1String("application/octet-stream");
+    response->setHeader(QLatin1String("Content-Type"), mimeType);
 
     // read contents
     QFile file(docPath);
@@ -190,7 +192,7 @@ QDjangoHttpResponse *QDjangoHttpController::serveStatic(const QDjangoHttpRequest
         return serveInternalServerError(request);
     }
     if (request.method() == QLatin1String("HEAD"))
-        response->setHeader("Content-Length", QString::number(file.size()));
+        response->setHeader(QLatin1String("Content-Length"), QString::number(file.size()));
     else
         response->setBody(file.readAll());
     return response;

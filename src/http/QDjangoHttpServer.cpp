@@ -142,7 +142,7 @@ void QDjangoHttpConnection::_q_readyRead()
                 m_socket->close();
                 return;
             }
-        } else if (line != "\r\n") {
+        } else if (line != QLatin1String("\r\n")) {
             int i = line.indexOf(QLatin1Char(':'));
             if (i == -1) {
                 qWarning("Invalid HTTP request header");
@@ -153,7 +153,7 @@ void QDjangoHttpConnection::_q_readyRead()
             const QString value = line.mid(i + 1).trimmed();
             m_requestHeaders.append(qMakePair(key, value));
 
-            if (key.toLower() == "content-length") {
+            if (key.toLower() == QLatin1String("content-length")) {
                 m_requestBytesRemaining = value.toInt();
             }
         } else {
@@ -190,28 +190,28 @@ void QDjangoHttpConnection::_q_readyRead()
     QString metaKey;
     QList<QPair<QString, QString> >::ConstIterator it = m_requestHeaders.constBegin();
     while (it != m_requestHeaders.constEnd()) {
-        if (it->first == "Content-Length")
-            metaKey = "CONTENT_LENGTH";
-        else if (it->first == "Content-Type")
-            metaKey = "CONTENT_TYPE";
+        if (it->first == QLatin1String("Content-Length"))
+            metaKey = QLatin1String("CONTENT_LENGTH");
+        else if (it->first == QLatin1String("Content-Type"))
+            metaKey = QLatin1String("CONTENT_TYPE");
         else {
-            metaKey = "HTTP_" + it->first.toUpper();
-            metaKey.replace('-', '_');
+            metaKey = QLatin1String("HTTP_") + it->first.toUpper();
+            metaKey.replace(QLatin1Char('-'), QLatin1Char('_'));
         }
         request->d->meta.insert(metaKey, it->second);
         ++it;
     }
-    request->d->meta.insert("QUERY_STRING", QUrl(m_requestPath).encodedQuery());
-    request->d->meta.insert("REMOTE_ADDR", m_socket->peerAddress().toString());
-    request->d->meta.insert("REQUEST_METHOD", request->method());
-    request->d->meta.insert("SERVER_NAME", m_socket->localAddress().toString());
-    request->d->meta.insert("SERVER_PORT", QString::number(m_socket->localPort()));
+    request->d->meta.insert(QLatin1String("QUERY_STRING"), QString::fromLatin1(QUrl(m_requestPath).encodedQuery()));
+    request->d->meta.insert(QLatin1String("REMOTE_ADDR"), m_socket->peerAddress().toString());
+    request->d->meta.insert(QLatin1String("REQUEST_METHOD"), request->method());
+    request->d->meta.insert(QLatin1String("SERVER_NAME"), m_socket->localAddress().toString());
+    request->d->meta.insert(QLatin1String("SERVER_PORT"), QString::number(m_socket->localPort()));
 
     /* Process request */
     bool keepAlive = m_requestMajorVersion >= 1 && m_requestMinorVersion >= 1;
-    if (request->d->meta.value("HTTP_CONNECTION").toLower() == QLatin1String("keep-alive"))
+    if (request->d->meta.value(QLatin1String("HTTP_CONNECTION")).toLower() == QLatin1String("keep-alive"))
         keepAlive = true;
-    else if (request->d->meta.value("HTTP_CONNECTION").toLower() == QLatin1String("close"))
+    else if (request->d->meta.value(QLatin1String("HTTP_CONNECTION")).toLower() == QLatin1String("close"))
         keepAlive = false;
 
     QDjangoHttpResponse *response = m_server->urls()->respond(*request, request->path());
@@ -236,12 +236,12 @@ void QDjangoHttpConnection::_q_writeResponse()
             return;
 
         /* Finalise response */
-        response->setHeader("Date", QDjangoHttpController::httpDateTime(QDateTime::currentDateTime()));
-        response->setHeader("Server", QString("%1/%2").arg(qApp->applicationName(), qApp->applicationVersion()));
-        response->setHeader("Connection", m_closeAfterResponse ? "close" : "keep-alive");
+        response->setHeader(QLatin1String("Date"), QDjangoHttpController::httpDateTime(QDateTime::currentDateTime()));
+        response->setHeader(QLatin1String("Server"), QString::fromLatin1("%1/%2").arg(qApp->applicationName(), qApp->applicationVersion()));
+        response->setHeader(QLatin1String("Connection"), QLatin1String(m_closeAfterResponse ? "close" : "keep-alive"));
 
         /* Send response */
-        QString httpHeader = QString("HTTP/1.1 %1 %2\r\n").arg(response->d->statusCode).arg(response->d->reasonPhrase);
+        QString httpHeader = QString::fromLatin1("HTTP/1.1 %1 %2\r\n").arg(response->d->statusCode).arg(response->d->reasonPhrase);
         QList<QPair<QString, QString> >::ConstIterator it = response->d->headers.constBegin();
         while (it != response->d->headers.constEnd()) {
             httpHeader += (*it).first + QLatin1String(": ") + (*it).second + QLatin1String("\r\n");
