@@ -35,35 +35,35 @@ QDjangoWhere QDjangoWhereFromScriptValue(QScriptEngine *engine, const QScriptVal
         it.next();
         QString key = it.name();
         QDjangoWhere::Operation op = QDjangoWhere::Equals;
-        if (key.endsWith("__lt")) {
+        if (key.endsWith(QLatin1String("__lt"))) {
             key.chop(4);
             op = QDjangoWhere::LessThan;
         }
-        else if (key.endsWith("__lte")) {
+        else if (key.endsWith(QLatin1String("__lte"))) {
             key.chop(5);
             op = QDjangoWhere::LessOrEquals;
         }
-        else if (key.endsWith("__gt")) {
+        else if (key.endsWith(QLatin1String("__gt"))) {
             key.chop(4);
             op = QDjangoWhere::GreaterThan;
         }
-        else if (key.endsWith("__gte")) {
+        else if (key.endsWith(QLatin1String("__gte"))) {
             key.chop(5);
             op = QDjangoWhere::GreaterOrEquals;
         }
-        else if (key.endsWith("__startswith")) {
+        else if (key.endsWith(QLatin1String("__startswith"))) {
             key.chop(12);
             op = QDjangoWhere::StartsWith;
         }
-        else if (key.endsWith("__endswith")) {
+        else if (key.endsWith(QLatin1String("__endswith"))) {
             key.chop(10);
             op = QDjangoWhere::EndsWith;
         }
-        else if (key.endsWith("__contains")) {
+        else if (key.endsWith(QLatin1String("__contains"))) {
             key.chop(10);
             op = QDjangoWhere::Contains;
         }
-        else if (key.endsWith("__in")) {
+        else if (key.endsWith(QLatin1String("__in"))) {
             key.chop(4);
             op = QDjangoWhere::IsIn;
         }
@@ -98,7 +98,7 @@ static QScriptValue whereOr(QScriptContext *context, QScriptEngine *engine)
 static QScriptValue whereToString(QScriptContext *context, QScriptEngine *engine)
 {
     QDjangoWhere q = engine->fromScriptValue<QDjangoWhere>(context->thisObject());
-    return engine->toScriptValue("Q(" + q.sql(QDjango::database()) + ")");
+    return engine->toScriptValue(QLatin1String("Q(") + q.sql(QDjango::database()) + QLatin1String(")"));
 }
 
 /** Makes the QDjangoWhere class available to the given QScriptEngine.
@@ -108,12 +108,12 @@ static QScriptValue whereToString(QScriptContext *context, QScriptEngine *engine
 void QDjangoScript::registerWhere(QScriptEngine *engine)
 {
     QScriptValue whereProto = engine->newObject();
-    whereProto.setProperty("and", engine->newFunction(whereAnd));
-    whereProto.setProperty("or", engine->newFunction(whereOr));
-    whereProto.setProperty("toString", engine->newFunction(whereToString));
+    whereProto.setProperty(QLatin1String("and"), engine->newFunction(whereAnd));
+    whereProto.setProperty(QLatin1String("or"), engine->newFunction(whereOr));
+    whereProto.setProperty(QLatin1String("toString"), engine->newFunction(whereToString));
     engine->setDefaultPrototype(qMetaTypeId<QDjangoWhere>(), whereProto);
 
     QScriptValue ctor = engine->newFunction(newWhere);
-    engine->globalObject().setProperty("Q", ctor, QScriptValue::ReadOnly);
+    engine->globalObject().setProperty(QLatin1String("Q"), ctor, QScriptValue::ReadOnly);
 }
 

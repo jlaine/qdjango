@@ -41,7 +41,7 @@ void setAndGet(const K &value)
     QCOMPARE(v1.save(), true);
 
     T v2;
-    QVERIFY(QDjangoQuerySet<T>().get(Q("pk", Q::Equals, v1.pk()), &v2) != 0);
+    QVERIFY(QDjangoQuerySet<T>().get(Q(QLatin1String("pk"), Q::Equals, v1.pk()), &v2) != 0);
     QCOMPARE(v2.value(), value);
 }
 
@@ -55,7 +55,7 @@ void cleanup()
 void tst_Bool::testValue()
 {
     init<tst_Bool>(QStringList()
-        << "CREATE TABLE \"tst_bool\" (\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, \"value\" bool NOT NULL)");
+        << QLatin1String("CREATE TABLE \"tst_bool\" (\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, \"value\" bool NOT NULL)"));
     setAndGet<tst_Bool>(true);
     setAndGet<tst_Bool>(false);
     cleanup<tst_Bool>();
@@ -64,7 +64,7 @@ void tst_Bool::testValue()
 void tst_ByteArray::testValue()
 {
     init<tst_ByteArray>(QStringList()
-        << "CREATE TABLE \"tst_bytearray\" (\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, \"value\" blob NOT NULL)");
+        << QLatin1String("CREATE TABLE \"tst_bytearray\" (\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, \"value\" blob NOT NULL)"));
     setAndGet<tst_ByteArray>(QByteArray("01234567", 8));
     setAndGet<tst_ByteArray>(QByteArray("\x00\x01\x02\x03\x04\x05\x06\x07", 8));
     cleanup<tst_ByteArray>();
@@ -73,7 +73,7 @@ void tst_ByteArray::testValue()
 void tst_Date::testValue()
 {
     init<tst_Date>(QStringList()
-        << "CREATE TABLE \"tst_date\" (\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, \"value\" date NOT NULL)");
+        << QLatin1String("CREATE TABLE \"tst_date\" (\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, \"value\" date NOT NULL)"));
     setAndGet<tst_Date>(QDate(2012, 1, 8));
     cleanup<tst_Date>();
 }
@@ -81,7 +81,7 @@ void tst_Date::testValue()
 void tst_DateTime::testValue()
 {
     init<tst_DateTime>(QStringList()
-        << "CREATE TABLE \"tst_datetime\" (\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, \"value\" datetime NOT NULL)");
+        << QLatin1String("CREATE TABLE \"tst_datetime\" (\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, \"value\" datetime NOT NULL)"));
     setAndGet<tst_DateTime>(QDateTime(QDate(2012, 1, 8), QTime(3, 4, 5)));
     cleanup<tst_DateTime>();
 }
@@ -89,7 +89,7 @@ void tst_DateTime::testValue()
 void tst_Double::testValue()
 {
     init<tst_Double>(QStringList()
-        << "CREATE TABLE \"tst_double\" (\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, \"value\" real NOT NULL)");
+        << QLatin1String("CREATE TABLE \"tst_double\" (\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, \"value\" real NOT NULL)"));
     setAndGet<tst_Double>(double(3.14159));;
     cleanup<tst_Double>();
 }
@@ -97,7 +97,7 @@ void tst_Double::testValue()
 void tst_Integer::testValue()
 {
     init<tst_Integer>(QStringList()
-        << "CREATE TABLE \"tst_integer\" (\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, \"value\" integer NOT NULL)");
+        << QLatin1String("CREATE TABLE \"tst_integer\" (\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, \"value\" integer NOT NULL)"));
     setAndGet<tst_Integer>(0);
     setAndGet<tst_Integer>(-2147483647);
     setAndGet<tst_Integer>(2147483647);
@@ -107,7 +107,7 @@ void tst_Integer::testValue()
 void tst_LongLong::testValue()
 {
     init<tst_LongLong>(QStringList()
-        << "CREATE TABLE \"tst_longlong\" (\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, \"value\" bigint NOT NULL)");
+        << QLatin1String("CREATE TABLE \"tst_longlong\" (\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, \"value\" bigint NOT NULL)"));
     setAndGet<tst_LongLong>(qlonglong(0));
     setAndGet<tst_LongLong>(qlonglong(-9223372036854775807ll));
     setAndGet<tst_LongLong>(qlonglong(9223372036854775807ll));
@@ -117,15 +117,15 @@ void tst_LongLong::testValue()
 void tst_String::testValue()
 {
     init<tst_String>(QStringList()
-        << "CREATE TABLE \"tst_string\" (\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, \"value\" varchar(255) NOT NULL)");
-    setAndGet<tst_String>(QString("foo bar"));
+        << QLatin1String("CREATE TABLE \"tst_string\" (\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, \"value\" varchar(255) NOT NULL)"));
+    setAndGet<tst_String>(QLatin1String("foo bar"));
     cleanup<tst_String>();
 }
 
 void tst_Time::testValue()
 {
     init<tst_Time>(QStringList()
-        << "CREATE TABLE \"tst_time\" (\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, \"value\" time NOT NULL)");
+        << QLatin1String("CREATE TABLE \"tst_time\" (\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, \"value\" time NOT NULL)"));
     setAndGet<tst_Time>(QTime(3, 4, 5));
     cleanup<tst_Time>();
 }

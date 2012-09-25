@@ -93,24 +93,24 @@ QString QDjangoUrlResolverPrivate::reverse(QObject *receiver, const char *member
             QString path = it->urls->d->reverse(receiver, member, args);
             if (!path.isNull()) {
                 QString prefix = it->path.pattern();
-                if (prefix.startsWith('^'))
+                if (prefix.startsWith(QLatin1Char('^')))
                     prefix.remove(0, 1);
-                if (prefix.endsWith('$'))
+                if (prefix.endsWith(QLatin1Char('$')))
                     prefix.chop(1);
 
                 return prefix + path;
             }
         } else if (it->receiver == receiver && it->member == member) {
             QString path = it->path.pattern();
-            if (path.startsWith('^'))
+            if (path.startsWith(QLatin1Char('^')))
                 path.remove(0, 1);
-            if (path.endsWith('$'))
+            if (path.endsWith(QLatin1Char('$')))
                 path.chop(1);
 
             // replace parameters
             QVariantList arguments(args);
             int pos = 0;
-            QRegExp rx("\\([^)]+\\)");
+            QRegExp rx(QLatin1String("\\([^)]+\\)"));
             while ((pos = rx.indexIn(path, pos)) != -1) {
                 if (arguments.isEmpty()) {
                     qWarning("Too few arguments for '%s'", member);
@@ -125,7 +125,7 @@ QString QDjangoUrlResolverPrivate::reverse(QObject *receiver, const char *member
                 return QString();
             }
             if (path.isEmpty())
-                return QString("");
+                return QLatin1String("");
             else
                 return path;
         }
@@ -206,7 +206,7 @@ bool QDjangoUrlResolver::include(const QRegExp &path, QDjangoUrlResolver *urls)
 QDjangoHttpResponse* QDjangoUrlResolver::respond(const QDjangoHttpRequest &request, const QString &path) const
 {
     QString fixedPath(path);
-    if (fixedPath.startsWith('/'))
+    if (fixedPath.startsWith(QLatin1Char('/')))
         fixedPath.remove(0, 1);
 
     QDjangoHttpResponse *response = d->respond(request, fixedPath);
@@ -225,7 +225,7 @@ QString QDjangoUrlResolver::reverse(QObject *receiver, const char *member, const
     if (path.isNull())
         return QString();
     else
-        return "/" + path;
+        return QLatin1String("/") + path;
 }
 
 
