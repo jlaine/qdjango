@@ -134,6 +134,11 @@ static QMap<QString, QString> parseOptions(const char *value)
     return options;
 }
 
+static bool stringToBool(const QString &value)
+{
+    return value.toLower() == QLatin1String("true") || value == QLatin1String("1");
+}
+
 class QDjangoMetaModelPrivate : public QSharedData
 {
 public:
@@ -162,7 +167,7 @@ QDjangoMetaModel::QDjangoMetaModel(const QObject *model)
         QMapIterator<QString, QString> option(options);
         while (option.hasNext()) {
             option.next();
-            if (option.key() == "db_table")
+            if (option.key() == QLatin1String("db_table"))
                 d->table = option.value();
         }
     }
@@ -190,23 +195,24 @@ QDjangoMetaModel::QDjangoMetaModel(const QObject *model)
             QMapIterator<QString, QString> option(options);
             while (option.hasNext()) {
                 option.next();
+                const QString key = option.key();
                 const QString value = option.value();
-                if (option.key() == "auto_increment")
-                    autoIncrementOption = (value.toLower() == "true" || value == "1");
-                else if (option.key() == "db_column")
+                if (key == QLatin1String("auto_increment"))
+                    autoIncrementOption = stringToBool(value);
+                else if (key == QLatin1String("db_column"))
                     dbColumnOption = value;
-                else if (option.key() == "db_index")
-                    dbIndexOption = (value.toLower() == "true" || value == "1");
-                else if (option.key() == "ignore_field")
-                    ignoreFieldOption = (value.toLower() == "true" || value == "1");
-                else if (option.key() == "max_length")
+                else if (key == QLatin1String("db_index"))
+                    dbIndexOption = stringToBool(value);
+                else if (key == QLatin1String("ignore_field"))
+                    ignoreFieldOption = stringToBool(value);
+                else if (key == QLatin1String("max_length"))
                     maxLengthOption = value.toInt();
-                else if (option.key() == "null")
-                    nullOption = (value.toLower() == "true" || value == "1");
-                else if (option.key() == "primary_key")
-                    primaryKeyOption = (value.toLower() == "true" || value == "1");
-                else if (option.key() == "unique")
-                    uniqueOption = (value.toLower() == "true" || value == "1");
+                else if (key == QLatin1String("null"))
+                    nullOption = stringToBool(value);
+                else if (key == QLatin1String("primary_key"))
+                    primaryKeyOption = stringToBool(value);
+                else if (key == QLatin1String("unique"))
+                    uniqueOption = stringToBool(value);
             }
         }
 
