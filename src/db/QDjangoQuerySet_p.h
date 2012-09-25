@@ -58,7 +58,7 @@ private:
 class QDJANGO_EXPORT QDjangoQuerySetPrivate
 {
 public:
-    QDjangoQuerySetPrivate(const QString &modelName);
+    QDjangoQuerySetPrivate(const char *modelName);
 
     void addFilter(const QDjangoWhere &where);
     QDjangoWhere resolvedWhere(const QSqlDatabase &db) const;

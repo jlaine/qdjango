@@ -151,7 +151,7 @@ void QDjangoCompiler::resolve(QDjangoWhere &where)
         resolve(where.d->children[i]);
 }
 
-QDjangoQuerySetPrivate::QDjangoQuerySetPrivate(const QString &modelName)
+QDjangoQuerySetPrivate::QDjangoQuerySetPrivate(const char *modelName)
     : counter(1),
     hasResults(false),
     lowMark(0),
