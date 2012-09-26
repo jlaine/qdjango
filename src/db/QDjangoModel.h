@@ -41,6 +41,9 @@
  *
  *  \li \c db_table if provided, this is the name of the database table for
  *  the model, otherwise the lowercased class name will be used
+ *  \li \c unique_together set of fields that, taken together, must be unique.
+ *  If provided, a UNIQUE statement is included in the CREATE TABLE statement.
+ *  Example: \c unique_together=some_field,other_field
  *
  *  You can also provide additional information about a field using the
  *  Q_CLASSINFO macro, in the form:

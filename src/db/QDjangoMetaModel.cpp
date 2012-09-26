@@ -183,6 +183,7 @@ public:
     QMap<QByteArray, QByteArray> foreignFields;
     QByteArray primaryKey;
     QString table;
+    QList<QByteArray> uniqueTogether;
 };
 
 /*!
@@ -206,6 +207,8 @@ QDjangoMetaModel::QDjangoMetaModel(const QObject *model)
             option.next();
             if (option.key() == QLatin1String("db_table"))
                 d->table = option.value();
+            else if (option.key() == QLatin1String("unique_together"))
+                d->uniqueTogether = option.value().toLatin1().split(',');
         }
     }
 
@@ -443,6 +446,15 @@ QStringList QDjangoMetaModel::createTableSql() const
                 driver->escapeIdentifier(foreignField.column(), QSqlDriver::FieldName));
         }
         propSql << fieldSql;
+    }
+
+    // unique contraints
+    if (!d->uniqueTogether.isEmpty()) {
+        QStringList columns;
+        foreach (const QByteArray &name, d->uniqueTogether) {
+            columns << driver->escapeIdentifier(localField(name).column(), QSqlDriver::FieldName);
+        }
+        propSql << QString::fromLatin1("UNIQUE (%2)").arg(columns.join(QLatin1String(", ")));
     }
 
     // create table

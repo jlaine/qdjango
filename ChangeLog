@@ -1,5 +1,6 @@
 QDjango 0.2.7 (UNRELEASED)
  * Fix and test "unique" field option.
+ * Add a "unique_together" model option.
  * Make index names coincide with those used by django.
 
 QDjango 0.2.6 (2012-09-07)

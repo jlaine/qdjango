@@ -167,15 +167,24 @@ private:
 class tst_Options : public QDjangoModel
 {
     Q_OBJECT
+    Q_PROPERTY(int aField READ aField WRITE setAField)
+    Q_PROPERTY(int bField READ bField WRITE setBField)
     Q_PROPERTY(int indexField READ indexField WRITE setIndexField)
     Q_PROPERTY(int nullField READ nullField WRITE setNullField)
     Q_PROPERTY(int uniqueField READ uniqueField WRITE setUniqueField)
 
+    Q_CLASSINFO("__meta__", "unique_together=aField,bField")
     Q_CLASSINFO("indexField", "db_index=true")
     Q_CLASSINFO("nullField", "null=true")
     Q_CLASSINFO("uniqueField", "unique=true")
 
 public:
+    int aField() const { return m_aField; }
+    void setAField(int value) { m_aField = value; }
+
+    int bField() const { return m_bField; }
+    void setBField(int value) { m_bField = value; }
+
     int indexField() const { return m_indexField; }
     void setIndexField(int value) { m_indexField = value; }
 
@@ -189,6 +198,8 @@ private slots:
     void testOptions();
 
 private:
+    int m_aField;
+    int m_bField;
     int m_indexField;
     int m_nullField;
     int m_uniqueField;
