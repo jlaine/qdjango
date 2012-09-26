@@ -203,3 +203,35 @@ void Message::setMessage(const QString &message)
 Q_DECLARE_METATYPE(Group*)
 Q_DECLARE_METATYPE(User*)
 
+
+WithoutFkConstraint::WithoutFkConstraint(QObject *parent)
+    : QDjangoModel(parent)
+{
+    setForeignKey("user", new User(this));
+}
+
+User *WithoutFkConstraint::user() const
+{
+    return qobject_cast<User*>(foreignKey("user"));
+}
+
+void WithoutFkConstraint::setUser(User *user)
+{
+    setForeignKey("user", user);
+}
+
+WithFkConstraint::WithFkConstraint(QObject *parent)
+    : QDjangoModel(parent)
+{
+    setForeignKey("user", new User(this));
+}
+
+User *WithFkConstraint::user() const
+{
+    return qobject_cast<User*>(foreignKey("user"));
+}
+
+void WithFkConstraint::setUser(User *user)
+{
+    setForeignKey("user", user);
+}

@@ -69,6 +69,8 @@
  *  field will be added.
  *  \li \c unique if set to 'true', this field must be unique throughout the
  *  table.
+ *  \li \c on_delete if provided, create a foreign key constraint on this field.
+ *  Accepted values are: 'cascade', 'restrict', and 'set_null'
  *
  * \ingroup Database
  */

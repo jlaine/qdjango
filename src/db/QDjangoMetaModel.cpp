@@ -61,6 +61,14 @@ static QString stringlist_digest(const QStringList &l)
     return QString::number(labs(stringlist_hash(l)) % 4294967296L, 16);
 }
 
+enum ForeignKeyConstraint
+{
+    NoAction,
+    Restrict,
+    Cascade,
+    SetNull
+};
+
 class QDjangoMetaFieldPrivate : public QSharedData
 {
 public:
@@ -75,6 +83,7 @@ public:
     bool null;
     QVariant::Type type;
     bool unique;
+    ForeignKeyConstraint deleteConstraint;
 };
 
 QDjangoMetaFieldPrivate::QDjangoMetaFieldPrivate()
@@ -82,7 +91,8 @@ QDjangoMetaFieldPrivate::QDjangoMetaFieldPrivate()
     index(false),
     maxLength(0),
     null(false),
-    unique(false)
+    unique(false),
+    deleteConstraint(NoAction)
 {
 }
 
@@ -228,6 +238,7 @@ QDjangoMetaModel::QDjangoMetaModel(const QObject *model)
         bool primaryKeyOption = false;
         bool nullOption = false;
         bool uniqueOption = false;
+        ForeignKeyConstraint deleteConstraint = NoAction;
         const int infoIndex = meta->indexOfClassInfo(meta->property(i).name());
         if (infoIndex >= 0)
         {
@@ -253,6 +264,14 @@ QDjangoMetaModel::QDjangoMetaModel(const QObject *model)
                     primaryKeyOption = stringToBool(value);
                 else if (key == QLatin1String("unique"))
                     uniqueOption = stringToBool(value);
+                else if (option.key() == "on_delete") {
+                    if (value.toLower() == "cascade")
+                        deleteConstraint = Cascade;
+                    else if (value.toLower() == "set_null")
+                        deleteConstraint = SetNull;
+                    else if (value.toLower() == "restrict")
+                        deleteConstraint = Restrict;
+                }
             }
         }
 
@@ -276,6 +295,7 @@ QDjangoMetaModel::QDjangoMetaModel(const QObject *model)
             field.d->db_column = dbColumnOption.isEmpty() ? QString::fromLatin1(field.d->name) : dbColumnOption;
             field.d->index = true;
             field.d->null = nullOption;
+            field.d->deleteConstraint = deleteConstraint;
             d->localFields << field;
             continue;
         }
@@ -444,6 +464,21 @@ QStringList QDjangoMetaModel::createTableSql() const
             fieldSql += QString::fromLatin1(" REFERENCES %1 (%2)").arg(
                 driver->escapeIdentifier(foreignMeta.d->table, QSqlDriver::TableName),
                 driver->escapeIdentifier(foreignField.column(), QSqlDriver::FieldName));
+
+            if (field.d->deleteConstraint != NoAction) {
+                fieldSql += " ON DELETE";
+                switch (field.d->deleteConstraint) {
+                case Cascade:
+                    fieldSql += " CASCADE";
+                    break;
+                case SetNull:
+                    fieldSql += " SET NULL";
+                    break;
+                case Restrict:
+                    fieldSql += " RESTRICT";
+                    break;
+                }
+            }
         }
         propSql << fieldSql;
     }

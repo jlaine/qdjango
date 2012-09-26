@@ -56,6 +56,7 @@ private slots:
     void testGroups();
     void testRelated();
     void filterRelated();
+    void testFkConstraint();
     void cleanup();
     void cleanupTestCase();
 };

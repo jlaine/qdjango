@@ -740,6 +740,19 @@ void TestRelated::testGroups()
     delete ug;
 }
 
+/** Test foreign key constraint sql generation
+ */
+void TestRelated::testFkConstraint()
+{
+  QDjangoMetaModel without = QDjango::registerModel<WithoutFkConstraint>();
+  QDjangoMetaModel with = QDjango::registerModel<WithFkConstraint>();
+  QString withSql = with.createTableSql().join(" ");
+  QString withoutSql = without.createTableSql().join(" ");
+  QVERIFY(withoutSql != withSql);
+  QVERIFY(!withoutSql.contains("ON DELETE"));
+  QVERIFY(withSql.contains("ON DELETE"));
+}
+
 /** Clear database tables after each test.
  */
 void TestRelated::cleanup()
