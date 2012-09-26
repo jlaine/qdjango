@@ -9,4 +9,5 @@ path = []
 for component in ['db', 'http', 'script']:
     path.append(os.path.join(root, 'src', component))
 
-os.system("LD_LIBRARY_PATH=%s %s" % (':'.join(path), prog))
+os.environ['LD_LIBRARY_PATH'] = ':'.join(path)
+os.system(prog)
