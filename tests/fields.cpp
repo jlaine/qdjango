@@ -134,7 +134,7 @@ void tst_Options::testOptions()
 {
     init<tst_Options>(QStringList()
         << QLatin1String(
-            "CREATE TABLE \"tst_options\" ("
+            "CREATE TABLE \"some_table\" ("
                 "\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, "
                 "\"aField\" integer NOT NULL, "
                 "\"b_field\" integer NOT NULL, "
@@ -143,5 +143,5 @@ void tst_Options::testOptions()
                 "\"uniqueField\" integer NOT NULL UNIQUE, "
                 "UNIQUE (\"aField\", \"b_field\")"
             ")")
-        << QLatin1String("CREATE INDEX \"tst_options_ac243651\" ON \"tst_options\" (\"indexField\")"));
+        << QLatin1String("CREATE INDEX \"some_table_ac243651\" ON \"some_table\" (\"indexField\")"));
 }
