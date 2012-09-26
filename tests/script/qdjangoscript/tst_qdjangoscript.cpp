@@ -51,6 +51,8 @@ void TestScript::cleanupTestCase()
 
 void TestScript::initTestCase()
 {
+    initialiseDatabase();
+
     metaModel = QDjango::registerModel<User>();
     QCOMPARE(metaModel.createTable(), true);
 
