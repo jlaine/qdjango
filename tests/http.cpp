@@ -37,8 +37,8 @@ void TestHttp::cleanupTestCase()
 void TestHttp::initTestCase()
 {
     httpServer = new QDjangoHttpServer;
-    httpServer->urls()->set(QRegExp("^$"), this, "_q_index");
-    httpServer->urls()->set(QRegExp("^internal-server-error$"), this, "_q_error");
+    httpServer->urls()->set(QRegExp(QLatin1String(QLatin1String("^$"))), this, "_q_index");
+    httpServer->urls()->set(QRegExp(QLatin1String("^internal-server-error$")), this, "_q_error");
     QCOMPARE(httpServer->listen(QHostAddress::LocalHost, 8123), true);
 }
 
@@ -48,7 +48,7 @@ void TestHttp::testGet_data()
     QTest::addColumn<int>("err");
     QTest::addColumn<QByteArray>("body");
 
-    const QString errorTemplate(
+    const QString errorTemplate = QLatin1String(
         "<html>"
         "<head><title>Error</title></head>"
         "<body><p>%1</p></body>"
@@ -56,8 +56,8 @@ void TestHttp::testGet_data()
 
     QTest::newRow("root") << "/" << int(QNetworkReply::NoError) << QByteArray("method=GET|path=/");
     QTest::newRow("query-string") << "/?message=bar" << int(QNetworkReply::NoError) << QByteArray("method=GET|path=/|get=bar");
-    QTest::newRow("not-found") << "/not-found" << int(QNetworkReply::ContentNotFoundError) << errorTemplate.arg("The document you requested was not found.").toUtf8();
-    QTest::newRow("internal-server-error") << "/internal-server-error" << int(QNetworkReply::UnknownContentError) << errorTemplate.arg("An internal server error was encountered.").toUtf8();
+    QTest::newRow("not-found") << "/not-found" << int(QNetworkReply::ContentNotFoundError) << errorTemplate.arg(QLatin1String("The document you requested was not found.")).toUtf8();
+    QTest::newRow("internal-server-error") << "/internal-server-error" << int(QNetworkReply::UnknownContentError) << errorTemplate.arg(QLatin1String("An internal server error was encountered.")).toUtf8();
 }
 
 void TestHttp::testGet()
@@ -67,7 +67,7 @@ void TestHttp::testGet()
     QFETCH(QByteArray, body);
 
     QNetworkAccessManager network;
-    QNetworkReply *reply = network.get(QNetworkRequest(QUrl("http://127.0.0.1:8123" + path)));
+    QNetworkReply *reply = network.get(QNetworkRequest(QUrl(QLatin1String("http://127.0.0.1:8123") + path)));
 
     QEventLoop loop;
     QObject::connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
@@ -99,7 +99,7 @@ void TestHttp::testPost()
     QFETCH(QByteArray, body);
 
     QNetworkAccessManager network;
-    QNetworkRequest req(QUrl("http://127.0.0.1:8123" + path));
+    QNetworkRequest req(QUrl(QLatin1String("http://127.0.0.1:8123") + path));
     req.setRawHeader("Content-Type", "application/x-www-form-urlencoded");
     QNetworkReply *reply = network.post(req, data);
 
@@ -116,18 +116,18 @@ void TestHttp::testPost()
 QDjangoHttpResponse *TestHttp::_q_index(const QDjangoHttpRequest &request)
 {
     QDjangoHttpResponse *response = new QDjangoHttpResponse;
-    response->setHeader("Content-Type", "text/plain");
+    response->setHeader(QLatin1String("Content-Type"), QLatin1String("text/plain"));
 
-    QString output = "method=" + request.method();
-    output += "|path=" + request.path();
+    QString output = QLatin1String("method=") + request.method();
+    output += QLatin1String("|path=") + request.path();
 
-    const QString getValue = request.get("message");
+    const QString getValue = request.get(QLatin1String("message"));
     if (!getValue.isEmpty())
-        output += "|get=" + getValue;
+        output += QLatin1String("|get=") + getValue;
 
-    const QString postValue = request.post("message");
+    const QString postValue = request.post(QLatin1String("message"));
     if (!postValue.isEmpty())
-        output += "|post=" + postValue;
+        output += QLatin1String("|post=") + postValue;
 
     response->setBody(output.toUtf8());
     return response;
@@ -145,7 +145,7 @@ QDjangoHttpResponse* tst_QDjangoUrlHelper::_q_index(const QDjangoHttpRequest &re
     Q_UNUSED(request);
 
     QDjangoHttpResponse *response = new QDjangoHttpResponse;
-    response->setHeader("Content-Type", "text/plain");
+    response->setHeader(QLatin1String("Content-Type"), QLatin1String("text/plain"));
     response->setBody("sub index");
     return response;
 }
@@ -155,7 +155,7 @@ QDjangoHttpResponse* tst_QDjangoUrlHelper::_q_test(const QDjangoHttpRequest &req
     Q_UNUSED(request);
 
     QDjangoHttpResponse *response = new QDjangoHttpResponse;
-    response->setHeader("Content-Type", "text/plain");
+    response->setHeader(QLatin1String("Content-Type"), QLatin1String("text/plain"));
     response->setBody("sub test");
     return response;
 }
@@ -169,15 +169,15 @@ void tst_QDjangoUrlResolver::initTestCase()
 {
     urlHelper = new tst_QDjangoUrlHelper;
     urlSub = new QDjangoUrlResolver;
-    QVERIFY(urlSub->set(QRegExp("^$"), urlHelper, "_q_index"));
-    QVERIFY(urlSub->set(QRegExp("^test/$"), urlHelper, "_q_test"));
+    QVERIFY(urlSub->set(QRegExp(QLatin1String("^$")), urlHelper, "_q_index"));
+    QVERIFY(urlSub->set(QRegExp(QLatin1String("^test/$")), urlHelper, "_q_test"));
 
     urlResolver = new QDjangoUrlResolver;
-    QVERIFY(urlResolver->set(QRegExp("^$"), this, "_q_index"));
-    QVERIFY(urlResolver->set(QRegExp("^test/$"), this, "_q_noArgs"));
-    QVERIFY(urlResolver->set(QRegExp("^test/([0-9]+)/$"), this, "_q_oneArg"));
-    QVERIFY(urlResolver->set(QRegExp("^test/([0-9]+)/([a-z]+)/$"), this, "_q_twoArgs"));
-    QVERIFY(urlResolver->include(QRegExp("^recurse/"), urlSub));
+    QVERIFY(urlResolver->set(QRegExp(QLatin1String("^$")), this, "_q_index"));
+    QVERIFY(urlResolver->set(QRegExp(QLatin1String("^test/$")), this, "_q_noArgs"));
+    QVERIFY(urlResolver->set(QRegExp(QLatin1String("^test/([0-9]+)/$")), this, "_q_oneArg"));
+    QVERIFY(urlResolver->set(QRegExp(QLatin1String("^test/([0-9]+)/([a-z]+)/$")), this, "_q_twoArgs"));
+    QVERIFY(urlResolver->include(QRegExp(QLatin1String("^recurse/")), urlSub));
 }
 
 void tst_QDjangoUrlResolver::testRespond_data()
@@ -203,7 +203,7 @@ void tst_QDjangoUrlResolver::testRespond()
     QFETCH(int, err);
     QFETCH(QString, body);
 
-    QDjangoHttpTestRequest request("GET", path);
+    QDjangoHttpTestRequest request(QLatin1String("GET"), path);
     QDjangoHttpResponse *response = urlResolver->respond(request, path);
     QVERIFY(response);
     QCOMPARE(int(response->statusCode()), err);
@@ -238,7 +238,7 @@ void tst_QDjangoUrlResolver::testReverse()
 
     QVariantList varArgs;
     if (!args.isEmpty()) {
-        foreach (const QString &bit, args.split('|'))
+        foreach (const QString &bit, args.split(QLatin1Char('|')))
             varArgs << bit;
     }
     QCOMPARE(urlResolver->reverse(receiver, member.toLatin1(), varArgs), path);
