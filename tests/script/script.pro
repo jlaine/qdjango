@@ -3,10 +3,10 @@ include(../../qdjango.pri)
 QT -= gui
 QT += script sql testlib
 
-TARGET = qdjango-script-tests
+TARGET = tst_qdjangoscript
 
-HEADERS += ../db/auth-models.h script.h
-SOURCES += ../db/auth-models.cpp script.cpp
+HEADERS += ../db/auth-models.h
+SOURCES += ../db/auth-models.cpp tst_qdjangoscript.cpp
 
 INCLUDEPATH += ../db $$QDJANGO_INCLUDEPATH
 

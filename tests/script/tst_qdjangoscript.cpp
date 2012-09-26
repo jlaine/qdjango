@@ -21,9 +21,26 @@
 
 #include "auth-models.h"
 #include "main.h"
-#include "script.h"
 
 Q_DECLARE_METATYPE(QDjangoQuerySet<User>)
+
+/** Test QDjango scripting.
+ */
+class TestScript : public QObject
+{
+    Q_OBJECT
+
+private slots:
+    void initTestCase();
+    void testWhereConstructor();
+    void testWhereOperators();
+    void testModel();
+    void cleanupTestCase();
+
+private:
+    QDjangoMetaModel metaModel;
+    QScriptEngine *engine;
+};
 
 void TestScript::cleanupTestCase()
 {
@@ -127,3 +144,4 @@ void TestScript::testModel()
 }
 
 QTEST_MAIN(TestScript)
+#include "tst_qdjangoscript.moc"
