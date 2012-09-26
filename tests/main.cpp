@@ -321,7 +321,7 @@ void tst_QDjangoMetaModel::localField()
     QFETCH(QString, name);
     QFETCH(QString, column);
 
-    QDjangoMetaField field = metaModel.localField(lookup);
+    QDjangoMetaField field = metaModel.localField(lookup.toLatin1());
     QCOMPARE(field.isValid(), isValid);
     QCOMPARE(field.name(), name);
     QCOMPARE(field.column(), column);
