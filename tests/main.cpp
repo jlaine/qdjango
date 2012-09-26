@@ -31,6 +31,7 @@
 #include "auth-models.h"
 #include "auth-tests.h"
 #include "fields.h"
+#include "foreignkey.h"
 #include "shares-models.h"
 #include "shares-tests.h"
 #include "http.h"
@@ -905,6 +906,10 @@ int main(int argc, char *argv[])
 
         tst_Options testOptions;
         errors += QTest::qExec(&testOptions);
+
+        // foreign keys
+        tst_FkConstraint testFkConstraint;
+        errors += QTest::qExec(&testFkConstraint);
 
         // models
         TestUser testUser;

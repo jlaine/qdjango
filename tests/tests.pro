@@ -7,6 +7,7 @@ TARGET = qdjango-tests
 
 HEADERS += \
     fields.h \
+    foreignkey.h \
     http.h \
     main.h \
     script.h \
@@ -16,6 +17,7 @@ HEADERS += \
     shares-tests.h
 SOURCES += \
     fields.cpp \
+    foreignkey.cpp \
     http.cpp \
     main.cpp \
     script.cpp \

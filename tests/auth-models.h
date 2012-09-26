@@ -148,29 +148,4 @@ private:
     QString m_message;
 };
 
-class WithoutFkConstraint : public QDjangoModel
-{
-    Q_OBJECT
-    Q_PROPERTY(User *user READ user WRITE setUser)
-public:
-    WithoutFkConstraint(QObject *parent = 0);
-
-    User *user() const;
-    void setUser(User *user);
-
-};
-
-class WithFkConstraint : public QDjangoModel
-{
-    Q_OBJECT
-    Q_PROPERTY(User *user READ user WRITE setUser)
-    Q_CLASSINFO("user", "on_delete=cascade")
-public:
-    WithFkConstraint(QObject *parent = 0);
-
-    User *user() const;
-    void setUser(User *user);
-
-};
-
 #endif
