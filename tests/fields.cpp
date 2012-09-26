@@ -54,8 +54,13 @@ void cleanup()
 
 void tst_Bool::testValue()
 {
-    init<tst_Bool>(QStringList()
-        << QLatin1String("CREATE TABLE \"tst_bool\" (\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, \"value\" bool NOT NULL)"));
+    QStringList sql;
+    if (QDjango::database().driverName() == QLatin1String("QPSQL"))
+        sql << QLatin1String("CREATE TABLE \"tst_bool\" (\"id\" serial PRIMARY KEY, \"value\" boolean NOT NULL)");
+    else
+        sql << QLatin1String("CREATE TABLE \"tst_bool\" (\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, \"value\" bool NOT NULL)");
+
+    init<tst_Bool>(sql);
     setAndGet<tst_Bool>(true);
     setAndGet<tst_Bool>(false);
     cleanup<tst_Bool>();
@@ -63,8 +68,13 @@ void tst_Bool::testValue()
 
 void tst_ByteArray::testValue()
 {
-    init<tst_ByteArray>(QStringList()
-        << QLatin1String("CREATE TABLE \"tst_bytearray\" (\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, \"value\" blob NOT NULL)"));
+    QStringList sql;
+    if (QDjango::database().driverName() == QLatin1String("QPSQL"))
+        sql << QLatin1String("CREATE TABLE \"tst_bytearray\" (\"id\" serial PRIMARY KEY, \"value\" bytea NOT NULL)");
+    else
+        sql << QLatin1String("CREATE TABLE \"tst_bytearray\" (\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, \"value\" blob NOT NULL)");
+
+    init<tst_ByteArray>(sql);
     setAndGet<tst_ByteArray>(QByteArray("01234567", 8));
     setAndGet<tst_ByteArray>(QByteArray("\x00\x01\x02\x03\x04\x05\x06\x07", 8));
     cleanup<tst_ByteArray>();
@@ -72,32 +82,52 @@ void tst_ByteArray::testValue()
 
 void tst_Date::testValue()
 {
-    init<tst_Date>(QStringList()
-        << QLatin1String("CREATE TABLE \"tst_date\" (\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, \"value\" date NOT NULL)"));
+    QStringList sql;
+    if (QDjango::database().driverName() == QLatin1String("QPSQL"))
+        sql << QLatin1String("CREATE TABLE \"tst_date\" (\"id\" serial PRIMARY KEY, \"value\" date NOT NULL)");
+    else
+        sql << QLatin1String("CREATE TABLE \"tst_date\" (\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, \"value\" date NOT NULL)");
+
+    init<tst_Date>(sql);
     setAndGet<tst_Date>(QDate(2012, 1, 8));
     cleanup<tst_Date>();
 }
 
 void tst_DateTime::testValue()
 {
-    init<tst_DateTime>(QStringList()
-        << QLatin1String("CREATE TABLE \"tst_datetime\" (\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, \"value\" datetime NOT NULL)"));
+    QStringList sql;
+    if (QDjango::database().driverName() == QLatin1String("QPSQL"))
+        sql << QLatin1String("CREATE TABLE \"tst_datetime\" (\"id\" serial PRIMARY KEY, \"value\" timestamp NOT NULL)");
+    else
+        sql << QLatin1String("CREATE TABLE \"tst_datetime\" (\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, \"value\" datetime NOT NULL)");
+
+    init<tst_DateTime>(sql);
     setAndGet<tst_DateTime>(QDateTime(QDate(2012, 1, 8), QTime(3, 4, 5)));
     cleanup<tst_DateTime>();
 }
 
 void tst_Double::testValue()
 {
-    init<tst_Double>(QStringList()
-        << QLatin1String("CREATE TABLE \"tst_double\" (\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, \"value\" real NOT NULL)"));
+    QStringList sql;
+    if (QDjango::database().driverName() == QLatin1String("QPSQL"))
+        sql << QLatin1String("CREATE TABLE \"tst_double\" (\"id\" serial PRIMARY KEY, \"value\" real NOT NULL)");
+    else
+        sql << QLatin1String("CREATE TABLE \"tst_double\" (\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, \"value\" real NOT NULL)");
+
+    init<tst_Double>(sql);
     setAndGet<tst_Double>(double(3.14159));;
     cleanup<tst_Double>();
 }
 
 void tst_Integer::testValue()
 {
-    init<tst_Integer>(QStringList()
-        << QLatin1String("CREATE TABLE \"tst_integer\" (\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, \"value\" integer NOT NULL)"));
+    QStringList sql;
+    if (QDjango::database().driverName() == QLatin1String("QPSQL"))
+        sql << QLatin1String("CREATE TABLE \"tst_integer\" (\"id\" serial PRIMARY KEY, \"value\" integer NOT NULL)");
+    else
+        sql << QLatin1String("CREATE TABLE \"tst_integer\" (\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, \"value\" integer NOT NULL)");
+
+    init<tst_Integer>(sql);
     setAndGet<tst_Integer>(0);
     setAndGet<tst_Integer>(-2147483647);
     setAndGet<tst_Integer>(2147483647);
@@ -106,8 +136,13 @@ void tst_Integer::testValue()
 
 void tst_LongLong::testValue()
 {
-    init<tst_LongLong>(QStringList()
-        << QLatin1String("CREATE TABLE \"tst_longlong\" (\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, \"value\" bigint NOT NULL)"));
+    QStringList sql;
+    if (QDjango::database().driverName() == QLatin1String("QPSQL"))
+        sql << QLatin1String("CREATE TABLE \"tst_longlong\" (\"id\" serial PRIMARY KEY, \"value\" bigint NOT NULL)");
+    else
+        sql << QLatin1String("CREATE TABLE \"tst_longlong\" (\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, \"value\" bigint NOT NULL)");
+
+    init<tst_LongLong>(sql);
     setAndGet<tst_LongLong>(qlonglong(0));
     setAndGet<tst_LongLong>(qlonglong(-9223372036854775807ll));
     setAndGet<tst_LongLong>(qlonglong(9223372036854775807ll));
@@ -116,24 +151,46 @@ void tst_LongLong::testValue()
 
 void tst_String::testValue()
 {
-    init<tst_String>(QStringList()
-        << QLatin1String("CREATE TABLE \"tst_string\" (\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, \"value\" varchar(255) NOT NULL)"));
+    QStringList sql;
+    if (QDjango::database().driverName() == QLatin1String("QPSQL"))
+        sql << QLatin1String("CREATE TABLE \"tst_string\" (\"id\" serial PRIMARY KEY, \"value\" varchar(255) NOT NULL)");
+    else
+        sql << QLatin1String("CREATE TABLE \"tst_string\" (\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, \"value\" varchar(255) NOT NULL)");
+
+    init<tst_String>(sql);
     setAndGet<tst_String>(QLatin1String("foo bar"));
     cleanup<tst_String>();
 }
 
 void tst_Time::testValue()
 {
-    init<tst_Time>(QStringList()
-        << QLatin1String("CREATE TABLE \"tst_time\" (\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, \"value\" time NOT NULL)"));
+    QStringList sql;
+    if (QDjango::database().driverName() == QLatin1String("QPSQL"))
+        sql << QLatin1String("CREATE TABLE \"tst_time\" (\"id\" serial PRIMARY KEY, \"value\" time NOT NULL)");
+    else
+        sql << QLatin1String("CREATE TABLE \"tst_time\" (\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, \"value\" time NOT NULL)");
+
+    init<tst_Time>(sql);
     setAndGet<tst_Time>(QTime(3, 4, 5));
     cleanup<tst_Time>();
 }
 
 void tst_Options::testOptions()
 {
-    init<tst_Options>(QStringList()
-        << QLatin1String(
+    QStringList sql;
+    if (QDjango::database().driverName() == QLatin1String("QPSQL"))
+        sql << QLatin1String(
+            "CREATE TABLE \"some_table\" ("
+                "\"id\" serial PRIMARY KEY, "
+                "\"aField\" integer NOT NULL, "
+                "\"b_field\" integer NOT NULL, "
+                "\"indexField\" integer NOT NULL, "
+                "\"nullField\" integer, "
+                "\"uniqueField\" integer NOT NULL UNIQUE, "
+                "UNIQUE (\"aField\", \"b_field\")"
+            ")");
+    else
+        sql << QLatin1String(
             "CREATE TABLE \"some_table\" ("
                 "\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, "
                 "\"aField\" integer NOT NULL, "
@@ -142,6 +199,8 @@ void tst_Options::testOptions()
                 "\"nullField\" integer, "
                 "\"uniqueField\" integer NOT NULL UNIQUE, "
                 "UNIQUE (\"aField\", \"b_field\")"
-            ")")
-        << QLatin1String("CREATE INDEX \"some_table_ac243651\" ON \"some_table\" (\"indexField\")"));
+            ")");
+
+    sql << QLatin1String("CREATE INDEX \"some_table_ac243651\" ON \"some_table\" (\"indexField\")");
+    init<tst_Options>(sql);
 }
