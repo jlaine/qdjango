@@ -5,10 +5,10 @@ QT += script sql testlib
 
 TARGET = qdjango-script-tests
 
-HEADERS += ../auth-models.h script.h
-SOURCES += ../auth-models.cpp script.cpp
+HEADERS += ../db/auth-models.h script.h
+SOURCES += ../db/auth-models.cpp script.cpp
 
-INCLUDEPATH += .. $$QDJANGO_INCLUDEPATH
+INCLUDEPATH += ../db $$QDJANGO_INCLUDEPATH
 
 LIBS += \
     -L../../src/db $$QDJANGO_DB_LIBS \
