@@ -245,15 +245,15 @@ QDjangoMetaModel::QDjangoMetaModel(const QObject *model)
         field.d->name = meta->property(i).name();
         field.d->type = meta->property(i).type();
         field.d->db_column = dbColumnOption.isEmpty() ? QString::fromLatin1(field.d->name) : dbColumnOption;
-        field.d->index = dbIndexOption;
         field.d->maxLength = maxLengthOption;
         field.d->null = nullOption;
         if (primaryKeyOption) {
             field.d->autoIncrement = autoIncrementOption;
-            field.d->unique = true;
             d->primaryKey = field.d->name;
         } else if (uniqueOption) {
             field.d->unique = true;
+        } else if (dbIndexOption) {
+            field.d->index = true;
         }
 
         d->localFields << field;
@@ -266,7 +266,6 @@ QDjangoMetaModel::QDjangoMetaModel(const QObject *model)
         field.d->type = QVariant::Int;
         field.d->db_column = QLatin1String("id");
         field.d->autoIncrement = true;
-        field.d->unique = true;
         d->localFields.prepend(field);
         d->primaryKey = field.d->name;
     }
@@ -376,6 +375,8 @@ QStringList QDjangoMetaModel::createTableSql() const
 
         if (!field.d->null)
             fieldSql += QLatin1String(" NOT NULL");
+        if (field.d->unique)
+            fieldSql += QLatin1String(" UNIQUE");
 
         // primary key
         if (field.d->name == d->primaryKey)
@@ -414,7 +415,7 @@ QStringList QDjangoMetaModel::createTableSql() const
 
     // create indices
     foreach (const QDjangoMetaField &field, d->localFields) {
-        if (field.d->index && !field.d->unique) {
+        if (field.d->index) {
             const QString indexName = d->table + QLatin1Char('_') + field.column();
             queries << QString::fromLatin1("CREATE INDEX %1 ON %2 (%3)").arg(
                 // FIXME : how should we escape an index name?

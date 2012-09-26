@@ -164,3 +164,32 @@ private:
     QTime m_value;
 };
 
+class tst_Options : public QDjangoModel
+{
+    Q_OBJECT
+    Q_PROPERTY(int indexField READ indexField WRITE setIndexField)
+    Q_PROPERTY(int nullField READ nullField WRITE setNullField)
+    Q_PROPERTY(int uniqueField READ uniqueField WRITE setUniqueField)
+
+    Q_CLASSINFO("indexField", "db_index=true")
+    Q_CLASSINFO("nullField", "null=true")
+    Q_CLASSINFO("uniqueField", "unique=true")
+
+public:
+    int indexField() const { return m_indexField; }
+    void setIndexField(int value) { m_indexField = value; }
+
+    int nullField() const { return m_nullField; }
+    void setNullField(int value) { m_nullField = value; }
+
+    int uniqueField() const { return m_uniqueField; }
+    void setUniqueField(int value) { m_uniqueField = value; }
+
+private slots:
+    void testOptions();
+
+private:
+    int m_indexField;
+    int m_nullField;
+    int m_uniqueField;
+};

@@ -130,3 +130,15 @@ void tst_Time::testValue()
     cleanup<tst_Time>();
 }
 
+void tst_Options::testOptions()
+{
+    init<tst_Options>(QStringList()
+        << QLatin1String(
+            "CREATE TABLE \"tst_options\" ("
+                "\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, "
+                "\"indexField\" integer NOT NULL, "
+                "\"nullField\" integer, "
+                "\"uniqueField\" integer NOT NULL UNIQUE"
+            ")")
+        << QLatin1String("CREATE INDEX \"tst_options_indexField\" ON \"tst_options\" (\"indexField\")"));
+}

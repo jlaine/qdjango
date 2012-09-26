@@ -903,6 +903,9 @@ int main(int argc, char *argv[])
         tst_Time testTime;
         errors += QTest::qExec(&testTime);
 
+        tst_Options testOptions;
+        errors += QTest::qExec(&testOptions);
+
         // models
         TestUser testUser;
         errors += QTest::qExec(&testUser);
