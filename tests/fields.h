@@ -28,9 +28,6 @@ public:
     bool value() const { return m_value; }
     void setValue(bool value) { m_value = value; }
 
-private slots:
-    void testValue();
-
 private:
     bool m_value;
 };
@@ -43,9 +40,6 @@ class tst_ByteArray : public QDjangoModel
 public:
     QByteArray value() const { return m_value; }
     void setValue(const QByteArray &value) { m_value = value; }
-
-private slots:
-    void testValue();
 
 private:
     QByteArray m_value;
@@ -60,9 +54,6 @@ public:
     QDate value() const { return m_value; }
     void setValue(const QDate &value) { m_value = value; }
 
-private slots:
-    void testValue();
-
 private:
     QDate m_value;
 };
@@ -75,9 +66,6 @@ class tst_DateTime : public QDjangoModel
 public:
     QDateTime value() const { return m_value; }
     void setValue(const QDateTime &value) { m_value = value; }
-
-private slots:
-    void testValue();
 
 private:
     QDateTime m_value;
@@ -92,9 +80,6 @@ public:
     double value() const { return m_value; }
     void setValue(double value) { m_value = value; }
 
-private slots:
-    void testValue();
-
 private:
     double m_value;
 };
@@ -108,9 +93,6 @@ public:
     int value() const { return m_value; }
     void setValue(int value) { m_value = value; }
 
-private slots:
-    void testValue();
-
 private:
     int m_value;
 };
@@ -123,9 +105,6 @@ class tst_LongLong : public QDjangoModel
 public:
     qlonglong value() const { return m_value; }
     void setValue(qlonglong value) { m_value = value; }
-
-private slots:
-    void testValue();
 
 private:
     qlonglong m_value;
@@ -141,9 +120,6 @@ public:
     QString value() const { return m_value; }
     void setValue(const QString &value) { m_value = value; }
 
-private slots:
-    void testValue();
-
 private:
     QString m_value;
 };
@@ -157,11 +133,24 @@ public:
     QTime value() const { return m_value; }
     void setValue(const QTime &value) { m_value = value; }
 
-private slots:
-    void testValue();
-
 private:
     QTime m_value;
+};
+
+class tst_Fields : public QObject
+{
+    Q_OBJECT
+
+private slots:
+    void testBool();
+    void testByteArray();
+    void testDate();
+    void testDateTime();
+    void testDouble();
+    void testInteger();
+    void testLongLong();
+    void testString();
+    void testTime();
 };
 
 class tst_Options : public QDjangoModel

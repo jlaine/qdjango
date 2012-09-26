@@ -876,38 +876,13 @@ int main(int argc, char *argv[])
         tst_QDjangoModel testModel;
         errors += QTest::qExec(&testModel);
 
-        // field types
-        tst_Bool testBool;
-        errors += QTest::qExec(&testBool);
-
-        tst_ByteArray testByteArray;
-        errors += QTest::qExec(&testByteArray);
-
-        tst_Date testDate;
-        errors += QTest::qExec(&testDate);
-
-        tst_DateTime testDateTime;
-        errors += QTest::qExec(&testDateTime);
-
-        tst_Double testDouble;
-        errors += QTest::qExec(&testDouble);
-
-        tst_Integer testInteger;
-        errors += QTest::qExec(&testInteger);
-
-        tst_LongLong testLongLong;
-        errors += QTest::qExec(&testLongLong);
-
-        tst_String testString;
-        errors += QTest::qExec(&testString);
-
-        tst_Time testTime;
-        errors += QTest::qExec(&testTime);
+        // fields
+        tst_Fields testFields;
+        errors += QTest::qExec(&testFields);
 
         tst_Options testOptions;
         errors += QTest::qExec(&testOptions);
 
-        // foreign keys
         tst_FkConstraint testFkConstraint;
         errors += QTest::qExec(&testFkConstraint);
 

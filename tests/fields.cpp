@@ -52,7 +52,7 @@ void cleanup()
     QCOMPARE(metaModel.dropTable(), true);
 }
 
-void tst_Bool::testValue()
+void tst_Fields::testBool()
 {
     QStringList sql;
     if (QDjango::database().driverName() == QLatin1String("QPSQL"))
@@ -66,7 +66,7 @@ void tst_Bool::testValue()
     cleanup<tst_Bool>();
 }
 
-void tst_ByteArray::testValue()
+void tst_Fields::testByteArray()
 {
     QStringList sql;
     if (QDjango::database().driverName() == QLatin1String("QPSQL"))
@@ -80,7 +80,7 @@ void tst_ByteArray::testValue()
     cleanup<tst_ByteArray>();
 }
 
-void tst_Date::testValue()
+void tst_Fields::testDate()
 {
     QStringList sql;
     if (QDjango::database().driverName() == QLatin1String("QPSQL"))
@@ -93,7 +93,7 @@ void tst_Date::testValue()
     cleanup<tst_Date>();
 }
 
-void tst_DateTime::testValue()
+void tst_Fields::testDateTime()
 {
     QStringList sql;
     if (QDjango::database().driverName() == QLatin1String("QPSQL"))
@@ -106,7 +106,7 @@ void tst_DateTime::testValue()
     cleanup<tst_DateTime>();
 }
 
-void tst_Double::testValue()
+void tst_Fields::testDouble()
 {
     QStringList sql;
     if (QDjango::database().driverName() == QLatin1String("QPSQL"))
@@ -119,7 +119,7 @@ void tst_Double::testValue()
     cleanup<tst_Double>();
 }
 
-void tst_Integer::testValue()
+void tst_Fields::testInteger()
 {
     QStringList sql;
     if (QDjango::database().driverName() == QLatin1String("QPSQL"))
@@ -134,7 +134,7 @@ void tst_Integer::testValue()
     cleanup<tst_Integer>();
 }
 
-void tst_LongLong::testValue()
+void tst_Fields::testLongLong()
 {
     QStringList sql;
     if (QDjango::database().driverName() == QLatin1String("QPSQL"))
@@ -149,7 +149,7 @@ void tst_LongLong::testValue()
     cleanup<tst_LongLong>();
 }
 
-void tst_String::testValue()
+void tst_Fields::testString()
 {
     QStringList sql;
     if (QDjango::database().driverName() == QLatin1String("QPSQL"))
@@ -162,7 +162,7 @@ void tst_String::testValue()
     cleanup<tst_String>();
 }
 
-void tst_Time::testValue()
+void tst_Fields::testTime()
 {
     QStringList sql;
     if (QDjango::database().driverName() == QLatin1String("QPSQL"))
