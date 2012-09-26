@@ -638,14 +638,14 @@ void TestRelated::testRelated()
     // load fixtures
     QVariant userPk;
     {
-        User *user = new User;
-        user->setUsername("foouser");
-        user->setPassword("foopass");
-        QCOMPARE(user->save(), true);
-        userPk = user->pk();
+        User user;
+        user.setUsername("foouser");
+        user.setPassword("foopass");
+        QCOMPARE(user.save(), true);
+        userPk = user.pk();
 
         Message message;
-        message.setUser(user);
+        message.setUser(&user);
         message.setMessage("test message");
         QCOMPARE(message.save(), true);
     }
@@ -687,14 +687,14 @@ void TestRelated::filterRelated()
     // load fixtures
     QVariant userPk;
     {
-        User *user = new User;
-        user->setUsername("foouser");
-        user->setPassword("foopass");
-        QCOMPARE(user->save(), true);
-        userPk = user->pk();
+        User user;
+        user.setUsername("foouser");
+        user.setPassword("foopass");
+        QCOMPARE(user.save(), true);
+        userPk = user.pk();
 
         Message message;
-        message.setUser(user);
+        message.setUser(&user);
         message.setMessage("test message");
         QCOMPARE(message.save(), true);
     }
@@ -718,25 +718,25 @@ void TestRelated::testGroups()
 {
     const QDjangoQuerySet<UserGroups> userGroups;
 
-    User *user = new User;
-    user->setUsername("foouser");
-    user->setPassword("foopass");
-    QCOMPARE(user->save(), true);
+    User user;
+    user.setUsername("foouser");
+    user.setPassword("foopass");
+    QCOMPARE(user.save(), true);
 
-    Group *group = new Group;
-    group->setName("foogroup");
-    QCOMPARE(group->save(), true);
+    Group group;
+    group.setName("foogroup");
+    QCOMPARE(group.save(), true);
 
     UserGroups userGroup;
-    userGroup.setUser(user);
-    userGroup.setGroup(group);
+    userGroup.setUser(&user);
+    userGroup.setGroup(&group);
     QCOMPARE(userGroup.save(), true);
     
     UserGroups *ug = userGroups.selectRelated().get(
         QDjangoWhere("id", QDjangoWhere::Equals, 1));
     QVERIFY(ug != 0);
-    QCOMPARE(ug->property("user_id"), user->pk());
-    QCOMPARE(ug->property("group_id"), group->pk());
+    QCOMPARE(ug->property("user_id"), user.pk());
+    QCOMPARE(ug->property("group_id"), group.pk());
     delete ug;
 }
 
