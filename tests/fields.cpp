@@ -140,5 +140,5 @@ void tst_Options::testOptions()
                 "\"nullField\" integer, "
                 "\"uniqueField\" integer NOT NULL UNIQUE"
             ")")
-        << QLatin1String("CREATE INDEX \"tst_options_indexField\" ON \"tst_options\" (\"indexField\")"));
+        << QLatin1String("CREATE INDEX \"tst_options_ac243651\" ON \"tst_options\" (\"indexField\")"));
 }

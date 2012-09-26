@@ -24,6 +24,43 @@
 #include "QDjangoMetaModel.h"
 #include "QDjangoQuerySet_p.h"
 
+// python-compatible hash
+
+static long string_hash(const QString &s)
+{
+    if (s.isEmpty())
+        return 0;
+
+    const QByteArray a = s.toLatin1();
+    unsigned char *p = (unsigned char *) a.constData();
+    long x = *p << 7;
+    for (int i = 0; i < a.size(); ++i)
+        x = (1000003*x) ^ *p++;
+    x ^= a.size();
+    return (x == -1) ? -2 : x;
+}
+
+static long stringlist_hash(const QStringList &l)
+{
+    long x = 0x345678L;
+    long mult = 1000003L;
+    int len = l.size();
+    foreach (const QString &s, l) {
+        --len;
+        x = (x ^ string_hash(s)) * mult;
+        mult += (long)(82520L + len + len);
+    }
+    x += 97531L;
+    return (x == -1) ? -2 : x;
+}
+
+// django-compatible digest
+
+static QString stringlist_digest(const QStringList &l)
+{
+    return QString::number(labs(stringlist_hash(l)) % 4294967296L, 16);
+}
+
 class QDjangoMetaFieldPrivate : public QSharedData
 {
 public:
@@ -416,7 +453,8 @@ QStringList QDjangoMetaModel::createTableSql() const
     // create indices
     foreach (const QDjangoMetaField &field, d->localFields) {
         if (field.d->index) {
-            const QString indexName = d->table + QLatin1Char('_') + field.column();
+            const QString indexName = d->table + QLatin1Char('_')
+                + stringlist_digest(QStringList() << field.column());
             queries << QString::fromLatin1("CREATE INDEX %1 ON %2 (%3)").arg(
                 // FIXME : how should we escape an index name?
                 driver->escapeIdentifier(indexName, QSqlDriver::FieldName),
