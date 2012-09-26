@@ -705,14 +705,17 @@ bool QDjangoMetaModel::save(QObject *model) const
     }
 
     // perform INSERT
-    QVariant insertId;
     QDjangoQuerySetPrivate qs(model->metaObject()->className());
-    if (!qs.sqlInsert(fields, &insertId))
-        return false;
-
-    // fetch autoincrement pk
-    if (primaryKey.d->autoIncrement)
+    if (primaryKey.d->autoIncrement) {
+        // fetch autoincrement pk
+        QVariant insertId;
+        if (!qs.sqlInsert(fields, &insertId))
+            return false;
         model->setProperty(d->primaryKey, insertId);
+    } else {
+        if (!qs.sqlInsert(fields))
+            return false;
+    }
     return true;
 }
 
