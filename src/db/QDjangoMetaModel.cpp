@@ -465,6 +465,9 @@ QStringList QDjangoMetaModel::createTableSql() const
                 driver->escapeIdentifier(foreignMeta.d->table, QSqlDriver::TableName),
                 driver->escapeIdentifier(foreignField.column(), QSqlDriver::FieldName));
 
+            if (driverName == QLatin1String("QPSQL"))
+                fieldSql += " DEFERRABLE INITIALLY DEFERRED";
+
             if (field.d->deleteConstraint != NoAction) {
                 fieldSql += " ON DELETE";
                 switch (field.d->deleteConstraint) {
