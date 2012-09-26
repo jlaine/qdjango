@@ -87,12 +87,12 @@ public:
 };
 
 QDjangoMetaFieldPrivate::QDjangoMetaFieldPrivate()
-    : autoIncrement(false),
-    index(false),
-    maxLength(0),
-    null(false),
-    unique(false),
-    deleteConstraint(NoAction)
+    : autoIncrement(false)
+    , index(false)
+    , maxLength(0)
+    , null(false)
+    , unique(false)
+    , deleteConstraint(NoAction)
 {
 }
 
