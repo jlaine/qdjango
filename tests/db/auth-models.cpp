@@ -19,17 +19,6 @@
 
 #include "auth-models.h"
 
-QString normalizeSql(const QSqlDatabase &db, const QString &sql)
-{
-    const QString driverName = db.driverName();
-    QString modSql(sql);
-    if (driverName == "QMYSQL")
-        modSql.replace("`", "\"");
-    else if (driverName == "QSQLITE" || driverName == "QSQLITE2")
-        modSql.replace("LIKE ? ESCAPE '\\'", "LIKE ?");
-    return modSql;
-}
-
 User::User(QObject *parent)
     : QDjangoModel(parent),
     m_isActive(true),

@@ -17,8 +17,9 @@
 
 #include <QtTest/QtTest>
 
+#include "QDjango.h"
+
 #include "foreignkey.h"
-#include "main.h"
 
 tst_FkConstraint::tst_FkConstraint(QObject *parent)
     : QDjangoModel(parent)

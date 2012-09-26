@@ -20,9 +20,9 @@
 #include "QDjangoQuerySet.h"
 #include "QDjangoWhere.h"
 
-#include "main.h"
 #include "auth-models.h"
 #include "auth-tests.h"
+#include "util.h"
 
 /** Create database table before running tests.
  */

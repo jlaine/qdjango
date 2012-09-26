@@ -20,7 +20,7 @@
 #include "QDjangoScript.h"
 
 #include "auth-models.h"
-#include "main.h"
+#include "util.h"
 
 Q_DECLARE_METATYPE(QDjangoQuerySet<User>)
 

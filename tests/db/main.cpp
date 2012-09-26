@@ -34,6 +34,7 @@
 #include "foreignkey.h"
 #include "shares-models.h"
 #include "shares-tests.h"
+#include "util.h"
 
 static QString escapeField(const QSqlDatabase &db, const QString &name)
 {
