@@ -203,4 +203,5 @@ void tst_Options::testOptions()
 
     sql << QLatin1String("CREATE INDEX \"some_table_ac243651\" ON \"some_table\" (\"indexField\")");
     init<tst_Options>(sql);
+    cleanup<tst_Options>();
 }
