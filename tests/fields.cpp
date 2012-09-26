@@ -175,7 +175,7 @@ void tst_Fields::testTime()
     cleanup<tst_Time>();
 }
 
-void tst_Options::testOptions()
+void tst_Fields::testOptions()
 {
     QStringList sql;
     if (QDjango::database().driverName() == QLatin1String("QPSQL"))

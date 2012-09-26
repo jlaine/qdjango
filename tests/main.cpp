@@ -880,9 +880,6 @@ int main(int argc, char *argv[])
         tst_Fields testFields;
         errors += QTest::qExec(&testFields);
 
-        tst_Options testOptions;
-        errors += QTest::qExec(&testOptions);
-
         tst_FkConstraint testFkConstraint;
         errors += QTest::qExec(&testFkConstraint);
 

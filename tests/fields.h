@@ -19,6 +19,23 @@
 
 #include "QDjangoModel.h"
 
+class tst_Fields : public QObject
+{
+    Q_OBJECT
+
+private slots:
+    void testBool();
+    void testByteArray();
+    void testDate();
+    void testDateTime();
+    void testDouble();
+    void testInteger();
+    void testLongLong();
+    void testString();
+    void testTime();
+    void testOptions();
+};
+
 class tst_Bool : public QDjangoModel
 {
     Q_OBJECT
@@ -137,22 +154,6 @@ private:
     QTime m_value;
 };
 
-class tst_Fields : public QObject
-{
-    Q_OBJECT
-
-private slots:
-    void testBool();
-    void testByteArray();
-    void testDate();
-    void testDateTime();
-    void testDouble();
-    void testInteger();
-    void testLongLong();
-    void testString();
-    void testTime();
-};
-
 class tst_Options : public QDjangoModel
 {
     Q_OBJECT
@@ -183,9 +184,6 @@ public:
 
     int uniqueField() const { return m_uniqueField; }
     void setUniqueField(int value) { m_uniqueField = value; }
-
-private slots:
-    void testOptions();
 
 private:
     int m_aField;
