@@ -126,3 +126,4 @@ void TestScript::testModel()
     QCOMPARE(user->username(), QLatin1String("foobar"));
 }
 
+QTEST_MAIN(TestScript)

@@ -9,7 +9,6 @@ HEADERS += \
     fields.h \
     foreignkey.h \
     main.h \
-    script.h \
     auth-models.h \
     auth-tests.h \
     shares-models.h \
@@ -18,7 +17,6 @@ SOURCES += \
     fields.cpp \
     foreignkey.cpp \
     main.cpp \
-    script.cpp \
     auth-models.cpp \
     auth-tests.cpp \
     shares-models.cpp \

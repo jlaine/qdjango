@@ -34,7 +34,6 @@
 #include "foreignkey.h"
 #include "shares-models.h"
 #include "shares-tests.h"
-#include "script.h"
 
 static QString escapeField(const QSqlDatabase &db, const QString &name)
 {
@@ -44,17 +43,6 @@ static QString escapeField(const QSqlDatabase &db, const QString &name)
 static QString escapeTable(const QSqlDatabase &db, const QString &name)
 {
     return db.driver()->escapeIdentifier(name, QSqlDriver::TableName);
-}
-
-QString normalizeSql(const QSqlDatabase &db, const QString &sql)
-{
-    const QString driverName = db.driverName();
-    QString modSql(sql);
-    if (driverName == "QMYSQL")
-        modSql.replace("`", "\"");
-    else if (driverName == "QSQLITE" || driverName == "QSQLITE2")
-        modSql.replace("LIKE ? ESCAPE '\\'", "LIKE ?");
-    return modSql;
 }
 
 Object::Object(QObject *parent)
@@ -891,10 +879,6 @@ int main(int argc, char *argv[])
 
         TestShares testShares;
         errors += QTest::qExec(&testShares);
-
-        // script
-        TestScript testScript;
-        errors += QTest::qExec(&testScript);
     }
 
     if (errors)

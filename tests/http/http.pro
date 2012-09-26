@@ -3,7 +3,7 @@ include(../../qdjango.pri)
 QT -= gui
 QT += network testlib
 
-TARGET = qdjango-tests-http
+TARGET = qdjango-http-tests
 
 HEADERS += http.h
 SOURCES += http.cpp
