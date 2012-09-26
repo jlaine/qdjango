@@ -15,13 +15,14 @@
  * Lesser General Public License for more details.
  */
 
-#include <QtTest>
-
 #include "QDjango.h"
 #include "QDjango_p.h"
+#include "QDjangoModel.h"
 #include "QDjangoQuerySet.h"
 #include "QDjangoWhere.h"
-#include "fields.h"
+
+#include "tst_qdjangometafield.h"
+#include "util.h"
 
 #define Q QDjangoWhere
 
@@ -36,10 +37,16 @@ void init(const QStringList &sql)
 template<class T, class K>
 void setAndGet(const K &value)
 {
+    // save object
     T v1;
     v1.setValue(value);
     QCOMPARE(v1.save(), true);
+    QVERIFY(!v1.pk().isNull());
 
+    // save again
+    QCOMPARE(v1.save(), true);
+
+    // get object
     T v2;
     QVERIFY(QDjangoQuerySet<T>().get(Q(QLatin1String("pk"), Q::Equals, v1.pk()), &v2) != 0);
     QCOMPARE(v2.value(), value);
@@ -52,7 +59,12 @@ void cleanup()
     QCOMPARE(metaModel.dropTable(), true);
 }
 
-void tst_Fields::testBool()
+void tst_QDjangoMetaModel::initTestCase()
+{
+    initialiseDatabase();
+}
+
+void tst_QDjangoMetaModel::testBool()
 {
     QStringList sql;
     if (QDjango::database().driverName() == QLatin1String("QPSQL"))
@@ -66,7 +78,7 @@ void tst_Fields::testBool()
     cleanup<tst_Bool>();
 }
 
-void tst_Fields::testByteArray()
+void tst_QDjangoMetaModel::testByteArray()
 {
     QStringList sql;
     if (QDjango::database().driverName() == QLatin1String("QPSQL"))
@@ -80,7 +92,7 @@ void tst_Fields::testByteArray()
     cleanup<tst_ByteArray>();
 }
 
-void tst_Fields::testDate()
+void tst_QDjangoMetaModel::testDate()
 {
     QStringList sql;
     if (QDjango::database().driverName() == QLatin1String("QPSQL"))
@@ -93,7 +105,7 @@ void tst_Fields::testDate()
     cleanup<tst_Date>();
 }
 
-void tst_Fields::testDateTime()
+void tst_QDjangoMetaModel::testDateTime()
 {
     QStringList sql;
     if (QDjango::database().driverName() == QLatin1String("QPSQL"))
@@ -106,7 +118,7 @@ void tst_Fields::testDateTime()
     cleanup<tst_DateTime>();
 }
 
-void tst_Fields::testDouble()
+void tst_QDjangoMetaModel::testDouble()
 {
     QStringList sql;
     if (QDjango::database().driverName() == QLatin1String("QPSQL"))
@@ -119,7 +131,7 @@ void tst_Fields::testDouble()
     cleanup<tst_Double>();
 }
 
-void tst_Fields::testInteger()
+void tst_QDjangoMetaModel::testInteger()
 {
     QStringList sql;
     if (QDjango::database().driverName() == QLatin1String("QPSQL"))
@@ -134,7 +146,7 @@ void tst_Fields::testInteger()
     cleanup<tst_Integer>();
 }
 
-void tst_Fields::testLongLong()
+void tst_QDjangoMetaModel::testLongLong()
 {
     QStringList sql;
     if (QDjango::database().driverName() == QLatin1String("QPSQL"))
@@ -149,7 +161,7 @@ void tst_Fields::testLongLong()
     cleanup<tst_LongLong>();
 }
 
-void tst_Fields::testString()
+void tst_QDjangoMetaModel::testString()
 {
     QStringList sql;
     if (QDjango::database().driverName() == QLatin1String("QPSQL"))
@@ -162,7 +174,7 @@ void tst_Fields::testString()
     cleanup<tst_String>();
 }
 
-void tst_Fields::testTime()
+void tst_QDjangoMetaModel::testTime()
 {
     QStringList sql;
     if (QDjango::database().driverName() == QLatin1String("QPSQL"))
@@ -175,7 +187,7 @@ void tst_Fields::testTime()
     cleanup<tst_Time>();
 }
 
-void tst_Fields::testOptions()
+void tst_QDjangoMetaModel::testOptions()
 {
     QStringList sql;
     if (QDjango::database().driverName() == QLatin1String("QPSQL"))
@@ -205,3 +217,5 @@ void tst_Fields::testOptions()
     init<tst_Options>(sql);
     cleanup<tst_Options>();
 }
+
+QTEST_MAIN(tst_QDjangoMetaModel)

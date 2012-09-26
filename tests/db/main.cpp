@@ -30,7 +30,6 @@
 #include "main.h"
 #include "auth-models.h"
 #include "auth-tests.h"
-#include "fields.h"
 #include "foreignkey.h"
 #include "shares-models.h"
 #include "shares-tests.h"
@@ -281,101 +280,6 @@ void tst_QDjangoCompiler::resolve()
         escapeField(db, "item2_id")));
 }
 
-void tst_QDjangoMetaModel::initTestCase()
-{
-    metaModel = QDjango::registerModel<Object>();
-    QCOMPARE(metaModel.createTable(), true);
-}
-
-void tst_QDjangoMetaModel::localField_data()
-{
-    QTest::addColumn<QString>("lookup");
-    QTest::addColumn<bool>("isValid");
-    QTest::addColumn<QString>("name");
-    QTest::addColumn<QString>("column");
-
-    QTest::newRow("pk") << "pk" << true << "id" << "id";
-    QTest::newRow("id") << "id" << true << "id" << "id";
-    QTest::newRow("foo") << "foo" << true << "foo" << "foo";
-    QTest::newRow("bar") << "bar" << true << "bar" << "bar";
-    QTest::newRow("zoo") << "zoo" << true << "zoo" << "zoo";
-    QTest::newRow("zzz") << "zzz" << true << "zzz" << "zzz_column";
-    QTest::newRow("unknown") << "unknown" << false << "" << "";
-}
-
-void tst_QDjangoMetaModel::localField()
-{
-    QFETCH(QString, lookup);
-    QFETCH(bool, isValid);
-    QFETCH(QString, name);
-    QFETCH(QString, column);
-
-    QDjangoMetaField field = metaModel.localField(lookup.toLatin1());
-    QCOMPARE(field.isValid(), isValid);
-    QCOMPARE(field.name(), name);
-    QCOMPARE(field.column(), column);
-}
-
-void tst_QDjangoMetaModel::options()
-{
-    const QList<QDjangoMetaField> localFields = metaModel.localFields();
-    QCOMPARE(metaModel.table(), QLatin1String("foo_table"));
-    QCOMPARE(metaModel.primaryKey(), QByteArray("id"));
-    QCOMPARE(localFields.size(), 5);
-    QCOMPARE(localFields[0].name(), QLatin1String("id"));
-    QCOMPARE(localFields[0].column(), QLatin1String("id"));
-#if 0
-    QCOMPARE(localFields[0].autoIncrement, true);
-    QCOMPARE(localFields[0].maxLength, 0);
-    QCOMPARE(localFields[0].index, false);
-    QCOMPARE(localFields[0].unique, true);
-#endif
-    QCOMPARE(localFields[1].name(), QLatin1String("foo"));
-    QCOMPARE(localFields[1].column(), QLatin1String("foo"));
-#if 0
-    QCOMPARE(localFields[1].autoIncrement, false);
-    QCOMPARE(localFields[1].index, false);
-    QCOMPARE(localFields[1].maxLength, 255);
-    QCOMPARE(localFields[1].unique, false);
-#endif
-    QCOMPARE(localFields[2].name(), QLatin1String("bar"));
-    QCOMPARE(localFields[2].column(), QLatin1String("bar"));
-#if 0
-    QCOMPARE(localFields[2].autoIncrement, false);
-    QCOMPARE(localFields[2].index, true);
-    QCOMPARE(localFields[2].maxLength, 0);
-    QCOMPARE(localFields[2].unique, false);
-#endif
-    QCOMPARE(localFields[3].name(), QLatin1String("zoo"));
-    QCOMPARE(localFields[3].column(), QLatin1String("zoo"));
-#if 0
-    QCOMPARE(localFields[3].autoIncrement, false);
-    QCOMPARE(localFields[3].index, false);
-    QCOMPARE(localFields[3].maxLength, 0);
-    QCOMPARE(localFields[3].unique, true);
-#endif
-    QCOMPARE(localFields[4].name(), QLatin1String("zzz"));
-    QCOMPARE(localFields[4].column(), QLatin1String("zzz_column"));
-}
-
-void tst_QDjangoMetaModel::save()
-{
-    Object obj;
-    obj.setFoo("some string");
-    obj.setBar(1234);
-    QCOMPARE(metaModel.save(&obj), true);
-    QCOMPARE(obj.property("id"), QVariant(1));
-
-    // save again
-    QCOMPARE(metaModel.save(&obj), true);
-    QCOMPARE(obj.property("id"), QVariant(1));
-}
-
-void tst_QDjangoMetaModel::cleanupTestCase()
-{
-    metaModel.dropTable();
-}
-
 /** Create database tables before running tests.
  */
 void tst_QDjangoModel::initTestCase()
@@ -553,9 +457,6 @@ int main(int argc, char *argv[])
     tst_QDjangoCompiler testCompiler;
     errors += QTest::qExec(&testCompiler);
 
-    tst_QDjangoMetaModel testMetaModel;
-    errors += QTest::qExec(&testMetaModel);
-
     tst_QDjangoQuerySetPrivate testQuerySetPrivate;
     errors += QTest::qExec(&testQuerySetPrivate);
 
@@ -563,9 +464,6 @@ int main(int argc, char *argv[])
     errors += QTest::qExec(&testModel);
 
     // fields
-    tst_Fields testFields;
-    errors += QTest::qExec(&testFields);
-
     tst_FkConstraint testFkConstraint;
     errors += QTest::qExec(&testFkConstraint);
 

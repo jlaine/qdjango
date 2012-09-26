@@ -112,24 +112,6 @@ private slots:
     void resolve();
 };
 
-/** Test QDjangoMetaModel class.
- */
-class tst_QDjangoMetaModel : public QObject
-{
-    Q_OBJECT
-
-private slots:
-    void initTestCase();
-    void localField_data();
-    void localField();
-    void options();
-    void save();
-    void cleanupTestCase();
-
-private:
-    QDjangoMetaModel metaModel;
-};
-
 /** Test QDjangoModel class.
  */
 class tst_QDjangoModel : public QObject

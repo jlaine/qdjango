@@ -6,7 +6,6 @@ QT += sql testlib
 TARGET = qdjango-db-tests
 
 HEADERS += \
-    fields.h \
     foreignkey.h \
     main.h \
     auth-models.h \
@@ -15,7 +14,6 @@ HEADERS += \
     shares-tests.h \
     util.h
 SOURCES += \
-    fields.cpp \
     foreignkey.cpp \
     main.cpp \
     auth-models.cpp \
