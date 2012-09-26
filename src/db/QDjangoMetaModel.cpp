@@ -524,8 +524,6 @@ QObject *QDjangoMetaModel::foreignKey(const QObject *model, const char *name) co
     \param model
     \param name
     \param value
-
-    \note The \c model will take ownership of the given \c value.
 */
 void QDjangoMetaModel::setForeignKey(QObject *model, const char *name, QObject *value) const
 {
@@ -533,16 +531,12 @@ void QDjangoMetaModel::setForeignKey(QObject *model, const char *name, QObject *
     QObject *old = model->property(prop + "_ptr").value<QObject*>();
     if (old == value)
         return;
-    if (old)
-        delete old;
 
     // store the new pointer and update the foreign key
     model->setProperty(prop + "_ptr", qVariantFromValue(value));
-    if (value)
-    {
+    if (value) {
         const QDjangoMetaModel foreignMeta = QDjango::metaModel(d->foreignFields[prop]);
         model->setProperty(prop + "_id", value->property(foreignMeta.primaryKey()));
-        value->setParent(model);
     } else {
         model->setProperty(prop + "_id", QVariant());
     }
