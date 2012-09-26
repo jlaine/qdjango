@@ -174,6 +174,7 @@ class tst_Options : public QDjangoModel
     Q_PROPERTY(int uniqueField READ uniqueField WRITE setUniqueField)
 
     Q_CLASSINFO("__meta__", "unique_together=aField,bField")
+    Q_CLASSINFO("bField", "db_column=b_field")
     Q_CLASSINFO("indexField", "db_index=true")
     Q_CLASSINFO("nullField", "null=true")
     Q_CLASSINFO("uniqueField", "unique=true")

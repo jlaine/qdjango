@@ -137,11 +137,11 @@ void tst_Options::testOptions()
             "CREATE TABLE \"tst_options\" ("
                 "\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, "
                 "\"aField\" integer NOT NULL, "
-                "\"bField\" integer NOT NULL, "
+                "\"b_field\" integer NOT NULL, "
                 "\"indexField\" integer NOT NULL, "
                 "\"nullField\" integer, "
                 "\"uniqueField\" integer NOT NULL UNIQUE, "
-                "UNIQUE (\"aField\", \"bField\")"
+                "UNIQUE (\"aField\", \"b_field\")"
             ")")
         << QLatin1String("CREATE INDEX \"tst_options_ac243651\" ON \"tst_options\" (\"indexField\")"));
 }
