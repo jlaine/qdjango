@@ -161,27 +161,3 @@ private:
     QDjangoMetaModel metaModel;
 };
 
-/** Test QDjangoWhere class.
- */
-class tst_QDjangoWhere : public QObject
-{
-    Q_OBJECT
-
-private slots:
-    void emptyWhere();
-    void equalsWhere();
-    void notEqualsWhere();
-    void greaterThan();
-    void greaterOrEquals();
-    void lessThan();
-    void lessOrEquals();
-    void isIn();
-    void isNull();
-    void startsWith();
-    void endsWith();
-    void contains();
-    void andWhere();
-    void orWhere();
-    void complexWhere();
-};
-

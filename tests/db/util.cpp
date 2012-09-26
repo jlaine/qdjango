@@ -15,7 +15,45 @@
  * Lesser General Public License for more details.
  */
 
+#include <cstdlib>
+
+#include <QtTest>
+
+#include "QDjango.h"
+
 #include "util.h"
+
+void initialiseDatabase()
+{
+    char *p;
+
+    // enable SQL debugging
+    QDjango::setDebugEnabled(true);
+
+    // open database
+    QString databaseDriver = "QSQLITE";
+    p = getenv("QDJANGO_DB_DRIVER");
+    if ((p = getenv("QDJANGO_DB_DRIVER")) != 0)
+        databaseDriver = QString::fromLocal8Bit(p);
+    QSqlDatabase db = QSqlDatabase::addDatabase(databaseDriver);
+
+    if ((p = getenv("QDJANGO_DB_NAME")) != 0) 
+        db.setDatabaseName(QString::fromLocal8Bit(p));
+    else if (databaseDriver == "QSQLITE")
+        db.setDatabaseName(":memory:");
+
+    if ((p = getenv("QDJANGO_DB_USER")) != 0) 
+        db.setUserName(QString::fromLocal8Bit(p));
+    
+    if ((p = getenv("QDJANGO_DB_PASSWORD")) != 0) 
+        db.setPassword(QString::fromLocal8Bit(p));
+    
+    if ((p = getenv("QDJANGO_DB_HOST")) != 0) 
+        db.setHostName(QString::fromLocal8Bit(p));
+
+    QVERIFY(db.open());
+    QDjango::setDatabase(db);
+}
 
 QString normalizeSql(const QSqlDatabase &db, const QString &sql)
 {

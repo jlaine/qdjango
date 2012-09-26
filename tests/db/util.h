@@ -15,9 +15,12 @@
  * Lesser General Public License for more details.
  */
 
+#include <QtTest>
+
 #include "QDjango.h"
 #include "QDjangoModel.h"
 
+void initialiseDatabase();
 QString normalizeSql(const QSqlDatabase &db, const QString &sql);
 
 #define CHECKWHERE(_where, s, v) { \
