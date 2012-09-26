@@ -34,7 +34,6 @@
 #include "foreignkey.h"
 #include "shares-models.h"
 #include "shares-tests.h"
-#include "http.h"
 #include "script.h"
 
 static QString escapeField(const QSqlDatabase &db, const QString &name)
@@ -892,13 +891,6 @@ int main(int argc, char *argv[])
 
         TestShares testShares;
         errors += QTest::qExec(&testShares);
-
-        // http
-        TestHttp testHttp;
-        errors += QTest::qExec(&testHttp);
-
-        tst_QDjangoUrlResolver testUrlResolver;
-        errors += QTest::qExec(&testUrlResolver);
 
         // script
         TestScript testScript;

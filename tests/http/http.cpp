@@ -274,3 +274,21 @@ QDjangoHttpResponse* tst_QDjangoUrlResolver::_q_twoArgs(const QDjangoHttpRequest
 
     return new QDjangoHttpResponse;
 }
+
+int main(int argc, char *argv[])
+{
+    QCoreApplication app(argc, argv);
+    int errors = 0;
+
+    TestHttp testHttp;
+    errors += QTest::qExec(&testHttp);
+
+    tst_QDjangoUrlResolver testUrlResolver;
+    errors += QTest::qExec(&testUrlResolver);
+
+    if (errors) {
+        qWarning() << "Total failed tests:" << errors;
+        return EXIT_FAILURE;
+    }
+    return EXIT_SUCCESS;
+}
