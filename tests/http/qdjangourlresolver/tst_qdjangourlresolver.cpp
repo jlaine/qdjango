@@ -133,18 +133,19 @@ void tst_QDjangoUrlResolver::testReverse_data()
     QTest::addColumn<QObject*>("receiver");
     QTest::addColumn<QString>("member");
     QTest::addColumn<QString>("args");
+    QTest::addColumn<QString>("warning");
 
     QObject *receiver = this;
-    QTest::newRow("root") << "/" << receiver << "_q_index" << "";
-    QTest::newRow("no-args") << "/test/" << receiver << "_q_noArgs" << "";
-    QTest::newRow("one-arg") << "/test/123/" << receiver << "_q_oneArg" << "123";
-    QTest::newRow("two-args") << "/test/123/delete/" << receiver << "_q_twoArgs" << "123|delete";
-    QTest::newRow("too-few-args") << "" << receiver << "_q_oneArg" << "";
-    QTest::newRow("too-many-args") << "" << receiver << "_q_noArgs" << "123";
+    QTest::newRow("root") << "/" << receiver << "_q_index" << "" << "";
+    QTest::newRow("no-args") << "/test/" << receiver << "_q_noArgs" << "" << "";
+    QTest::newRow("one-arg") << "/test/123/" << receiver << "_q_oneArg" << "123" << "";
+    QTest::newRow("two-args") << "/test/123/delete/" << receiver << "_q_twoArgs" << "123|delete" << "";
+    QTest::newRow("too-few-args") << "" << receiver << "_q_oneArg" << "" << "Too few arguments for '_q_oneArg'";
+    QTest::newRow("too-many-args") << "" << receiver << "_q_noArgs" << "123" << "Too many arguments for '_q_noArgs'";
 
     receiver = urlHelper;
-    QTest::newRow("recurse-index") << "/recurse/" << receiver << "_q_index" << "";
-    QTest::newRow("recurse-test") << "/recurse/test/" << receiver << "_q_test" << "";
+    QTest::newRow("recurse-index") << "/recurse/" << receiver << "_q_index" << "" << "";
+    QTest::newRow("recurse-test") << "/recurse/test/" << receiver << "_q_test" << "" << "";
 }
 
 void tst_QDjangoUrlResolver::testReverse()
@@ -153,12 +154,15 @@ void tst_QDjangoUrlResolver::testReverse()
     QFETCH(QObject*, receiver);
     QFETCH(QString, member);
     QFETCH(QString, args);
+    QFETCH(QString, warning);
 
     QVariantList varArgs;
     if (!args.isEmpty()) {
         foreach (const QString &bit, args.split(QLatin1Char('|')))
             varArgs << bit;
     }
+    if (!warning.isEmpty())
+        QTest::ignoreMessage(QtWarningMsg, warning.toLatin1());
     QCOMPARE(urlResolver->reverse(receiver, member.toLatin1(), varArgs), path);
 }
 
