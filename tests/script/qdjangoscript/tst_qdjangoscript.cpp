@@ -26,7 +26,7 @@ Q_DECLARE_METATYPE(QDjangoQuerySet<User>)
 
 /** Test QDjango scripting.
  */
-class TestScript : public QObject
+class tst_QDjangoScript : public QObject
 {
     Q_OBJECT
 
@@ -42,14 +42,14 @@ private:
     QScriptEngine *engine;
 };
 
-void TestScript::cleanupTestCase()
+void tst_QDjangoScript::cleanupTestCase()
 {
     metaModel.dropTable();
 
     delete engine;
 }
 
-void TestScript::initTestCase()
+void tst_QDjangoScript::initTestCase()
 {
     initialiseDatabase();
 
@@ -61,7 +61,7 @@ void TestScript::initTestCase()
     QDjangoScript::registerModel<User>(engine);
 }
 
-void TestScript::testWhereConstructor()
+void tst_QDjangoScript::testWhereConstructor()
 {
     QScriptValue result;
     QDjangoWhere where;
@@ -117,7 +117,7 @@ void TestScript::testWhereConstructor()
     CHECKWHERE(where, QLatin1String("username = ?"), QVariantList() << "foobar");
 }
 
-void TestScript::testWhereOperators()
+void tst_QDjangoScript::testWhereOperators()
 {
     QScriptValue result;
     QDjangoWhere where;
@@ -133,7 +133,7 @@ void TestScript::testWhereOperators()
     CHECKWHERE(where, QLatin1String("username = ? OR password = ?"), QVariantList() << "foobar" << "foopass");
 }
 
-void TestScript::testModel()
+void tst_QDjangoScript::testModel()
 {
     // create model instance
     QScriptValue result = engine->evaluate("user = User();");
@@ -145,5 +145,5 @@ void TestScript::testModel()
     QCOMPARE(user->username(), QLatin1String("foobar"));
 }
 
-QTEST_MAIN(TestScript)
+QTEST_MAIN(tst_QDjangoScript)
 #include "tst_qdjangoscript.moc"
