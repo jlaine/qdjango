@@ -131,10 +131,11 @@ bool QDjangoQuery::exec(const QString &query)
 */
 QSqlDatabase QDjango::database()
 {
-    Q_ASSERT(globalDatabase != 0);
-    QThread *thread = QThread::currentThread();
+    if (!globalDatabase)
+        return QSqlDatabase();
 
     // if we are in the main thread, return reference connection
+    QThread *thread = QThread::currentThread();
     if (thread == globalDatabase->thread())
         return globalDatabase->reference;
 

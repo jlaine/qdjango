@@ -1,6 +1,7 @@
 QDjango 0.2.7 (UNRELEASED)
  * Fix and test "unique" field option.
  * Add a "unique_together" model option.
+ * Don't crash if QDjango::database() is called before QDjango::setDatabase().
  * Do not take object ownership in QDjangoMetaModel::setForeignKey().
  * Make index names coincide with those used by django.
 
