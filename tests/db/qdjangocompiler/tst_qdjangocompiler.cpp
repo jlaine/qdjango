@@ -15,8 +15,6 @@
  * Lesser General Public License for more details.
  */
 
-#include <cstdlib>
-
 #include <QSqlDriver>
 
 #include "QDjango.h"
@@ -368,25 +366,4 @@ void tst_QDjangoModel::cleanupTestCase()
     QCOMPARE(QDjango::registerModel<Item>().dropTable(), true);
 }
 
-int main(int argc, char *argv[])
-{
-    QCoreApplication app(argc, argv);
-
-    initialiseDatabase();
-
-    // run tests
-    int errors = 0;
-
-    tst_QDjangoCompiler testCompiler;
-    errors += QTest::qExec(&testCompiler);
-
-    tst_QDjangoModel testModel;
-    errors += QTest::qExec(&testModel);
-
-    if (errors) {
-        qWarning() << "Total failed tests:" << errors;
-        return EXIT_FAILURE;
-    }
-    return EXIT_SUCCESS;
-};
-
+QTEST_MAIN(tst_QDjangoCompiler)
