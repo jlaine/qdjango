@@ -28,11 +28,11 @@ bool initialiseDatabase()
     char *p;
 
     // enable SQL debugging
-    QDjango::setDebugEnabled(true);
+    if ((p = getenv("QDJANGO_DB_DEBUG")) != 0)
+        QDjango::setDebugEnabled(true);
 
     // open database
     QString databaseDriver = "QSQLITE";
-    p = getenv("QDJANGO_DB_DRIVER");
     if ((p = getenv("QDJANGO_DB_DRIVER")) != 0)
         databaseDriver = QString::fromLocal8Bit(p);
     QSqlDatabase db = QSqlDatabase::addDatabase(databaseDriver);

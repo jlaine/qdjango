@@ -14,7 +14,7 @@ def usage():
 
 # parse options
 try:
-    opts, args = getopt.getopt(sys.argv[1:], 'hx:')
+    opts, args = getopt.getopt(sys.argv[1:], 'hvx:')
 except getopt.GetoptError, err:
     print err
     usage()
@@ -24,6 +24,8 @@ for opt, optarg in opts:
     if opt == '-h':
         usage()
         sys.exit()
+    elif opt == '-v':
+        os.environ['QDJANGO_DB_DEBUG'] = '1'
     elif opt == '-x':
         report_path = optarg
         if not os.path.exists(report_path):
