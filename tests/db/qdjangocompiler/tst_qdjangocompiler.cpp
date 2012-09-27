@@ -17,18 +17,13 @@
 
 #include <cstdlib>
 
-#include <QCoreApplication>
-#include <QSqlDatabase>
 #include <QSqlDriver>
-#include <QVariant>
-#include <QtTest>
 
 #include "QDjango.h"
 #include "QDjangoQuerySet.h"
 #include "QDjangoWhere.h"
 
-#include "main.h"
-#include "auth-models.h"
+#include "tst_qdjangocompiler.h"
 #include "util.h"
 
 static QString escapeField(const QSqlDatabase &db, const QString &name)
@@ -378,12 +373,6 @@ int main(int argc, char *argv[])
     QCoreApplication app(argc, argv);
 
     initialiseDatabase();
-
-    // declare models
-    QDjango::registerModel<User>();
-    QDjango::registerModel<Group>();
-    QDjango::registerModel<Message>();
-    QDjango::registerModel<UserGroups>();
 
     // run tests
     int errors = 0;

@@ -1,5 +1,6 @@
 TEMPLATE = subdirs
 SUBDIRS = \
+    qdjangocompiler \
     qdjangometamodel \
     qdjangoqueryset \
     qdjangowhere \
