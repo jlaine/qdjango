@@ -32,7 +32,7 @@
 #include "QDjangoHttpServer.h"
 #include "QDjangoUrlResolver.h"
 
-#include "../../tests/auth-models.h"
+#include "auth-models.h"
 #include "http-server.h"
 
 class ModelAdminFetcher

@@ -30,7 +30,8 @@
 
 #include "QDjango.h"
 #include "QDjangoScript.h"
-#include "../../tests/auth-models.h"
+
+#include "auth-models.h"
 
 static bool wantsToQuit;
 
