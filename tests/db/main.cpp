@@ -29,7 +29,6 @@
 
 #include "main.h"
 #include "auth-models.h"
-#include "auth-tests.h"
 #include "util.h"
 
 static QString escapeField(const QSqlDatabase &db, const QString &name)
@@ -394,13 +393,6 @@ int main(int argc, char *argv[])
 
     tst_QDjangoModel testModel;
     errors += QTest::qExec(&testModel);
-
-    // models
-    TestUser testUser;
-    errors += QTest::qExec(&testUser);
-
-    TestRelated testRelated;
-    errors += QTest::qExec(&testRelated);
 
     if (errors) {
         qWarning() << "Total failed tests:" << errors;

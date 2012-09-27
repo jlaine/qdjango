@@ -15,6 +15,7 @@ TESTS = [
     'db/qdjangometamodel/tst_qdjangometamodel',
     'db/qdjangoqueryset/tst_qdjangoqueryset',
     'db/qdjangowhere/tst_qdjangowhere',
+    'db/auth/tst_auth',
     'db/shares/tst_shares',
     'http/qdjangohttpserver/tst_qdjangohttpserver',
     'http/qdjangourlresolver/tst_qdjangourlresolver',

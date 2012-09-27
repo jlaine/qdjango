@@ -21,13 +21,56 @@
 #include "QDjangoWhere.h"
 
 #include "auth-models.h"
-#include "auth-tests.h"
 #include "util.h"
+
+/** Tests for the User class.
+ */
+class TestUser: public QObject
+{
+    Q_OBJECT
+
+private slots:
+    void initTestCase();
+    void create();
+    void remove();
+    void removeFilter();
+    void removeLimit();
+    void get();
+    void filter();
+    void filterLike();
+    void exclude();
+    void limit();
+    void subLimit();
+    void orderBy();
+    void update();
+    void values();
+    void valuesList();
+    void constIterator();
+    void cleanup();
+    void cleanupTestCase();
+
+private:
+    void loadFixtures();
+};
+
+class TestRelated : public QObject
+{
+    Q_OBJECT
+
+private slots:
+    void initTestCase();
+    void testGroups();
+    void testRelated();
+    void filterRelated();
+    void cleanup();
+    void cleanupTestCase();
+};
 
 /** Create database table before running tests.
  */
 void TestUser::initTestCase()
 {
+    initialiseDatabase();
     QCOMPARE(QDjango::registerModel<User>().createTable(), true);
 }
 
@@ -760,3 +803,5 @@ void TestRelated::cleanupTestCase()
     QCOMPARE(QDjango::registerModel<User>().dropTable(), true);
 }
 
+QTEST_MAIN(TestUser)
+#include "tst_auth.moc"
