@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 import os
+import platform
 
 components = ['db', 'http', 'script']
 root = os.path.dirname(__file__)
@@ -9,7 +10,10 @@ root = os.path.dirname(__file__)
 path = []
 for component in components:
     path.append(os.path.join(root, '..', 'src', component))
-os.environ['LD_LIBRARY_PATH'] = ':'.join(path)
+if platform.system() == 'Darwin':
+    os.environ['DYLD_LIBRARY_PATH'] = ':'.join(path)
+else:
+    os.environ['LD_LIBRARY_PATH'] = ':'.join(path)
 
 # run tests
 for component in components:
@@ -17,5 +21,8 @@ for component in components:
     for test in os.listdir(component_root):
         test_path = os.path.join(component_root, test)
         if os.path.isdir(test_path):
-            prog = os.path.join(test_path, 'tst_' + test)
+            if platform.system() == 'Darwin':
+                prog = os.path.join(test_path, 'tst_' + test + '.app', 'Contents', 'MacOS', 'tst_' + test)
+            else:
+                prog = os.path.join(test_path, 'tst_' + test)
             os.system(prog)
