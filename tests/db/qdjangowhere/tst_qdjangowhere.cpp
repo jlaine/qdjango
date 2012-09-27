@@ -46,7 +46,7 @@ private slots:
 
 void tst_QDjangoWhere::initTestCase()
 {
-    initialiseDatabase();
+    QVERIFY(initialiseDatabase());
 }
 
 /** Test empty where clause.

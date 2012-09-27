@@ -20,7 +20,7 @@
 #include "QDjango.h"
 #include "QDjangoModel.h"
 
-void initialiseDatabase();
+bool initialiseDatabase();
 QString normalizeSql(const QSqlDatabase &db, const QString &sql);
 
 #define CHECKWHERE(_where, s, v) { \

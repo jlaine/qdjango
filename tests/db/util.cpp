@@ -23,7 +23,7 @@
 
 #include "util.h"
 
-void initialiseDatabase()
+bool initialiseDatabase()
 {
     char *p;
 
@@ -51,8 +51,12 @@ void initialiseDatabase()
     if ((p = getenv("QDJANGO_DB_HOST")) != 0) 
         db.setHostName(QString::fromLocal8Bit(p));
 
-    QVERIFY(db.open());
-    QDjango::setDatabase(db);
+    if (db.open()) {
+        QDjango::setDatabase(db);
+        return true;
+    } else {
+        return false;
+    }
 }
 
 QString normalizeSql(const QSqlDatabase &db, const QString &sql)

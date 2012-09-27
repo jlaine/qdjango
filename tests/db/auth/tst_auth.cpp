@@ -60,7 +60,7 @@ private:
  */
 void tst_Auth::initTestCase()
 {
-    initialiseDatabase();
+    QVERIFY(initialiseDatabase());
     QCOMPARE(QDjango::registerModel<User>().createTable(), true);
     QCOMPARE(QDjango::registerModel<Group>().createTable(), true);
     QCOMPARE(QDjango::registerModel<Message>().createTable(), true);

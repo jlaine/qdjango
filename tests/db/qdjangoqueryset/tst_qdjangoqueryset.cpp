@@ -63,7 +63,7 @@ private:
 
 void tst_QDjangoQuerySetPrivate::initTestCase()
 {
-    initialiseDatabase();
+    QVERIFY(initialiseDatabase());
 
     metaModel = QDjango::registerModel<Object>();
     QCOMPARE(metaModel.createTable(), true);

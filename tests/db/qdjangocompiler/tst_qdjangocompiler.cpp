@@ -147,6 +147,7 @@ void Owner::setItem2(Item *item2)
 
 void tst_QDjangoCompiler::initTestCase()
 {
+    QVERIFY(initialiseDatabase());
     QDjango::registerModel<Item>();
     QDjango::registerModel<Owner>();
 }

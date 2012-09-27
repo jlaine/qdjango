@@ -114,7 +114,7 @@ void File::setSize(qint64 size)
  */
 void tst_Shares::initTestCase()
 {
-    initialiseDatabase();
+    QVERIFY(initialiseDatabase());
     QCOMPARE(QDjango::registerModel<File>().createTable(), true);
 }
 

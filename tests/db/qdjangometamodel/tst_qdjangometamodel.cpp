@@ -110,7 +110,7 @@ void tst_FkConstraint::setNullConstraint(User *user)
 
 void tst_QDjangoMetaModel::initTestCase()
 {
-    initialiseDatabase();
+    QVERIFY(initialiseDatabase());
 }
 
 void tst_QDjangoMetaModel::testBool()
