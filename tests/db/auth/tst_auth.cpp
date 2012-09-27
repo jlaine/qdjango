@@ -25,7 +25,7 @@
 
 /** Tests for the User class.
  */
-class TestUser: public QObject
+class tst_Auth: public QObject
 {
     Q_OBJECT
 
@@ -46,6 +46,9 @@ private slots:
     void values();
     void valuesList();
     void constIterator();
+    void testGroups();
+    void testRelated();
+    void filterRelated();
     void cleanup();
     void cleanupTestCase();
 
@@ -53,30 +56,20 @@ private:
     void loadFixtures();
 };
 
-class TestRelated : public QObject
-{
-    Q_OBJECT
-
-private slots:
-    void initTestCase();
-    void testGroups();
-    void testRelated();
-    void filterRelated();
-    void cleanup();
-    void cleanupTestCase();
-};
-
 /** Create database table before running tests.
  */
-void TestUser::initTestCase()
+void tst_Auth::initTestCase()
 {
     initialiseDatabase();
     QCOMPARE(QDjango::registerModel<User>().createTable(), true);
+    QCOMPARE(QDjango::registerModel<Group>().createTable(), true);
+    QCOMPARE(QDjango::registerModel<Message>().createTable(), true);
+    QCOMPARE(QDjango::registerModel<UserGroups>().createTable(), true);
 }
 
 /** Load fixtures consisting of 3 users.
  */
-void TestUser::loadFixtures()
+void tst_Auth::loadFixtures()
 {
     User foo;
     foo.setUsername("foouser");
@@ -100,7 +93,7 @@ void TestUser::loadFixtures()
     QCOMPARE(QDjangoQuerySet<User>().size(), 3);
 }
 
-void TestUser::create()
+void tst_Auth::create()
 {
     const QDjangoQuerySet<User> users;
     User *other;
@@ -168,7 +161,7 @@ void TestUser::create()
 
 /** Test removing a single user.
  */
-void TestUser::remove()
+void tst_Auth::remove()
 {
     const QDjangoQuerySet<User> users;
 
@@ -185,7 +178,7 @@ void TestUser::remove()
 
 /** Test removing multiple users.
   */
-void TestUser::removeFilter()
+void tst_Auth::removeFilter()
 {
     loadFixtures();
 
@@ -205,7 +198,7 @@ void TestUser::removeFilter()
 
 /** Test removing multiple users with a LIMIT clause.
  */
-void TestUser::removeLimit()
+void tst_Auth::removeLimit()
 {
     loadFixtures();
 
@@ -217,7 +210,7 @@ void TestUser::removeLimit()
 
 /** Test retrieving a single user.
  */
-void TestUser::get()
+void tst_Auth::get()
 {
     loadFixtures();
 
@@ -240,7 +233,7 @@ void TestUser::get()
 
 /** Test filtering users with a "=" comparison.
  */
-void TestUser::filter()
+void tst_Auth::filter()
 {
     loadFixtures();
 
@@ -284,7 +277,7 @@ void TestUser::filter()
 
 /** Test filtering users with a "like" condition.
  */
-void TestUser::filterLike()
+void tst_Auth::filterLike()
 {
     loadFixtures();
 
@@ -319,7 +312,7 @@ void TestUser::filterLike()
 
 /** Test excluding users with an "=" condition.
  */
-void TestUser::exclude()
+void tst_Auth::exclude()
 {
     loadFixtures();
     const QDjangoQuerySet<User> users;
@@ -348,7 +341,7 @@ void TestUser::exclude()
 
 /** Test limiting user results.
  */
-void TestUser::limit()
+void tst_Auth::limit()
 {
     const QDjangoQuerySet<User> users;
 
@@ -397,7 +390,7 @@ void TestUser::limit()
 
 /** Test chaining limit statements.
  */
-void TestUser::subLimit()
+void tst_Auth::subLimit()
 {
     const QDjangoQuerySet<User> users;
 
@@ -445,7 +438,7 @@ void TestUser::subLimit()
 
 /** Test ordering.
  */
-void TestUser::orderBy()
+void tst_Auth::orderBy()
 {
     loadFixtures();
 
@@ -477,7 +470,7 @@ void TestUser::orderBy()
 
 /** Test updating.
  */
-void TestUser::update()
+void tst_Auth::update()
 {
     loadFixtures();
 
@@ -514,7 +507,7 @@ void TestUser::update()
 
 /** Test retrieving maps of values.
  */
-void TestUser::values()
+void tst_Auth::values()
 {
     loadFixtures();
 
@@ -549,7 +542,7 @@ void TestUser::values()
 
 /** Test retrieving lists of values.
  */
-void TestUser::valuesList()
+void tst_Auth::valuesList()
 {
     loadFixtures();
 
@@ -582,7 +575,7 @@ void TestUser::valuesList()
     QCOMPARE(list[2][1], QVariant("wizpass"));
 }
 
-void TestUser::constIterator()
+void tst_Auth::constIterator()
 {
     loadFixtures();
     QVERIFY(!QTest::currentTestFailed());
@@ -651,31 +644,27 @@ void TestUser::constIterator()
 
 /** Clear database table after each test.
  */
-void TestUser::cleanup()
+void tst_Auth::cleanup()
 {
+    QCOMPARE(QDjangoQuerySet<UserGroups>().remove(), true);
+    QCOMPARE(QDjangoQuerySet<Message>().remove(), true);
+    QCOMPARE(QDjangoQuerySet<Group>().remove(), true);
     QCOMPARE(QDjangoQuerySet<User>().remove(), true);
 }
 
 /** Drop database table after running tests.
  */
-void TestUser::cleanupTestCase()
+void tst_Auth::cleanupTestCase()
 {
+    QCOMPARE(QDjango::registerModel<UserGroups>().dropTable(), true);
+    QCOMPARE(QDjango::registerModel<Message>().dropTable(), true);
+    QCOMPARE(QDjango::registerModel<Group>().dropTable(), true);
     QCOMPARE(QDjango::registerModel<User>().dropTable(), true);
-}
-
-/** Create database tables before running tests.
- */
-void TestRelated::initTestCase()
-{
-    QCOMPARE(QDjango::registerModel<User>().createTable(), true);
-    QCOMPARE(QDjango::registerModel<Group>().createTable(), true);
-    QCOMPARE(QDjango::registerModel<Message>().createTable(), true);
-    QCOMPARE(QDjango::registerModel<UserGroups>().createTable(), true);
 }
 
 /** Set and get foreign key on a Message object.
  */
-void TestRelated::testRelated()
+void tst_Auth::testRelated()
 {
     const QDjangoQuerySet<Message> messages;
     // load fixtures
@@ -724,7 +713,7 @@ void TestRelated::testRelated()
 
 /** Perform filtering on a foreign field.
  */
-void TestRelated::filterRelated()
+void tst_Auth::filterRelated()
 {
     const QDjangoQuerySet<Message> messages;
     // load fixtures
@@ -757,7 +746,7 @@ void TestRelated::filterRelated()
 
 /** Test many-to-many relationships using an intermediate table.
  */
-void TestRelated::testGroups()
+void tst_Auth::testGroups()
 {
     const QDjangoQuerySet<UserGroups> userGroups;
 
@@ -783,25 +772,5 @@ void TestRelated::testGroups()
     delete ug;
 }
 
-/** Clear database tables after each test.
- */
-void TestRelated::cleanup()
-{
-    QCOMPARE(QDjangoQuerySet<UserGroups>().remove(), true);
-    QCOMPARE(QDjangoQuerySet<Message>().remove(), true);
-    QCOMPARE(QDjangoQuerySet<Group>().remove(), true);
-    QCOMPARE(QDjangoQuerySet<User>().remove(), true);
-}
-
-/** Drop database tables after running tests.
- */
-void TestRelated::cleanupTestCase()
-{
-    QCOMPARE(QDjango::registerModel<UserGroups>().dropTable(), true);
-    QCOMPARE(QDjango::registerModel<Message>().dropTable(), true);
-    QCOMPARE(QDjango::registerModel<Group>().dropTable(), true);
-    QCOMPARE(QDjango::registerModel<User>().dropTable(), true);
-}
-
-QTEST_MAIN(TestUser)
+QTEST_MAIN(tst_Auth)
 #include "tst_auth.moc"

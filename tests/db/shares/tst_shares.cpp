@@ -21,7 +21,7 @@
 
 /** Tests for the File class.
  */
-class TestShares : public QObject
+class tst_Shares : public QObject
 {
     Q_OBJECT
 
@@ -112,13 +112,13 @@ void File::setSize(qint64 size)
 
 /** Create database table before running tests.
  */
-void TestShares::initTestCase()
+void tst_Shares::initTestCase()
 {
     initialiseDatabase();
     QCOMPARE(QDjango::registerModel<File>().createTable(), true);
 }
 
-void TestShares::testFile()
+void tst_Shares::testFile()
 {
     // create a file
     File file;
@@ -143,17 +143,17 @@ void TestShares::testFile()
 
 /** Clear database table after each test.
  */
-void TestShares::cleanup()
+void tst_Shares::cleanup()
 {
     QCOMPARE(QDjangoQuerySet<File>().remove(), true);
 }
 
 /** Drop database table after running tests.
  */
-void TestShares::cleanupTestCase()
+void tst_Shares::cleanupTestCase()
 {
     QCOMPARE(QDjango::registerModel<File>().dropTable(), true);
 }
 
-QTEST_MAIN(TestShares)
+QTEST_MAIN(tst_Shares)
 #include "tst_shares.moc"
