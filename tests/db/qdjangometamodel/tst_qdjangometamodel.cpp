@@ -293,8 +293,9 @@ void tst_QDjangoMetaModel::testConstraints()
     sql << QLatin1String("CREATE INDEX \"tst_fkconstraint_728cefe1\" ON \"tst_fkconstraint\" (\"restrictConstraint_id\")");
     sql << QLatin1String("CREATE INDEX \"tst_fkconstraint_44c71620\" ON \"tst_fkconstraint\" (\"nullConstraint_id\")");
 
-    QDjangoMetaModel tst_ = QDjango::registerModel<tst_FkConstraint>();
-    QCOMPARE(tst_.createTableSql(), sql);
+    QDjango::registerModel<User>();
+    QDjangoMetaModel metaModel = QDjango::registerModel<tst_FkConstraint>();
+    QCOMPARE(metaModel.createTableSql(), sql);
 }
 
 QTEST_MAIN(tst_QDjangoMetaModel)
