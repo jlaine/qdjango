@@ -26,7 +26,8 @@ QString normalizeSql(const QSqlDatabase &db, const QString &sql);
 #define CHECKWHERE(_where, s, v) { \
     QSqlDatabase _sql_db(QDjango::database()); \
     QDjangoQuery _sql_query(_sql_db); \
-    _sql_query.prepare(_where.sql(_sql_db)); \
+    QString _sql_stmt = _where.sql(_sql_db); \
+    if (!_sql_stmt.isEmpty()) _sql_query.prepare(_sql_stmt); \
     _where.bindValues(_sql_query); \
     const QVariantList _sql_values = v; \
     QCOMPARE(normalizeSql(_sql_db, _sql_query.lastQuery()), s); \
