@@ -125,21 +125,3 @@ private slots:
     void cleanup();
     void cleanupTestCase();
 };
-
-/** Test QDjangoQuerySetPrivate class.
- */
-class tst_QDjangoQuerySetPrivate : public QObject
-{
-    Q_OBJECT
-
-private slots:
-    void initTestCase();
-    void deleteQuery();
-    void insertQuery();
-    void updateQuery();
-    void cleanupTestCase();
-
-private:
-    QDjangoMetaModel metaModel;
-};
-

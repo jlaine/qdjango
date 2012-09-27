@@ -21,7 +21,7 @@
 #include "QDjangoQuerySet.h"
 #include "QDjangoWhere.h"
 
-#include "tst_qdjangometafield.h"
+#include "tst_qdjangometamodel.h"
 #include "util.h"
 
 #define Q QDjangoWhere
@@ -57,6 +57,55 @@ void cleanup()
 {
     const QDjangoMetaModel metaModel = QDjango::registerModel<T>();
     QCOMPARE(metaModel.dropTable(), true);
+}
+
+tst_FkConstraint::tst_FkConstraint(QObject *parent)
+    : QDjangoModel(parent)
+{
+    setForeignKey("noConstraint", new User(this));
+    setForeignKey("cascadeConstraint", new User(this));
+    setForeignKey("restrictConstraint", new User(this));
+    setForeignKey("nullConstraint", new User(this));
+}
+
+User *tst_FkConstraint::noConstraint() const
+{
+    return qobject_cast<User*>(foreignKey("noConstraint"));
+}
+
+void tst_FkConstraint::setNoConstraint(User *user)
+{
+    setForeignKey("noConstraint", user);
+}
+
+User *tst_FkConstraint::cascadeConstraint() const
+{
+    return qobject_cast<User*>(foreignKey("cascadeConstraint"));
+}
+
+void tst_FkConstraint::setCascadeConstraint(User *user)
+{
+    setForeignKey("cascadeConstraint", user);
+}
+
+User *tst_FkConstraint::restrictConstraint() const
+{
+    return qobject_cast<User*>(foreignKey("restrictConstraint"));
+}
+
+void tst_FkConstraint::setRestrictConstraint(User *user)
+{
+    setForeignKey("restrictConstraint", user);
+}
+
+User *tst_FkConstraint::nullConstraint() const
+{
+    return qobject_cast<User*>(foreignKey("nullConstraint"));
+}
+
+void tst_FkConstraint::setNullConstraint(User *user)
+{
+    setForeignKey("nullConstraint", user);
 }
 
 void tst_QDjangoMetaModel::initTestCase()
@@ -216,6 +265,36 @@ void tst_QDjangoMetaModel::testOptions()
     sql << QLatin1String("CREATE INDEX \"some_table_ac243651\" ON \"some_table\" (\"indexField\")");
     init<tst_Options>(sql);
     cleanup<tst_Options>();
+}
+
+/** Test foreign key constraint sql generation
+ */
+void tst_QDjangoMetaModel::testConstraints()
+{
+    QStringList sql;
+    if (QDjango::database().driverName() == QLatin1String("QPSQL"))
+        sql << QLatin1String("CREATE TABLE \"tst_fkconstraint\" ("
+            "\"id\" serial PRIMARY KEY, "
+            "\"noConstraint_id\" integer NOT NULL REFERENCES \"user\" (\"id\") DEFERRABLE INITIALLY DEFERRED, "
+            "\"cascadeConstraint_id\" integer NOT NULL REFERENCES \"user\" (\"id\") DEFERRABLE INITIALLY DEFERRED ON DELETE CASCADE, "
+            "\"restrictConstraint_id\" integer NOT NULL REFERENCES \"user\" (\"id\") DEFERRABLE INITIALLY DEFERRED ON DELETE RESTRICT, "
+            "\"nullConstraint_id\" integer REFERENCES \"user\" (\"id\") DEFERRABLE INITIALLY DEFERRED ON DELETE SET NULL"
+            ")");
+    else
+       sql << QLatin1String("CREATE TABLE \"tst_fkconstraint\" ("
+            "\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, "
+            "\"noConstraint_id\" integer NOT NULL REFERENCES \"user\" (\"id\"), "
+            "\"cascadeConstraint_id\" integer NOT NULL REFERENCES \"user\" (\"id\") ON DELETE CASCADE, "
+            "\"restrictConstraint_id\" integer NOT NULL REFERENCES \"user\" (\"id\") ON DELETE RESTRICT, "
+            "\"nullConstraint_id\" integer REFERENCES \"user\" (\"id\") ON DELETE SET NULL"
+            ")");
+    sql << QLatin1String("CREATE INDEX \"tst_fkconstraint_f388fc3c\" ON \"tst_fkconstraint\" (\"noConstraint_id\")");
+    sql << QLatin1String("CREATE INDEX \"tst_fkconstraint_4634d592\" ON \"tst_fkconstraint\" (\"cascadeConstraint_id\")");
+    sql << QLatin1String("CREATE INDEX \"tst_fkconstraint_728cefe1\" ON \"tst_fkconstraint\" (\"restrictConstraint_id\")");
+    sql << QLatin1String("CREATE INDEX \"tst_fkconstraint_44c71620\" ON \"tst_fkconstraint\" (\"nullConstraint_id\")");
+
+    QDjangoMetaModel tst_ = QDjango::registerModel<tst_FkConstraint>();
+    QCOMPARE(tst_.createTableSql(), sql);
 }
 
 QTEST_MAIN(tst_QDjangoMetaModel)

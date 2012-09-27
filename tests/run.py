@@ -12,7 +12,10 @@ os.environ['LD_LIBRARY_PATH'] = ':'.join(path)
 
 # run tests
 TESTS = [
-    'db/qdjango-db-tests',
+    'db/qdjangometamodel/tst_qdjangometamodel',
+    'db/qdjangoqueryset/tst_qdjangoqueryset',
+    'db/qdjangowhere/tst_qdjangowhere',
+    'db/shares/tst_shares',
     'http/qdjangohttpserver/tst_qdjangohttpserver',
     'http/qdjangourlresolver/tst_qdjangourlresolver',
     'script/qdjangoscript/tst_qdjangoscript',

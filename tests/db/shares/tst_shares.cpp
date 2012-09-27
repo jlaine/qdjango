@@ -15,17 +15,106 @@
  * Lesser General Public License for more details.
  */
 
-#include <QtTest/QtTest>
-
 #include "QDjangoQuerySet.h"
 
-#include "shares-models.h"
-#include "shares-tests.h"
+#include "util.h"
+
+/** Tests for the File class.
+ */
+class TestShares : public QObject
+{
+    Q_OBJECT
+
+private slots:
+    void initTestCase();
+    void testFile();
+    void cleanup();
+    void cleanupTestCase();
+};
+
+class File : public QDjangoModel
+{
+    Q_OBJECT
+    Q_PROPERTY(QDateTime date READ date WRITE setDate)
+    Q_PROPERTY(QByteArray hash READ hash WRITE setHash)
+    Q_PROPERTY(QString path READ path WRITE setPath)
+    Q_PROPERTY(qint64 size READ size WRITE setSize)
+
+    Q_CLASSINFO("path", "max_length=255 primary_key=true")
+    Q_CLASSINFO("hash", "max_length=32")
+
+public:
+    File(QObject *parent = 0);
+
+    QDateTime date() const;
+    void setDate(const QDateTime &date);
+
+    QByteArray hash() const;
+    void setHash(const QByteArray &hash);
+
+    QString path() const;
+    void setPath(const QString &path);
+
+    qint64 size() const;
+    void setSize(qint64 size);
+
+private:
+    QDateTime m_date;
+    QByteArray m_hash;
+    QString m_path;
+    qint64 m_size;
+};
+
+File::File(QObject *parent)
+    : QDjangoModel(parent), m_size(0)
+{
+}
+
+QDateTime File::date() const
+{
+    return m_date;
+}
+
+void File::setDate(const QDateTime &date)
+{
+    m_date = date;
+}
+
+QByteArray File::hash() const
+{
+    return m_hash;
+}
+
+void File::setHash(const QByteArray &hash)
+{
+    m_hash = hash;
+}
+
+QString File::path() const
+{
+    return m_path;
+}
+
+void File::setPath(const QString &path)
+{
+    m_path = path;
+}
+
+qint64 File::size() const
+{
+    return m_size;
+}
+
+void File::setSize(qint64 size)
+{
+    m_size = size;
+}
 
 /** Create database table before running tests.
  */
 void TestShares::initTestCase()
 {
+    initialiseDatabase();
     QCOMPARE(QDjango::registerModel<File>().createTable(), true);
 }
 
@@ -66,3 +155,5 @@ void TestShares::cleanupTestCase()
     QCOMPARE(QDjango::registerModel<File>().dropTable(), true);
 }
 
+QTEST_MAIN(TestShares)
+#include "tst_shares.moc"

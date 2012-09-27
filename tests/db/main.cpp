@@ -30,9 +30,6 @@
 #include "main.h"
 #include "auth-models.h"
 #include "auth-tests.h"
-#include "foreignkey.h"
-#include "shares-models.h"
-#include "shares-tests.h"
 #include "util.h"
 
 static QString escapeField(const QSqlDatabase &db, const QString &name)
@@ -377,68 +374,6 @@ void tst_QDjangoModel::cleanupTestCase()
     QCOMPARE(QDjango::registerModel<Item>().dropTable(), true);
 }
 
-void tst_QDjangoQuerySetPrivate::initTestCase()
-{
-    metaModel = QDjango::registerModel<Object>();
-    QCOMPARE(metaModel.createTable(), true);
-}
-
-void tst_QDjangoQuerySetPrivate::deleteQuery()
-{
-    QDjangoQuerySetPrivate qs("Object");
-    qs.addFilter(QDjangoWhere("pk", QDjangoWhere::Equals, 1));
-    QDjangoQuery query = qs.deleteQuery();
-
-    QCOMPARE(normalizeSql(QDjango::database(), query.lastQuery()), QLatin1String("DELETE FROM \"foo_table\" WHERE \"foo_table\".\"id\" = ?"));
-    QCOMPARE(query.boundValues().size(), 1);
-    QCOMPARE(query.boundValue(0), QVariant(1));
-}
-
-void tst_QDjangoQuerySetPrivate::insertQuery()
-{
-    QVariantMap data;
-    data.insert("foo", 2);
-
-    QDjangoQuerySetPrivate qs("Object");
-    QDjangoQuery query = qs.insertQuery(data);
-
-    QCOMPARE(normalizeSql(QDjango::database(), query.lastQuery()), QLatin1String("INSERT INTO \"foo_table\" (\"foo\") VALUES(?)"));
-    QCOMPARE(query.boundValues().size(), 1);
-    QCOMPARE(query.boundValue(0), QVariant(2));
-}
-
-void tst_QDjangoQuerySetPrivate::updateQuery()
-{
-    QVariantMap data;
-    data.insert("foo", 2);
-
-    {
-        QDjangoQuerySetPrivate qs("Object");
-        qs.addFilter(QDjangoWhere("pk", QDjangoWhere::Equals, 1));
-        QDjangoQuery query = qs.updateQuery(data);
-
-        QCOMPARE(normalizeSql(QDjango::database(), query.lastQuery()), QLatin1String("UPDATE \"foo_table\" SET \"foo\" = ? WHERE \"foo_table\".\"id\" = ?"));
-        QCOMPARE(query.boundValues().size(), 2);
-        QCOMPARE(query.boundValue(0), QVariant(2));
-        QCOMPARE(query.boundValue(1), QVariant(1));
-    }
-
-    {
-        QDjangoQuerySetPrivate qs("Object");
-        qs.addFilter(QDjangoWhere("zzz", QDjangoWhere::Equals, 3));
-        QDjangoQuery query = qs.updateQuery(data);
-
-        QCOMPARE(normalizeSql(QDjango::database(), query.lastQuery()), QLatin1String("UPDATE \"foo_table\" SET \"foo\" = ? WHERE \"foo_table\".\"zzz_column\" = ?"));
-        QCOMPARE(query.boundValue(0), QVariant(2));
-        QCOMPARE(query.boundValue(1), QVariant(3));
-    }
-}
-
-void tst_QDjangoQuerySetPrivate::cleanupTestCase()
-{
-    metaModel.dropTable();
-}
-
 int main(int argc, char *argv[])
 {
     QCoreApplication app(argc, argv);
@@ -457,15 +392,8 @@ int main(int argc, char *argv[])
     tst_QDjangoCompiler testCompiler;
     errors += QTest::qExec(&testCompiler);
 
-    tst_QDjangoQuerySetPrivate testQuerySetPrivate;
-    errors += QTest::qExec(&testQuerySetPrivate);
-
     tst_QDjangoModel testModel;
     errors += QTest::qExec(&testModel);
-
-    // fields
-    tst_FkConstraint testFkConstraint;
-    errors += QTest::qExec(&testFkConstraint);
 
     // models
     TestUser testUser;
@@ -473,9 +401,6 @@ int main(int argc, char *argv[])
 
     TestRelated testRelated;
     errors += QTest::qExec(&testRelated);
-
-    TestShares testShares;
-    errors += QTest::qExec(&testShares);
 
     if (errors) {
         qWarning() << "Total failed tests:" << errors;

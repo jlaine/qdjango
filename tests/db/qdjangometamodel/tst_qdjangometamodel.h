@@ -19,6 +19,8 @@
 
 #include "QDjangoModel.h"
 
+#include "auth-models.h"
+
 class tst_QDjangoMetaModel : public QObject
 {
     Q_OBJECT
@@ -35,6 +37,7 @@ private slots:
     void testString();
     void testTime();
     void testOptions();
+    void testConstraints();
 };
 
 class tst_Bool : public QDjangoModel
@@ -192,4 +195,32 @@ private:
     int m_indexField;
     int m_nullField;
     int m_uniqueField;
+};
+
+class tst_FkConstraint : public QDjangoModel
+{
+    Q_OBJECT
+    Q_PROPERTY(User *noConstraint READ noConstraint WRITE setNoConstraint)
+    Q_PROPERTY(User *cascadeConstraint READ cascadeConstraint WRITE setCascadeConstraint)
+    Q_PROPERTY(User *restrictConstraint READ restrictConstraint WRITE setRestrictConstraint)
+    Q_PROPERTY(User *nullConstraint READ nullConstraint WRITE setNullConstraint)
+    
+    Q_CLASSINFO("cascadeConstraint", "on_delete=cascade")
+    Q_CLASSINFO("restrictConstraint", "on_delete=restrict")
+    Q_CLASSINFO("nullConstraint", "null=true on_delete=set_null")
+
+public:
+    tst_FkConstraint(QObject *parent = 0);
+
+    User *noConstraint() const;
+    void setNoConstraint(User *user);
+
+    User *cascadeConstraint() const;
+    void setCascadeConstraint(User *user);
+
+    User *restrictConstraint() const;
+    void setRestrictConstraint(User *user);
+
+    User *nullConstraint() const;
+    void setNullConstraint(User *user);
 };
