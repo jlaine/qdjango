@@ -15,8 +15,6 @@
  * Lesser General Public License for more details.
  */
 
-#include <QtTest/QtTest>
-
 #include "QDjangoQuerySet.h"
 #include "QDjangoWhere.h"
 

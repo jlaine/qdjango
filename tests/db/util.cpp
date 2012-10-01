@@ -17,8 +17,6 @@
 
 #include <cstdlib>
 
-#include <QtTest>
-
 #include "QDjango.h"
 
 #include "util.h"

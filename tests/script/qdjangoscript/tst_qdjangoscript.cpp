@@ -15,8 +15,6 @@
  * Lesser General Public License for more details.
  */
 
-#include <QtTest>
-
 #include "QDjangoScript.h"
 
 #include "auth-models.h"
