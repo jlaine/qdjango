@@ -233,7 +233,7 @@ QDjangoMetaModel QDjango::registerModel(const QObject *model)
 {
     const QByteArray name = model->metaObject()->className();
     if (!globalMetaModels.contains(name))
-        globalMetaModels.insert(name, QDjangoMetaModel(model));
+        globalMetaModels.insert(name, QDjangoMetaModel(model->metaObject()));
     return globalMetaModels[name];
 }
 

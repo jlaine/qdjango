@@ -197,15 +197,14 @@ public:
 };
 
 /*!
-    Constructs a new QDjangoMetaModel by inspecting the given \a model instance.
+    Constructs a new QDjangoMetaModel by inspecting the given \a meta model.
 */
-QDjangoMetaModel::QDjangoMetaModel(const QObject *model)
+QDjangoMetaModel::QDjangoMetaModel(const QMetaObject *meta)
     : d(new QDjangoMetaModelPrivate)
 {
-    if (!model)
+    if (!meta)
         return;
 
-    const QMetaObject* meta = model->metaObject();
     d->table = QString::fromLatin1(meta->className()).toLower();
 
     // parse table options
