@@ -4,6 +4,7 @@ QDjango 0.2.7 (UNRELEASED)
  * Don't crash if QDjango::database() is called before QDjango::setDatabase().
  * Do not take object ownership in QDjangoMetaModel::setForeignKey().
  * Make index names coincide with those used by django.
+ * Registering model without instantiating them.
 
 QDjango 0.2.6 (2012-09-07)
  * Store 0 integer foreign keys as NULL if field has null option.

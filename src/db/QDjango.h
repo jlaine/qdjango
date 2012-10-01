@@ -57,7 +57,7 @@ private:
     // backend specific
     static QString noLimitSql();
 
-    static QDjangoMetaModel registerModel(const QObject *model);
+    static QDjangoMetaModel registerModel(const QMetaObject *meta);
     static QDjangoMetaModel metaModel(const char *name);
 
     friend class QDjangoCompiler;
@@ -71,8 +71,7 @@ private:
 template <class T>
 QDjangoMetaModel QDjango::registerModel()
 {
-    T model;
-    return registerModel(&model);
+    return registerModel(&T::staticMetaObject);
 }
 
 #endif
