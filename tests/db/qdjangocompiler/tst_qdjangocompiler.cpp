@@ -21,7 +21,6 @@
 #include "QDjangoQuerySet.h"
 #include "QDjangoWhere.h"
 
-#include "tst_qdjangocompiler.h"
 #include "util.h"
 
 static QString escapeField(const QSqlDatabase &db, const QString &name)
@@ -33,6 +32,70 @@ static QString escapeTable(const QSqlDatabase &db, const QString &name)
 {
     return db.driver()->escapeIdentifier(name, QSqlDriver::TableName);
 }
+
+class Item : public QDjangoModel
+{
+    Q_OBJECT
+    Q_PROPERTY(QString name READ name WRITE setName)
+
+public:
+    Item(QObject *parent = 0);
+
+    QString name() const;
+    void setName(const QString &name);
+
+private:
+    QString m_name;
+};
+
+class Owner : public QDjangoModel
+{
+    Q_OBJECT
+    Q_PROPERTY(QString name READ name WRITE setName)
+    Q_PROPERTY(Item* item1 READ item1 WRITE setItem1)
+    Q_PROPERTY(Item* item2 READ item2 WRITE setItem2)
+
+public:
+    Owner(QObject *parent = 0);
+
+    QString name() const;
+    void setName(const QString &name);
+
+    Item *item1() const;
+    void setItem1(Item *item1);
+
+    Item *item2() const;
+    void setItem2(Item *item2);
+
+private:
+    QString m_name;
+};
+
+class tst_QDjangoCompiler : public QObject
+{
+    Q_OBJECT
+
+private slots:
+    void initTestCase();
+    void fieldNames();
+    void fieldNamesRecursive();
+    void orderLimit();
+    void resolve();
+};
+
+/** Test QDjangoModel class.
+ */
+class tst_QDjangoModel : public QObject
+{
+    Q_OBJECT
+
+private slots:
+    void initTestCase();
+    void filterRelated();
+    void selectRelated();
+    void cleanup();
+    void cleanupTestCase();
+};
 
 Item::Item(QObject *parent)
     : QDjangoModel(parent)
@@ -309,3 +372,4 @@ void tst_QDjangoModel::cleanupTestCase()
 }
 
 QTEST_MAIN(tst_QDjangoCompiler)
+#include "tst_qdjangocompiler.moc"
