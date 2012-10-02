@@ -535,7 +535,13 @@ bool QDjangoMetaModel::dropTable() const
 */
 QObject *QDjangoMetaModel::foreignKey(const QObject *model, const char *name) const
 {
+    // check the name is valid
     const QByteArray prop(name);
+    if (!d->foreignFields.contains(prop)) {
+        qWarning("Cannot get foreign model for invalid key %s", name);
+        return 0;
+    }
+
     QObject *foreign = model->property(prop + "_ptr").value<QObject*>();
     if (!foreign)
         return 0;
@@ -564,7 +570,13 @@ QObject *QDjangoMetaModel::foreignKey(const QObject *model, const char *name) co
 */
 void QDjangoMetaModel::setForeignKey(QObject *model, const char *name, QObject *value) const
 {
+    // check the name is valid
     const QByteArray prop(name);
+    if (!d->foreignFields.contains(prop)) {
+        qWarning("Cannot set foreign model for invalid key %s", name);
+        return;
+    }
+
     QObject *old = model->property(prop + "_ptr").value<QObject*>();
     if (old == value)
         return;
