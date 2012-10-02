@@ -129,6 +129,7 @@ void Owner::setItem2(Item *item2)
  */
 void tst_QDjangoModel::initTestCase()
 {
+    QVERIFY(initialiseDatabase());
     QCOMPARE(QDjango::registerModel<Item>().createTable(), true);
     QCOMPARE(QDjango::registerModel<Owner>().createTable(), true);
 }
