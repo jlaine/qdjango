@@ -70,6 +70,7 @@ private slots:
     void initTestCase();
     void init();
     void foreignKey();
+    void setForeignKey();
     void filterRelated();
     void selectRelated();
     void cleanup();
@@ -155,6 +156,14 @@ void tst_QDjangoModel::foreignKey()
     Book book;
     QVERIFY(!book.foreignKey("bad"));
     QVERIFY(book.foreignKey("author"));
+}
+
+void tst_QDjangoModel::setForeignKey()
+{
+    QTest::ignoreMessage(QtWarningMsg, "QDjangoMetaModel cannot set foreign model for invalid key 'bad'");
+    Book book;
+    book.setForeignKey("bad", 0);
+    book.setForeignKey("author", 0);
 }
 
 /** Perform filtering on foreign keys.
