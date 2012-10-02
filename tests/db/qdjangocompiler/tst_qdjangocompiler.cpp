@@ -284,18 +284,18 @@ void tst_QDjangoModel::filterRelated()
 {
     // load fixtures
     {
-        Item *item1 = new Item;
-        item1->setName("first");
-        QCOMPARE(item1->save(), true);
+        Item item1;
+        item1.setName("first");
+        QCOMPARE(item1.save(), true);
 
-        Item *item2 = new Item;
-        item2->setName("second");
-        QCOMPARE(item2->save(), true);
+        Item item2;
+        item2.setName("second");
+        QCOMPARE(item2.save(), true);
 
         Owner owner;
         owner.setName("owner");
-        owner.setItem1(item1);
-        owner.setItem2(item2);
+        owner.setItem1(&item1);
+        owner.setItem2(&item2);
         QCOMPARE(owner.save(), true);
     }
 
@@ -320,18 +320,18 @@ void tst_QDjangoModel::selectRelated()
 {
     // load fixtures
     {
-        Item *item1 = new Item;
-        item1->setName("first");
-        QCOMPARE(item1->save(), true);
+        Item item1;
+        item1.setName("first");
+        QCOMPARE(item1.save(), true);
 
-        Item *item2 = new Item;
-        item2->setName("second");
-        QCOMPARE(item2->save(), true);
+        Item item2;
+        item2.setName("second");
+        QCOMPARE(item2.save(), true);
 
         Owner owner;
         owner.setName("owner");
-        owner.setItem1(item1);
-        owner.setItem2(item2);
+        owner.setItem1(&item1);
+        owner.setItem2(&item2);
         QCOMPARE(owner.save(), true);
     }
 
