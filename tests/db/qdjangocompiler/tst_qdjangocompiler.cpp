@@ -34,65 +34,6 @@ static QString escapeTable(const QSqlDatabase &db, const QString &name)
     return db.driver()->escapeIdentifier(name, QSqlDriver::TableName);
 }
 
-Object::Object(QObject *parent)
-    : QObject(parent)
-    , m_bar(0)
-    , m_wiz(0)
-    , m_zoo(0)
-    , m_zzz(0)
-{
-}
-
-QString Object::foo() const
-{
-    return m_foo;
-}
-
-void Object::setFoo(const QString &foo)
-{
-    m_foo = foo;
-}
-
-int Object::bar() const
-{
-    return m_bar;
-}
-
-void Object::setBar(int bar)
-{
-    m_bar = bar;
-}
-
-int Object::wiz() const
-{
-    return m_wiz;
-}
-
-void Object::setWiz(int wiz)
-{
-    m_wiz = wiz;
-}
-
-int Object::zoo() const
-{
-    return m_zoo;
-}
-
-void Object::setZoo(int zoo)
-{
-    m_zoo = zoo;
-}
-
-int Object::zzz() const
-{
-    return m_zzz;
-}
-
-void Object::setZzz(int zzz)
-{
-    m_zzz = zzz;
-}
-
 Item::Item(QObject *parent)
     : QDjangoModel(parent)
 {
