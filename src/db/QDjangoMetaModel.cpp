@@ -479,6 +479,8 @@ QStringList QDjangoMetaModel::createTableSql() const
                 case Restrict:
                     fieldSql += " RESTRICT";
                     break;
+                default:
+                    break;
                 }
             }
         }
