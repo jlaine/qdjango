@@ -124,14 +124,23 @@ void tst_QDjangoModel::initTestCase()
  */
 void tst_QDjangoModel::init()
 {
-    Author author;
-    author.setName("first");
-    QCOMPARE(author.save(), true);
+    Author author1;
+    author1.setName("First author");
+    QCOMPARE(author1.save(), true);
+
+    Author author2;
+    author2.setName("Second author");
+    QCOMPARE(author2.save(), true);
 
     Book book;
-    book.setAuthor(&author);
+    book.setAuthor(&author1);
     book.setTitle("Some book");
     QCOMPARE(book.save(), true);
+
+    Book book2;
+    book2.setAuthor(&author2);
+    book2.setTitle("Other book");
+    QCOMPARE(book2.save(), true);
 }
 
 /** Perform filtering on foreign keys.
@@ -141,8 +150,8 @@ void tst_QDjangoModel::filterRelated()
     QDjangoQuerySet<Book> books;
 
     QDjangoQuerySet<Book> qs = books.filter(
-        QDjangoWhere("author__name", QDjangoWhere::Equals, "first"));
-    CHECKWHERE(qs.where(), QLatin1String("T0.\"name\" = ?"), QVariantList() << "first");
+        QDjangoWhere("author__name", QDjangoWhere::Equals, "First author"));
+    CHECKWHERE(qs.where(), QLatin1String("T0.\"name\" = ?"), QVariantList() << "First author");
     QCOMPARE(qs.count(), 1);
     QCOMPARE(qs.size(), 1);
 
@@ -162,7 +171,7 @@ void tst_QDjangoModel::selectRelated()
     QVERIFY(book != 0);
     QCOMPARE(book->title(), QLatin1String("Some book"));
     QVERIFY(book->author() != 0);
-    QCOMPARE(book->author()->name(), QLatin1String("first"));
+    QCOMPARE(book->author()->name(), QLatin1String("First author"));
     delete book;
 
     // with eager loading
@@ -170,7 +179,7 @@ void tst_QDjangoModel::selectRelated()
     QVERIFY(book != 0);
     QCOMPARE(book->title(), QLatin1String("Some book"));
     QVERIFY(book->author() != 0);
-    QCOMPARE(book->author()->name(), QLatin1String("first"));
+    QCOMPARE(book->author()->name(), QLatin1String("First author"));
     delete book;
 }
 
