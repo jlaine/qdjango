@@ -540,7 +540,7 @@ QObject *QDjangoMetaModel::foreignKey(const QObject *model, const char *name) co
     // check the name is valid
     const QByteArray prop(name);
     if (!d->foreignFields.contains(prop)) {
-        qWarning("Cannot get foreign model for invalid key %s", name);
+        qWarning("QDjangoMetaModel cannot get foreign model for invalid key '%s'", name);
         return 0;
     }
 
@@ -575,7 +575,7 @@ void QDjangoMetaModel::setForeignKey(QObject *model, const char *name, QObject *
     // check the name is valid
     const QByteArray prop(name);
     if (!d->foreignFields.contains(prop)) {
-        qWarning("Cannot set foreign model for invalid key %s", name);
+        qWarning("QDjangoMetaModel cannot set foreign model for invalid key '%s'", name);
         return;
     }
 

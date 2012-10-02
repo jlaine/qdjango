@@ -51,6 +51,11 @@ public:
     QString title() const;
     void setTitle(const QString &title);
 
+    // expose foreign key methods so they can be tested
+    QObject *foreignKey(const char *name) const
+    { return QDjangoModel::foreignKey(name); }
+    void setForeignKey(const char *name, QObject *value)
+    { QDjangoModel::setForeignKey(name, value); }
 private:
     QString m_title;
 };
@@ -64,6 +69,7 @@ class tst_QDjangoModel : public QObject
 private slots:
     void initTestCase();
     void init();
+    void foreignKey();
     void filterRelated();
     void selectRelated();
     void cleanup();
@@ -141,6 +147,14 @@ void tst_QDjangoModel::init()
     book2.setAuthor(&author2);
     book2.setTitle("Other book");
     QCOMPARE(book2.save(), true);
+}
+
+void tst_QDjangoModel::foreignKey()
+{
+    QTest::ignoreMessage(QtWarningMsg, "QDjangoMetaModel cannot get foreign model for invalid key 'bad'");
+    Book book;
+    QVERIFY(!book.foreignKey("bad"));
+    QVERIFY(book.foreignKey("author"));
 }
 
 /** Perform filtering on foreign keys.
