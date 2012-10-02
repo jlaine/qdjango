@@ -443,7 +443,12 @@ int QDjangoQuerySet<T>::count() const
 {
     if (d->hasResults)
         return d->properties.size();
-    return d->sqlCount();
+
+    // execute COUNT query
+    QDjangoQuery query(d->countQuery());
+    if (!query.exec() || !query.next())
+        return -1;
+    return query.value(0).toInt();
 }
 
 /** Returns a new QDjangoQuerySet containing objects for which the given key

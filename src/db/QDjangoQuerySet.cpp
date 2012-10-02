@@ -177,31 +177,6 @@ QDjangoWhere QDjangoQuerySetPrivate::resolvedWhere(const QSqlDatabase &db) const
     return resolvedWhere;
 }
 
-int QDjangoQuerySetPrivate::sqlCount() const
-{
-    QSqlDatabase db = QDjango::database();
-
-    // build query
-    QDjangoCompiler compiler(m_modelName, db);
-    QDjangoWhere resolvedWhere(whereClause);
-    compiler.resolve(resolvedWhere);
-
-    const QString where = resolvedWhere.sql(db);
-    const QString limit = compiler.orderLimitSql(QStringList(), lowMark, highMark);
-    QString sql = QLatin1String("SELECT COUNT(*) FROM ") + compiler.fromSql();
-    if (!where.isEmpty())
-        sql += QLatin1String(" WHERE ") + where;
-    sql += limit;
-    QDjangoQuery query(db);
-    query.prepare(sql);
-    resolvedWhere.bindValues(query);
-
-    // execute query
-    if (!query.exec() || !query.next())
-        return -1;
-    return query.value(0).toInt();
-}
-
 bool QDjangoQuerySetPrivate::sqlDelete()
 {
     // DELETE on an empty queryset doesn't need a query
@@ -314,6 +289,32 @@ bool QDjangoQuerySetPrivate::sqlLoad(QObject *model, int index)
     return true;
 }
 
+/** Returns the SQL query to perform a COUNT on the current set.
+ */
+QDjangoQuery QDjangoQuerySetPrivate::countQuery() const
+{
+    QSqlDatabase db = QDjango::database();
+
+    // build query
+    QDjangoCompiler compiler(m_modelName, db);
+    QDjangoWhere resolvedWhere(whereClause);
+    compiler.resolve(resolvedWhere);
+
+    const QString where = resolvedWhere.sql(db);
+    const QString limit = compiler.orderLimitSql(QStringList(), lowMark, highMark);
+    QString sql = QLatin1String("SELECT COUNT(*) FROM ") + compiler.fromSql();
+    if (!where.isEmpty())
+        sql += QLatin1String(" WHERE ") + where;
+    sql += limit;
+    QDjangoQuery query(db);
+    query.prepare(sql);
+    resolvedWhere.bindValues(query);
+
+    return query;
+}
+
+/** Returns the SQL query to perform a DELETE on the current set.
+ */
 QDjangoQuery QDjangoQuerySetPrivate::deleteQuery() const
 {
     QSqlDatabase db = QDjango::database();
@@ -336,6 +337,8 @@ QDjangoQuery QDjangoQuerySetPrivate::deleteQuery() const
     return query;
 }
 
+/** Returns the SQL query to perform an INSERT for the specified \a fields.
+ */
 QDjangoQuery QDjangoQuerySetPrivate::insertQuery(const QVariantMap &fields) const
 {
     QSqlDatabase db = QDjango::database();
@@ -359,6 +362,9 @@ QDjangoQuery QDjangoQuerySetPrivate::insertQuery(const QVariantMap &fields) cons
     return query;
 }
 
+/** Returns the SQL query to perform an UPDATE on the current set for the
+    specified \a fields.
+ */
 QDjangoQuery QDjangoQuerySetPrivate::updateQuery(const QVariantMap &fields) const
 {
     QSqlDatabase db = QDjango::database();
