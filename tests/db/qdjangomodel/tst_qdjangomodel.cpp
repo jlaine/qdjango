@@ -63,6 +63,7 @@ class tst_QDjangoModel : public QObject
 
 private slots:
     void initTestCase();
+    void init();
     void filterRelated();
     void selectRelated();
     void cleanup();
@@ -119,23 +120,24 @@ void tst_QDjangoModel::initTestCase()
     QCOMPARE(QDjango::registerModel<Book>().createTable(), true);
 }
 
+/** Load fixtures.
+ */
+void tst_QDjangoModel::init()
+{
+    Author author;
+    author.setName("first");
+    QCOMPARE(author.save(), true);
+
+    Book book;
+    book.setAuthor(&author);
+    book.setTitle("Some book");
+    QCOMPARE(book.save(), true);
+}
+
 /** Perform filtering on foreign keys.
  */
 void tst_QDjangoModel::filterRelated()
 {
-    // load fixtures
-    {
-        Author author;
-        author.setName("first");
-        QCOMPARE(author.save(), true);
-
-        Book book;
-        book.setAuthor(&author);
-        book.setTitle("Some book");
-        QCOMPARE(book.save(), true);
-    }
-
-    // perform filtering
     QDjangoQuerySet<Book> books;
 
     QDjangoQuerySet<Book> qs = books.filter(
@@ -154,23 +156,12 @@ void tst_QDjangoModel::filterRelated()
  */
 void tst_QDjangoModel::selectRelated()
 {
-    // load fixtures
-    {
-        Author author;
-        author.setName("first");
-        QCOMPARE(author.save(), true);
-
-        Book book;
-        book.setAuthor(&author);
-        book.setTitle("Some book");
-        QCOMPARE(book.save(), true);
-    }
-
     // without eager loading
     QDjangoQuerySet<Book> qs;
     Book *book = qs.get(QDjangoWhere("title", QDjangoWhere::Equals, "Some book"));
     QVERIFY(book != 0);
     QCOMPARE(book->title(), QLatin1String("Some book"));
+    QVERIFY(book->author() != 0);
     QCOMPARE(book->author()->name(), QLatin1String("first"));
     delete book;
 
@@ -178,6 +169,7 @@ void tst_QDjangoModel::selectRelated()
     book = qs.selectRelated().get(QDjangoWhere("title", QDjangoWhere::Equals, "Some book"));
     QVERIFY(book != 0);
     QCOMPARE(book->title(), QLatin1String("Some book"));
+    QVERIFY(book->author() != 0);
     QCOMPARE(book->author()->name(), QLatin1String("first"));
     delete book;
 }
