@@ -3,6 +3,7 @@
 import getopt
 import os
 import platform
+import subprocess
 import sys
 
 components = ['db', 'http', 'script']
@@ -50,7 +51,10 @@ for component in components:
                 prog = os.path.join(test_path, 'tst_' + test + '.app', 'Contents', 'MacOS', 'tst_' + test)
             else:
                 prog = os.path.join(test_path, 'tst_' + test)
+            if not os.path.exists(prog):
+                continue
+
+            cmd = [ prog ]
             if report_path:
-                os.system('%s -xunitxml -o %s/%s.xml' % (prog, report_path, test))
-            else:
-                os.system(prog)
+                cmd += ['-xunitxml', '-o',  os.path.join(report_path, test + '.xml') ]
+            subprocess.call(cmd)
