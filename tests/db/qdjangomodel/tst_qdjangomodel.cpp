@@ -71,6 +71,25 @@ private:
     QString m_title;
 };
 
+class BookWithNullAuthor : public TestModel
+{
+    Q_OBJECT
+    Q_PROPERTY(Author* author READ author WRITE setAuthor)
+    Q_PROPERTY(QString title READ title WRITE setTitle)
+    Q_CLASSINFO("author", "null=true")
+
+public:
+    BookWithNullAuthor(QObject *parent = 0) : TestModel(parent) {}
+
+    Author *author() const { return qobject_cast<Author*>(foreignKey("author")); }
+    void setAuthor(Author *author) { setForeignKey("author", author); }
+
+    QString title() const { return m_title; }
+    void setTitle(const QString &title) { m_title = title; }
+private:
+    QString m_title;
+};
+
 /** Test QDjangoModel class.
  */
 class tst_QDjangoModel : public QObject
@@ -81,9 +100,11 @@ private slots:
     void initTestCase();
     void init();
     void foreignKey();
+    void foreignKey_null();
     void setForeignKey();
     void filterRelated();
     void selectRelated();
+    void selectRelated_null();
     void cleanup();
     void cleanupTestCase();
 };
@@ -95,6 +116,7 @@ void tst_QDjangoModel::initTestCase()
     QVERIFY(initialiseDatabase());
     QCOMPARE(QDjango::registerModel<Author>().createTable(), true);
     QCOMPARE(QDjango::registerModel<Book>().createTable(), true);
+    QCOMPARE(QDjango::registerModel<BookWithNullAuthor>().createTable(), true);
 }
 
 /** Load fixtures.
@@ -118,6 +140,10 @@ void tst_QDjangoModel::init()
     book2.setAuthor(&author2);
     book2.setTitle("Other book");
     QCOMPARE(book2.save(), true);
+
+    BookWithNullAuthor book3;
+    book2.setTitle("Book with null author");
+    QCOMPARE(book3.save(), true);
 }
 
 void tst_QDjangoModel::foreignKey()
@@ -126,6 +152,14 @@ void tst_QDjangoModel::foreignKey()
     Book book;
     QVERIFY(!book.foreignKey("bad"));
     QVERIFY(book.foreignKey("author"));
+}
+
+void tst_QDjangoModel::foreignKey_null()
+{
+    QTest::ignoreMessage(QtWarningMsg, "QDjangoMetaModel cannot get foreign model for invalid key 'bad'");
+    BookWithNullAuthor book;
+    QVERIFY(!book.foreignKey("bad"));
+    QVERIFY(!book.foreignKey("author"));
 }
 
 void tst_QDjangoModel::setForeignKey()
@@ -173,6 +207,17 @@ void tst_QDjangoModel::selectRelated()
     QCOMPARE(book->title(), QLatin1String("Some book"));
     QVERIFY(book->author() != 0);
     QCOMPARE(book->author()->name(), QLatin1String("First author"));
+    delete book;
+}
+
+void tst_QDjangoModel::selectRelated_null()
+{
+    // without eager loading
+    QDjangoQuerySet<BookWithNullAuthor> qs;
+    BookWithNullAuthor *book = qs.get(QDjangoWhere("title", QDjangoWhere::Equals, "Some book"));
+    QVERIFY(book != 0);
+    QCOMPARE(book->title(), QLatin1String("Book with null author"));
+    QVERIFY(!book->author());
     delete book;
 }
 
