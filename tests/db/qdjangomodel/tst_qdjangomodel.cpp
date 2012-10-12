@@ -21,41 +21,52 @@
 #include "QDjangoWhere.h"
 #include "util.h"
 
-class Author : public QDjangoModel
+class TestModel : public QDjangoModel
 {
-    Q_OBJECT
-    Q_PROPERTY(QString name READ name WRITE setName)
-
 public:
-    Author(QObject *parent = 0);
-
-    QString name() const;
-    void setName(const QString &name);
-
-private:
-    QString m_name;
-};
-
-class Book : public QDjangoModel
-{
-    Q_OBJECT
-    Q_PROPERTY(Author* author READ author WRITE setAuthor)
-    Q_PROPERTY(QString title READ title WRITE setTitle)
-
-public:
-    Book(QObject *parent = 0);
-
-    Author *author() const;
-    void setAuthor(Author *author);
-
-    QString title() const;
-    void setTitle(const QString &title);
+    TestModel(QObject *parent = 0) : QDjangoModel(parent) {}
 
     // expose foreign key methods so they can be tested
     QObject *foreignKey(const char *name) const
     { return QDjangoModel::foreignKey(name); }
     void setForeignKey(const char *name, QObject *value)
     { QDjangoModel::setForeignKey(name, value); }
+};
+
+class Author : public TestModel
+{
+    Q_OBJECT
+    Q_PROPERTY(QString name READ name WRITE setName)
+
+public:
+    Author(QObject *parent = 0) : TestModel(parent) {}
+
+    QString name() const { return m_name; }
+    void setName(const QString &name) { m_name = name; }
+
+private:
+    QString m_name;
+};
+
+class Book : public TestModel
+{
+    Q_OBJECT
+    Q_PROPERTY(Author* author READ author WRITE setAuthor)
+    Q_PROPERTY(QString title READ title WRITE setTitle)
+
+public:
+    Book(QObject *parent = 0)
+        : TestModel(parent)
+    {
+        setForeignKey("author", new Author(this));
+    }
+
+    Author *author() const { return qobject_cast<Author*>(foreignKey("author")); }
+    void setAuthor(Author *author) { setForeignKey("author", author); }
+
+    QString title() const { return m_title; }
+    void setTitle(const QString &title) { m_title = title; }
+
 private:
     QString m_title;
 };
@@ -76,47 +87,6 @@ private slots:
     void cleanup();
     void cleanupTestCase();
 };
-
-Author::Author(QObject *parent)
-    : QDjangoModel(parent)
-{
-}
-
-QString Author::name() const
-{
-    return m_name;
-}
-
-void Author::setName(const QString &name)
-{
-    m_name = name;
-}
-
-Book::Book(QObject *parent)
-    : QDjangoModel(parent)
-{
-    setForeignKey("author", new Author(this));
-}
-
-Author* Book::author() const
-{
-    return qobject_cast<Author*>(foreignKey("author"));
-}
-
-void Book::setAuthor(Author *author)
-{
-    setForeignKey("author", author);
-}
-
-QString Book::title() const
-{
-    return m_title;
-}
-
-void Book::setTitle(const QString &title)
-{
-    m_title = title;
-}
 
 /** Create database tables before running tests.
  */
