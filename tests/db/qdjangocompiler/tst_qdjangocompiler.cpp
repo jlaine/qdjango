@@ -21,7 +21,6 @@
 #include "QDjangoQuerySet.h"
 #include "QDjangoWhere.h"
 
-#include "tst_qdjangocompiler.h"
 #include "util.h"
 
 static QString escapeField(const QSqlDatabase &db, const QString &name)
@@ -34,64 +33,55 @@ static QString escapeTable(const QSqlDatabase &db, const QString &name)
     return db.driver()->escapeIdentifier(name, QSqlDriver::TableName);
 }
 
-Object::Object(QObject *parent)
-    : QObject(parent)
-    , m_bar(0)
-    , m_wiz(0)
-    , m_zoo(0)
-    , m_zzz(0)
+class Item : public QDjangoModel
 {
-}
+    Q_OBJECT
+    Q_PROPERTY(QString name READ name WRITE setName)
 
-QString Object::foo() const
-{
-    return m_foo;
-}
+public:
+    Item(QObject *parent = 0);
 
-void Object::setFoo(const QString &foo)
-{
-    m_foo = foo;
-}
+    QString name() const;
+    void setName(const QString &name);
 
-int Object::bar() const
-{
-    return m_bar;
-}
+private:
+    QString m_name;
+};
 
-void Object::setBar(int bar)
+class Owner : public QDjangoModel
 {
-    m_bar = bar;
-}
+    Q_OBJECT
+    Q_PROPERTY(QString name READ name WRITE setName)
+    Q_PROPERTY(Item* item1 READ item1 WRITE setItem1)
+    Q_PROPERTY(Item* item2 READ item2 WRITE setItem2)
 
-int Object::wiz() const
-{
-    return m_wiz;
-}
+public:
+    Owner(QObject *parent = 0);
 
-void Object::setWiz(int wiz)
-{
-    m_wiz = wiz;
-}
+    QString name() const;
+    void setName(const QString &name);
 
-int Object::zoo() const
-{
-    return m_zoo;
-}
+    Item *item1() const;
+    void setItem1(Item *item1);
 
-void Object::setZoo(int zoo)
-{
-    m_zoo = zoo;
-}
+    Item *item2() const;
+    void setItem2(Item *item2);
 
-int Object::zzz() const
-{
-    return m_zzz;
-}
+private:
+    QString m_name;
+};
 
-void Object::setZzz(int zzz)
+class tst_QDjangoCompiler : public QObject
 {
-    m_zzz = zzz;
-}
+    Q_OBJECT
+
+private slots:
+    void initTestCase();
+    void fieldNames();
+    void fieldNamesRecursive();
+    void orderLimit();
+    void resolve();
+};
 
 Item::Item(QObject *parent)
     : QDjangoModel(parent)
@@ -270,101 +260,5 @@ void tst_QDjangoCompiler::resolve()
         escapeField(db, "item2_id")));
 }
 
-/** Create database tables before running tests.
- */
-void tst_QDjangoModel::initTestCase()
-{
-    QCOMPARE(QDjango::registerModel<Item>().createTable(), true);
-    QCOMPARE(QDjango::registerModel<Owner>().createTable(), true);
-}
-
-/** Perform filtering on foreign keys.
- */
-void tst_QDjangoModel::filterRelated()
-{
-    // load fixtures
-    {
-        Item *item1 = new Item;
-        item1->setName("first");
-        QCOMPARE(item1->save(), true);
-
-        Item *item2 = new Item;
-        item2->setName("second");
-        QCOMPARE(item2->save(), true);
-
-        Owner owner;
-        owner.setName("owner");
-        owner.setItem1(item1);
-        owner.setItem2(item2);
-        QCOMPARE(owner.save(), true);
-    }
-
-    // perform filtering
-    QDjangoQuerySet<Owner> owners;
-
-    QDjangoQuerySet<Owner> qs = owners.filter(
-        QDjangoWhere("item1__name", QDjangoWhere::Equals, "first"));
-    CHECKWHERE(qs.where(), QLatin1String("T0.\"name\" = ?"), QVariantList() << "first");
-    QCOMPARE(qs.count(), 1);
-    QCOMPARE(qs.size(), 1);
-
-    Owner *owner = qs.at(0);
-    QVERIFY(owner != 0);
-    QCOMPARE(owner->name(), QLatin1String("owner"));
-    delete owner;
-}
-
-/** Test eager loading of foreign keys.
- */
-void tst_QDjangoModel::selectRelated()
-{
-    // load fixtures
-    {
-        Item *item1 = new Item;
-        item1->setName("first");
-        QCOMPARE(item1->save(), true);
-
-        Item *item2 = new Item;
-        item2->setName("second");
-        QCOMPARE(item2->save(), true);
-
-        Owner owner;
-        owner.setName("owner");
-        owner.setItem1(item1);
-        owner.setItem2(item2);
-        QCOMPARE(owner.save(), true);
-    }
-
-    // without eager loading
-    QDjangoQuerySet<Owner> qs;
-    Owner *owner = qs.get(QDjangoWhere("name", QDjangoWhere::Equals, "owner"));
-    QVERIFY(owner != 0);
-    QCOMPARE(owner->item1()->name(), QLatin1String("first"));
-    QCOMPARE(owner->item2()->name(), QLatin1String("second"));
-    delete owner;
-
-    // with eager loading
-    owner = qs.selectRelated().get(QDjangoWhere("name", QDjangoWhere::Equals, "owner"));
-    QVERIFY(owner != 0);
-    QCOMPARE(owner->item1()->name(), QLatin1String("first"));
-    QCOMPARE(owner->item2()->name(), QLatin1String("second"));
-    delete owner;
-}
-
-/** Clear database tables after each test.
- */
-void tst_QDjangoModel::cleanup()
-{
-    QCOMPARE(QDjangoQuerySet<Owner>().remove(), true);
-    QCOMPARE(QDjangoQuerySet<Item>().remove(), true);
-}
-
-/** Drop database tables after running tests.
- */
-void tst_QDjangoModel::cleanupTestCase()
-{
-    QCOMPARE(QDjango::registerModel<Owner>().dropTable(), true);
-    QCOMPARE(QDjango::registerModel<Item>().dropTable(), true);
-}
-
 QTEST_MAIN(tst_QDjangoCompiler)
+#include "tst_qdjangocompiler.moc"

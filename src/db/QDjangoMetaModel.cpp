@@ -197,15 +197,14 @@ public:
 };
 
 /*!
-    Constructs a new QDjangoMetaModel by inspecting the given \a model instance.
+    Constructs a new QDjangoMetaModel by inspecting the given \a meta model.
 */
-QDjangoMetaModel::QDjangoMetaModel(const QObject *model)
+QDjangoMetaModel::QDjangoMetaModel(const QMetaObject *meta)
     : d(new QDjangoMetaModelPrivate)
 {
-    if (!model)
+    if (!meta)
         return;
 
-    const QMetaObject* meta = model->metaObject();
     d->table = QString::fromLatin1(meta->className()).toLower();
 
     // parse table options
@@ -480,6 +479,8 @@ QStringList QDjangoMetaModel::createTableSql() const
                 case Restrict:
                     fieldSql += " RESTRICT";
                     break;
+                default:
+                    break;
                 }
             }
         }
@@ -536,7 +537,13 @@ bool QDjangoMetaModel::dropTable() const
 */
 QObject *QDjangoMetaModel::foreignKey(const QObject *model, const char *name) const
 {
+    // check the name is valid
     const QByteArray prop(name);
+    if (!d->foreignFields.contains(prop)) {
+        qWarning("QDjangoMetaModel cannot get foreign model for invalid key '%s'", name);
+        return 0;
+    }
+
     QObject *foreign = model->property(prop + "_ptr").value<QObject*>();
     if (!foreign)
         return 0;
@@ -565,7 +572,13 @@ QObject *QDjangoMetaModel::foreignKey(const QObject *model, const char *name) co
 */
 void QDjangoMetaModel::setForeignKey(QObject *model, const char *name, QObject *value) const
 {
+    // check the name is valid
     const QByteArray prop(name);
+    if (!d->foreignFields.contains(prop)) {
+        qWarning("QDjangoMetaModel cannot set foreign model for invalid key '%s'", name);
+        return;
+    }
+
     QObject *old = model->property(prop + "_ptr").value<QObject*>();
     if (old == value)
         return;

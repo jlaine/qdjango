@@ -52,6 +52,7 @@ class tst_QDjangoQuerySetPrivate : public QObject
 
 private slots:
     void initTestCase();
+    void countQuery();
     void deleteQuery();
     void insertQuery();
     void updateQuery();
@@ -67,6 +68,17 @@ void tst_QDjangoQuerySetPrivate::initTestCase()
 
     metaModel = QDjango::registerModel<Object>();
     QCOMPARE(metaModel.createTable(), true);
+}
+
+void tst_QDjangoQuerySetPrivate::countQuery()
+{
+    QDjangoQuerySetPrivate qs("Object");
+    qs.addFilter(QDjangoWhere("pk", QDjangoWhere::Equals, 1));
+    QDjangoQuery query = qs.countQuery();
+
+    QCOMPARE(normalizeSql(QDjango::database(), query.lastQuery()), QLatin1String("SELECT COUNT(*) FROM \"foo_table\" WHERE \"foo_table\".\"id\" = ?"));
+    QCOMPARE(query.boundValues().size(), 1);
+    QCOMPARE(query.boundValue(0), QVariant(1));
 }
 
 void tst_QDjangoQuerySetPrivate::deleteQuery()

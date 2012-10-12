@@ -229,11 +229,11 @@ QDjangoMetaModel QDjango::metaModel(const char *name)
     return globalMetaModels.value(name);
 }
 
-QDjangoMetaModel QDjango::registerModel(const QObject *model)
+QDjangoMetaModel QDjango::registerModel(const QMetaObject *meta)
 {
-    const QByteArray name = model->metaObject()->className();
+    const QByteArray name = meta->className();
     if (!globalMetaModels.contains(name))
-        globalMetaModels.insert(name, QDjangoMetaModel(model));
+        globalMetaModels.insert(name, QDjangoMetaModel(meta));
     return globalMetaModels[name];
 }
 
