@@ -142,7 +142,7 @@ void tst_QDjangoModel::init()
     QCOMPARE(book2.save(), true);
 
     BookWithNullAuthor book3;
-    book2.setTitle("Book with null author");
+    book3.setTitle("Book with null author");
     QCOMPARE(book3.save(), true);
 }
 
@@ -214,7 +214,7 @@ void tst_QDjangoModel::selectRelated_null()
 {
     // without eager loading
     QDjangoQuerySet<BookWithNullAuthor> qs;
-    BookWithNullAuthor *book = qs.get(QDjangoWhere("title", QDjangoWhere::Equals, "Some book"));
+    BookWithNullAuthor *book = qs.get(QDjangoWhere("title", QDjangoWhere::Equals, "Book with null author"));
     QVERIFY(book != 0);
     QCOMPARE(book->title(), QLatin1String("Book with null author"));
     QVERIFY(!book->author());
@@ -225,6 +225,7 @@ void tst_QDjangoModel::selectRelated_null()
  */
 void tst_QDjangoModel::cleanup()
 {
+    QCOMPARE(QDjangoQuerySet<BookWithNullAuthor>().remove(), true);
     QCOMPARE(QDjangoQuerySet<Book>().remove(), true);
     QCOMPARE(QDjangoQuerySet<Author>().remove(), true);
 }
@@ -233,6 +234,7 @@ void tst_QDjangoModel::cleanup()
  */
 void tst_QDjangoModel::cleanupTestCase()
 {
+    QCOMPARE(QDjango::registerModel<BookWithNullAuthor>().dropTable(), true);
     QCOMPARE(QDjango::registerModel<Book>().dropTable(), true);
     QCOMPARE(QDjango::registerModel<Author>().dropTable(), true);
 }
