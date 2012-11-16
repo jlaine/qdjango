@@ -36,7 +36,7 @@ bool QDjangoHttpController::getBasicAuth(const QDjangoHttpRequest &request, QStr
     QRegExp authRx(QLatin1String("^Basic (.+)$"));
     const QString authHeader = request.meta(QLatin1String("HTTP_AUTHORIZATION"));
     if (authRx.exactMatch(authHeader)) {
-        const QString authValue = QString::fromUtf8(QByteArray::fromBase64(authRx.cap(1).toAscii()));
+        const QString authValue = QString::fromUtf8(QByteArray::fromBase64(authRx.cap(1).toLatin1()));
         const QStringList bits = authValue.split(QLatin1Char(':'));
         if (bits.size() == 2 && !bits[0].isEmpty() && !bits[1].isEmpty()) {
             username = bits[0];

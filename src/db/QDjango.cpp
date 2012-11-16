@@ -81,8 +81,8 @@ bool QDjangoQuery::exec()
         QMapIterator<QString, QVariant> i(boundValues());
         while (i.hasNext()) {
             i.next();
-            qDebug() << "SQL   " << i.key().toAscii().data() << "="
-                     << i.value().toString().toAscii().data();
+            qDebug() << "SQL   " << i.key().toLatin1().data() << "="
+                     << i.value().toString().toLatin1().data();
         }
     }
     if (!QSqlQuery::exec()) {
