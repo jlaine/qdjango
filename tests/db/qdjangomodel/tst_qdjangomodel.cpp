@@ -219,6 +219,13 @@ void tst_QDjangoModel::selectRelated_null()
     QCOMPARE(book->title(), QLatin1String("Book with null author"));
     QVERIFY(!book->author());
     delete book;
+
+    // with eager loading
+    book = qs.selectRelated().get(QDjangoWhere("title", QDjangoWhere::Equals, "Book with null author"));
+    QVERIFY(book != 0);
+    QCOMPARE(book->title(), QLatin1String("Book with null author"));
+    QVERIFY(!book->author());
+    delete book;
 }
 
 /** Clear database tables after each test.
