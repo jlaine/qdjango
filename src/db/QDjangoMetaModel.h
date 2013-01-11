@@ -40,6 +40,7 @@ public:
     QDjangoMetaField& operator=(const QDjangoMetaField &other);
 
     QString column() const;
+    bool isNullable() const;
     bool isValid() const;
     QString name() const;
     QVariant toDatabase(const QVariant &value) const;

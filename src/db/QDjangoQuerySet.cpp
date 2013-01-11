@@ -97,7 +97,9 @@ QString QDjangoCompiler::fromSql()
 {
     QString from = driver->escapeIdentifier(baseModel.table(), QSqlDriver::TableName);
     foreach (const QString &name, modelRefs.keys()) {
-        from += QString::fromLatin1(" INNER JOIN %1 %2 ON %3.%4 = %5")
+        baseModel.localField(name.toLatin1() + QByteArray("_id"));
+        from += QString::fromLatin1(" %1 %2 %3 ON %4.%5 = %6")
+            .arg(baseModel.localField(name.toLatin1() + QByteArray("_id")).isNullable() ? "LEFT OUTER JOIN" : "INNER JOIN")
             .arg(driver->escapeIdentifier(modelRefs[name].second.table(), QSqlDriver::TableName))
             .arg(modelRefs[name].first)
             .arg(modelRefs[name].first)

@@ -71,6 +71,30 @@ private:
     QString m_name;
 };
 
+class OwnerWithNullableItem : public QDjangoModel
+{
+    Q_OBJECT
+    Q_PROPERTY(QString name READ name WRITE setName)
+    Q_PROPERTY(Item* item1 READ item1 WRITE setItem1)
+    Q_PROPERTY(Item* item2 READ item2 WRITE setItem2)
+    Q_CLASSINFO("item2", "null=true")
+
+public:
+    OwnerWithNullableItem(QObject *parent = 0);
+
+    QString name() const;
+    void setName(const QString &name);
+
+    Item *item1() const;
+    void setItem1(Item *item1);
+
+    Item *item2() const;
+    void setItem2(Item *item2);
+
+private:
+    QString m_name;
+};
+
 class tst_QDjangoCompiler : public QObject
 {
     Q_OBJECT
@@ -79,6 +103,7 @@ private slots:
     void initTestCase();
     void fieldNames();
     void fieldNamesRecursive();
+    void fieldNamesNullable();
     void orderLimit();
     void resolve();
 };
@@ -135,11 +160,49 @@ void Owner::setItem2(Item *item2)
     setForeignKey("item2", item2);
 }
 
+OwnerWithNullableItem::OwnerWithNullableItem(QObject *parent)
+    : QDjangoModel(parent)
+{
+    setForeignKey("item1", new Item(this));
+    setForeignKey("item2", new Item(this));
+}
+
+QString OwnerWithNullableItem::name() const
+{
+    return m_name;
+}
+
+void OwnerWithNullableItem::setName(const QString &name)
+{
+    m_name = name;
+}
+
+Item* OwnerWithNullableItem::item1() const
+{
+    return qobject_cast<Item*>(foreignKey("item1"));
+}
+
+void OwnerWithNullableItem::setItem1(Item *item1)
+{
+    setForeignKey("item1", item1);
+}
+
+Item* OwnerWithNullableItem::item2() const
+{
+    return qobject_cast<Item*>(foreignKey("item2"));
+}
+
+void OwnerWithNullableItem::setItem2(Item *item2)
+{
+    setForeignKey("item2", item2);
+}
+
 void tst_QDjangoCompiler::initTestCase()
 {
     QVERIFY(initialiseDatabase());
     QDjango::registerModel<Item>();
     QDjango::registerModel<Owner>();
+    QDjango::registerModel<OwnerWithNullableItem>();
 }
 
 void tst_QDjangoCompiler::fieldNames()
@@ -178,6 +241,32 @@ void tst_QDjangoCompiler::fieldNamesRecursive()
         escapeTable(db, "item"),
         escapeField(db, "id"),
         escapeTable(db, "owner"),
+        escapeField(db, "item2_id")));
+}
+
+void tst_QDjangoCompiler::fieldNamesNullable()
+{
+    QSqlDatabase db = QDjango::database();
+
+    QDjangoCompiler compiler("OwnerWithNullableItem", db);
+    QCOMPARE(compiler.fieldNames(true), QStringList()
+        << escapeTable(db, "ownerwithnullableitem") + "." + escapeField(db, "id")
+        << escapeTable(db, "ownerwithnullableitem") + "." + escapeField(db, "name")
+        << escapeTable(db, "ownerwithnullableitem") + "." + escapeField(db, "item1_id")
+        << escapeTable(db, "ownerwithnullableitem") + "." + escapeField(db, "item2_id")
+        << "T0." + escapeField(db, "id")
+        << "T0." + escapeField(db, "name")
+        << "T1." + escapeField(db, "id")
+        << "T1." + escapeField(db, "name"));
+    QCOMPARE(compiler.fromSql(), QString("%1 INNER JOIN %2 T0 ON T0.%3 = %4.%5 LEFT OUTER JOIN %6 T1 ON T1.%7 = %8.%9").arg(
+        escapeTable(db, "ownerwithnullableitem"),
+        escapeTable(db, "item"),
+        escapeField(db, "id"),
+        escapeTable(db, "ownerwithnullableitem"),
+        escapeField(db, "item1_id"),
+        escapeTable(db, "item"),
+        escapeField(db, "id"),
+        escapeTable(db, "ownerwithnullableitem"),
         escapeField(db, "item2_id")));
 }
 

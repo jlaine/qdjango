@@ -137,6 +137,14 @@ QString QDjangoMetaField::column() const
 }
 
 /*!
+    Returns true if this field is nullable.
+*/
+bool QDjangoMetaField::isNullable() const
+{
+    return d->null;
+}
+
+/*!
     Returns true if this is a valid field.
 */
 bool QDjangoMetaField::isValid() const
