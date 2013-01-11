@@ -44,7 +44,7 @@ class User : public QDjangoModel
     Q_CLASSINFO("first_name", "max_length=30")
     Q_CLASSINFO("last_name", "max_length=30")
     Q_CLASSINFO("password", "max_length=128")
- 
+
 public:
     User(QObject *parent = 0);
 
