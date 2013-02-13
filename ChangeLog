@@ -1,3 +1,6 @@
+QDjango 0.4.0 (UNRELEASED)
+ * Fix table creation on when using foreign key constraints with PostgreSQL.
+
 QDjango 0.3.0 (2013-01-11)
  * Fix and test "unique" field option.
  * Add a "unique_together" model option.

@@ -276,9 +276,9 @@ void tst_QDjangoMetaModel::testConstraints()
         sql << QLatin1String("CREATE TABLE \"tst_fkconstraint\" ("
             "\"id\" serial PRIMARY KEY, "
             "\"noConstraint_id\" integer NOT NULL REFERENCES \"user\" (\"id\") DEFERRABLE INITIALLY DEFERRED, "
-            "\"cascadeConstraint_id\" integer NOT NULL REFERENCES \"user\" (\"id\") DEFERRABLE INITIALLY DEFERRED ON DELETE CASCADE, "
-            "\"restrictConstraint_id\" integer NOT NULL REFERENCES \"user\" (\"id\") DEFERRABLE INITIALLY DEFERRED ON DELETE RESTRICT, "
-            "\"nullConstraint_id\" integer REFERENCES \"user\" (\"id\") DEFERRABLE INITIALLY DEFERRED ON DELETE SET NULL"
+            "\"cascadeConstraint_id\" integer NOT NULL REFERENCES \"user\" (\"id\") ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED, "
+            "\"restrictConstraint_id\" integer NOT NULL REFERENCES \"user\" (\"id\") ON DELETE RESTRICT DEFERRABLE INITIALLY DEFERRED, "
+            "\"nullConstraint_id\" integer REFERENCES \"user\" (\"id\") ON DELETE SET NULL DEFERRABLE INITIALLY DEFERRED"
             ")");
     else
        sql << QLatin1String("CREATE TABLE \"tst_fkconstraint\" ("
@@ -293,9 +293,17 @@ void tst_QDjangoMetaModel::testConstraints()
     sql << QLatin1String("CREATE INDEX \"tst_fkconstraint_728cefe1\" ON \"tst_fkconstraint\" (\"restrictConstraint_id\")");
     sql << QLatin1String("CREATE INDEX \"tst_fkconstraint_44c71620\" ON \"tst_fkconstraint\" (\"nullConstraint_id\")");
 
-    QDjango::registerModel<User>();
+    // create tables
+    QDjangoMetaModel userModel = QDjango::registerModel<User>();
+    QCOMPARE(userModel.createTable(), true);
+
     QDjangoMetaModel metaModel = QDjango::registerModel<tst_FkConstraint>();
     QCOMPARE(metaModel.createTableSql(), sql);
+    QCOMPARE(metaModel.createTable(), true);
+
+    // drop tables
+    QCOMPARE(metaModel.dropTable(), true);
+    QCOMPARE(userModel.dropTable(), true);
 }
 
 QTEST_MAIN(tst_QDjangoMetaModel)
