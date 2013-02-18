@@ -59,6 +59,16 @@ static void closeDatabase()
     delete globalDatabase;
 }
 
+static void initDatabase(QSqlDatabase db)
+{
+    if (db.driverName() == QLatin1String("QSQLITE")) {
+        // enable foreign key constraint handling
+        QDjangoQuery query(db);
+        query.prepare("PRAGMA foreign_keys=on");
+        query.exec();
+    }
+}
+
 QDjangoQuery::QDjangoQuery(QSqlDatabase db)
     : QSqlQuery(db)
 {
@@ -149,6 +159,7 @@ QSqlDatabase QDjango::database()
     QSqlDatabase db = QSqlDatabase::cloneDatabase(globalDatabase->reference,
         QLatin1String(connectionPrefix) + QString::number(globalDatabase->connectionId++));
     db.open();
+    initDatabase(db);
     globalDatabase->copies.insert(thread, db);
     return db;
 }
@@ -174,6 +185,7 @@ void QDjango::setDatabase(QSqlDatabase database)
         globalDatabase = new QDjangoDatabase();
         qAddPostRoutine(closeDatabase);
     }
+    initDatabase(database);
     globalDatabase->reference = database;
 }
 

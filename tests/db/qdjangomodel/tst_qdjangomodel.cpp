@@ -53,6 +53,7 @@ class Book : public TestModel
     Q_OBJECT
     Q_PROPERTY(Author* author READ author WRITE setAuthor)
     Q_PROPERTY(QString title READ title WRITE setTitle)
+    Q_CLASSINFO("author", "on_delete=cascade")
 
 public:
     Book(QObject *parent = 0)
@@ -99,6 +100,7 @@ class tst_QDjangoModel : public QObject
 private slots:
     void initTestCase();
     void init();
+    void deleteCascade();
     void foreignKey();
     void foreignKey_null();
     void setForeignKey();
@@ -144,6 +146,19 @@ void tst_QDjangoModel::init()
     BookWithNullAuthor book3;
     book3.setTitle("Book with null author");
     QCOMPARE(book3.save(), true);
+}
+
+void tst_QDjangoModel::deleteCascade()
+{
+    const QDjangoQuerySet<Author> authors;
+    const QDjangoQuerySet<Book> books;
+    QCOMPARE(authors.count(), 2);
+    QCOMPARE(books.count(), 2);
+
+    QVERIFY(authors.filter(QDjangoWhere("name", QDjangoWhere::Equals, "First author")).remove());
+
+    QCOMPARE(authors.count(), 1);
+    QCOMPARE(books.count(), 1);
 }
 
 void tst_QDjangoModel::foreignKey()
