@@ -153,11 +153,35 @@ bool QDjangoMetaField::isValid() const
 }
 
 /*!
+    Returns true if this field is auto incremented.
+*/
+bool QDjangoMetaField::isAutoIncrement() const
+{
+    return d->autoIncrement;
+}
+
+/*!
+    Returns true if this field is unique.
+*/
+bool QDjangoMetaField::isUnique() const
+{
+    return d->unique;
+}
+
+/*!
     Returns name of this meta field.
 */
 QString QDjangoMetaField::name() const
 {
     return QString::fromLatin1(d->name);
+}
+
+/*!
+    Returns the max length of this field
+*/
+int QDjangoMetaField::maxLength() const
+{
+    return d->maxLength;
 }
 
 /*!
