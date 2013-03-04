@@ -245,6 +245,7 @@ void tst_QDjangoMetaModel::testOptions()
                 "\"id\" serial PRIMARY KEY, "
                 "\"aField\" integer NOT NULL, "
                 "\"b_field\" integer NOT NULL, "
+                "\"blankField\" integer NOT NULL, "
                 "\"indexField\" integer NOT NULL, "
                 "\"nullField\" integer, "
                 "\"uniqueField\" integer NOT NULL UNIQUE, "
@@ -256,6 +257,7 @@ void tst_QDjangoMetaModel::testOptions()
                 "\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, "
                 "\"aField\" integer NOT NULL, "
                 "\"b_field\" integer NOT NULL, "
+                "\"blankField\" integer NOT NULL, "
                 "\"indexField\" integer NOT NULL, "
                 "\"nullField\" integer, "
                 "\"uniqueField\" integer NOT NULL UNIQUE, "
@@ -264,6 +266,45 @@ void tst_QDjangoMetaModel::testOptions()
 
     sql << QLatin1String("CREATE INDEX \"some_table_ac243651\" ON \"some_table\" (\"indexField\")");
     init<tst_Options>(sql);
+
+    QDjangoMetaField metaField;
+    const QDjangoMetaModel metaModel = QDjango::registerModel<tst_Options>();
+
+    metaField = metaModel.localField("aField");
+    QCOMPARE(metaField.isAutoIncrement(), false);
+    QCOMPARE(metaField.isBlank(), false);
+    QCOMPARE(metaField.isNullable(), false);
+    QCOMPARE(metaField.isUnique(), false);
+    QCOMPARE(metaField.isValid(), true);
+
+    metaField = metaModel.localField("bField");
+    QCOMPARE(metaField.isAutoIncrement(), false);
+    QCOMPARE(metaField.isBlank(), false);
+    QCOMPARE(metaField.isNullable(), false);
+    QCOMPARE(metaField.isUnique(), false);
+    QCOMPARE(metaField.isValid(), true);
+
+    metaField = metaModel.localField("blankField");
+    QCOMPARE(metaField.isAutoIncrement(), false);
+    QCOMPARE(metaField.isBlank(), true);
+    QCOMPARE(metaField.isNullable(), false);
+    QCOMPARE(metaField.isUnique(), false);
+    QCOMPARE(metaField.isValid(), true);
+
+    metaField = metaModel.localField("nullField");
+    QCOMPARE(metaField.isAutoIncrement(), false);
+    QCOMPARE(metaField.isBlank(), false);
+    QCOMPARE(metaField.isNullable(), true);
+    QCOMPARE(metaField.isUnique(), false);
+    QCOMPARE(metaField.isValid(), true);
+
+    metaField = metaModel.localField("uniqueField");
+    QCOMPARE(metaField.isAutoIncrement(), false);
+    QCOMPARE(metaField.isBlank(), false);
+    QCOMPARE(metaField.isNullable(), false);
+    QCOMPARE(metaField.isUnique(), true);
+    QCOMPARE(metaField.isValid(), true);
+
     cleanup<tst_Options>();
 }
 
