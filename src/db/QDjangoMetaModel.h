@@ -44,6 +44,7 @@ public:
     bool isValid() const;
     bool isAutoIncrement() const;
     bool isUnique() const;
+    bool isBlank() const;
     QString name() const;
     int maxLength() const;
     QVariant toDatabase(const QVariant &value) const;

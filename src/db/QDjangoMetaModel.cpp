@@ -83,6 +83,7 @@ public:
     bool null;
     QVariant::Type type;
     bool unique;
+    bool blank;
     ForeignKeyConstraint deleteConstraint;
 };
 
@@ -92,6 +93,7 @@ QDjangoMetaFieldPrivate::QDjangoMetaFieldPrivate()
     , maxLength(0)
     , null(false)
     , unique(false)
+    , blank(false)
     , deleteConstraint(NoAction)
 {
 }
@@ -166,6 +168,14 @@ bool QDjangoMetaField::isAutoIncrement() const
 bool QDjangoMetaField::isUnique() const
 {
     return d->unique;
+}
+
+/*!
+    Returns true if this field can be empty.
+*/
+bool QDjangoMetaField::isBlank() const
+{
+    return d->blank;
 }
 
 /*!
@@ -269,6 +279,7 @@ QDjangoMetaModel::QDjangoMetaModel(const QMetaObject *meta)
         bool primaryKeyOption = false;
         bool nullOption = false;
         bool uniqueOption = false;
+        bool blankOption = false;
         ForeignKeyConstraint deleteConstraint = NoAction;
         const int infoIndex = meta->indexOfClassInfo(meta->property(i).name());
         if (infoIndex >= 0)
@@ -295,6 +306,8 @@ QDjangoMetaModel::QDjangoMetaModel(const QMetaObject *meta)
                     primaryKeyOption = stringToBool(value);
                 else if (key == QLatin1String("unique"))
                     uniqueOption = stringToBool(value);
+                else if (key == QLatin1String("blank"))
+                    blankOption = stringToBool(value);
                 else if (option.key() == "on_delete") {
                     if (value.toLower() == "cascade")
                         deleteConstraint = Cascade;
@@ -343,6 +356,8 @@ QDjangoMetaModel::QDjangoMetaModel(const QMetaObject *meta)
             d->primaryKey = field.d->name;
         } else if (uniqueOption) {
             field.d->unique = true;
+        } else if (blankOption) {
+            field.d->blank = true;
         } else if (dbIndexOption) {
             field.d->index = true;
         }

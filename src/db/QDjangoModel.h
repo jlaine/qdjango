@@ -56,6 +56,7 @@
  *
  *  \li \c auto_increment if set to 'true', and if this field is the primary
  *  key, it will be marked as auto-increment.
+ *  \li \c blank if set to 'true', this field is allowed to be empty.
  *  \li \c db_column if provided, this is the name of the database column for
  *  the field, otherwise the field name will be used
  *  \li \c db_index if set to 'true', an index will be created on this field.
