@@ -376,10 +376,10 @@ void tst_QDjangoMetaModel::testConstraints()
             "`cascadeConstraint_id` integer NOT NULL, "
             "`restrictConstraint_id` integer NOT NULL, "
             "`nullConstraint_id` integer, "
-            "CONSTRAINT `FK_noConstraint_id` FOREIGN KEY (`noConstraint_id`) REFERENCES `user` (`id`), "
-            "CONSTRAINT `FK_cascadeConstraint_id` FOREIGN KEY (`cascadeConstraint_id`) REFERENCES `user` (`id`) ON DELETE CASCADE, "
-            "CONSTRAINT `FK_restrictConstraint_id` FOREIGN KEY (`restrictConstraint_id`) REFERENCES `user` (`id`) ON DELETE RESTRICT, "
-            "CONSTRAINT `FK_nullConstraint_id` FOREIGN KEY (`nullConstraint_id`) REFERENCES `user` (`id`) ON DELETE SET NULL"
+            "CONSTRAINT `FK_noConstraint_id_8049d4ec` FOREIGN KEY (`noConstraint_id`) REFERENCES `user` (`id`), "
+            "CONSTRAINT `FK_cascadeConstraint_id_d2686b82` FOREIGN KEY (`cascadeConstraint_id`) REFERENCES `user` (`id`) ON DELETE CASCADE, "
+            "CONSTRAINT `FK_restrictConstraint_id_99b64be3` FOREIGN KEY (`restrictConstraint_id`) REFERENCES `user` (`id`) ON DELETE RESTRICT, "
+            "CONSTRAINT `FK_nullConstraint_id_b4eac280` FOREIGN KEY (`nullConstraint_id`) REFERENCES `user` (`id`) ON DELETE SET NULL"
             ")");
         sql << QLatin1String("CREATE INDEX `tst_fkconstraint_f388fc3c` ON `tst_fkconstraint` (`noConstraint_id`)");
         sql << QLatin1String("CREATE INDEX `tst_fkconstraint_4634d592` ON `tst_fkconstraint` (`cascadeConstraint_id`)");

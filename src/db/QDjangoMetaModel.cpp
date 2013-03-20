@@ -509,7 +509,8 @@ QStringList QDjangoMetaModel::createTableSql() const
             const QDjangoMetaModel foreignMeta = QDjango::metaModel(field.d->foreignModel);
             const QDjangoMetaField foreignField = foreignMeta.localField("pk");
             if (driverName == QLatin1String("QMYSQL") || driverName == QLatin1String("QMYSQL3")) {
-                QString constraintName = QString::fromLatin1("FK_%1").arg(field.column());
+                QString constraintName = QString::fromLatin1("FK_%1_%2").arg(
+                    field.column(), stringlist_digest(QStringList() << field.column() << d->table));
                 QString constraint =
                     QString::fromLatin1("CONSTRAINT %1 FOREIGN KEY (%2) REFERENCES %3 (%4)").arg(
                         driver->escapeIdentifier(constraintName, QSqlDriver::FieldName),
