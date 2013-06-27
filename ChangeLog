@@ -1,4 +1,4 @@
-QDjango 0.4.0 (UNRELEASED)
+QDjango 0.4.0 (2013-06-27)
  * Enable foreign key constraints on SQLite (issue #9).
  * Fix table creation with foreign key constraints on PostgreSQL (issue #10).
  * Expose QDjangoMetaField's properties (issue #13).
