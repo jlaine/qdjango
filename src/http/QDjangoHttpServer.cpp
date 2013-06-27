@@ -201,7 +201,12 @@ void QDjangoHttpConnection::_q_readyRead()
         request->d->meta.insert(metaKey, it->second);
         ++it;
     }
+
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+    request->d->meta.insert(QLatin1String("QUERY_STRING"), QUrl(m_requestPath).query());
+#else
     request->d->meta.insert(QLatin1String("QUERY_STRING"), QString::fromLatin1(QUrl(m_requestPath).encodedQuery()));
+#endif
     request->d->meta.insert(QLatin1String("REMOTE_ADDR"), m_socket->peerAddress().toString());
     request->d->meta.insert(QLatin1String("REQUEST_METHOD"), request->method());
     request->d->meta.insert(QLatin1String("SERVER_NAME"), m_socket->localAddress().toString());

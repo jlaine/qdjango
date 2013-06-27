@@ -16,7 +16,11 @@
  */
 
 #include <QIODevice>
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+#include <QUrlQuery>
+#else
 #include <QUrl>
+#endif
 
 #include "QDjangoHttpRequest.h"
 #include "QDjangoHttpRequest_p.h"
@@ -46,9 +50,14 @@ QByteArray QDjangoHttpRequest::body() const
  */
 QString QDjangoHttpRequest::get(const QString &key) const
 {
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+    QUrlQuery query(d->meta.value(QLatin1String("QUERY_STRING")));
+    return query.queryItemValue(key);
+#else
     QUrl url;
     url.setEncodedQuery(d->meta.value(QLatin1String("QUERY_STRING")).toLatin1());
     return url.queryItemValue(key);
+#endif
 }
 
 /** Returns the specified HTTP request header.
@@ -78,9 +87,14 @@ QString QDjangoHttpRequest::path() const
  */
 QString QDjangoHttpRequest::post(const QString &key) const
 {
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+    QUrlQuery query(QString::fromUtf8(d->buffer));
+    return query.queryItemValue(key);
+#else
     QUrl url;
     url.setEncodedQuery(d->buffer);
     return url.queryItemValue(key);
+#endif
 }
 
 QDjangoHttpTestRequest::QDjangoHttpTestRequest(const QString &method, const QString &path)
