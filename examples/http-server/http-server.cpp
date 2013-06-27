@@ -316,12 +316,9 @@ QDjangoHttpResponse* ModelAdmin::addForm(const QDjangoHttpRequest &request)
     }
 
     if (request.method() == "POST") {
-        QUrl url;
-        url.setEncodedQuery(request.body());
-
         QDjangoModel *obj = d->modelFetcher->createObject();
         foreach (const QByteArray &key, d->changeFields)
-            obj->setProperty(key, url.queryItemValue(key));
+            obj->setProperty(key, request.post(key));
         obj->save();
         delete obj;
         return d->redirectHome(request);
@@ -351,11 +348,8 @@ QDjangoHttpResponse* ModelAdmin::changeForm(const QDjangoHttpRequest &request, c
     }
 
     if (request.method() == "POST") {
-        QUrl url;
-        url.setEncodedQuery(request.body());
-
         foreach (const QByteArray &key, d->changeFields)
-            original->setProperty(key, url.queryItemValue(key));
+            original->setProperty(key, request.post(key));
         original->save();
         return d->redirectHome(request);
     } else {
