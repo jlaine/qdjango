@@ -105,6 +105,7 @@ private slots:
     void foreignKey_null();
     void setForeignKey();
     void filterRelated();
+    void filterRelatedReverse();
     void selectRelated();
     void selectRelated_null();
     void cleanup();
@@ -201,6 +202,20 @@ void tst_QDjangoModel::filterRelated()
     QVERIFY(book != 0);
     QCOMPARE(book->title(), QLatin1String("Some book"));
     delete book;
+}
+
+void tst_QDjangoModel::filterRelatedReverse()
+{
+    QDjangoQuerySet<Author> authors;
+    QDjangoQuerySet<Author> qs = authors.filter(
+                QDjangoWhere("book__title", QDjangoWhere::Equals, "Some book"));
+    QCOMPARE(qs.count(), 1);
+    QCOMPARE(qs.size(), 1);
+
+    Author *author = qs.at(0);
+    QVERIFY(author != 0);
+    QCOMPARE(author->name(), QLatin1String("First author"));
+    delete author;
 }
 
 /** Test eager loading of foreign keys.
