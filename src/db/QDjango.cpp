@@ -238,7 +238,16 @@ bool QDjango::dropTables()
  */
 QDjangoMetaModel QDjango::metaModel(const char *name)
 {
-    return globalMetaModels.value(name);
+    if (globalMetaModels.contains(name))
+        return globalMetaModels.value(name);
+
+    // otherwise, try to find a model anyway
+    foreach (QByteArray modelName, globalMetaModels.keys()) {
+        if (qstricmp(name, modelName.data()) == 0)
+            return globalMetaModels.value(modelName);
+    }
+
+    return QDjangoMetaModel();
 }
 
 QDjangoMetaModel QDjango::registerModel(const QMetaObject *meta)
