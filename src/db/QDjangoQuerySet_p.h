@@ -50,6 +50,7 @@ private:
     QSqlDriver *driver;
     QDjangoMetaModel baseModel;
     QMap<QString, QPair<QString, QDjangoMetaModel> > modelRefs;
+    QStringList reverseModelRefs;
     QMap<QString, QString> fieldColumnCache;
 };
 
