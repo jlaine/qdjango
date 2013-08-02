@@ -60,7 +60,7 @@ QString QDjangoCompiler::databaseColumn(const QString &name)
             if (!foreignModel.isValid())
                 break;
 
-            reverseModelRefs.append(bits.first());
+            reverseModelRefs[bits.first()] = foreignModel.primaryKey();
         } else {
             foreignModel = QDjango::metaModel(model.foreignFields()[fk]);
         }
@@ -112,7 +112,7 @@ QString QDjangoCompiler::fromSql()
             .arg(modelRefs[name].first)
             .arg(modelRefs[name].first)
             .arg(driver->escapeIdentifier(modelRefs[name].second.localField("pk").column(), QSqlDriver::FieldName))
-            .arg(reverseModelRefs.contains(name) ? databaseColumn(QLatin1String("id")) :
+            .arg(reverseModelRefs.contains(name) ? databaseColumn(reverseModelRefs[name]) :
                                                    databaseColumn(name + QLatin1String("_id")));
     }
     return from;
