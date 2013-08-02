@@ -209,6 +209,7 @@ void tst_QDjangoModel::filterRelatedReverse()
     QDjangoQuerySet<Author> authors;
     QDjangoQuerySet<Author> qs = authors.filter(
                 QDjangoWhere("book__title", QDjangoWhere::Equals, "Some book"));
+    QVERIFY(!qs.values().isEmpty());
     QCOMPARE(qs.count(), 1);
     QCOMPARE(qs.size(), 1);
 
