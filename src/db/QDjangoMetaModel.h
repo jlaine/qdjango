@@ -69,7 +69,7 @@ public:
     ~QDjangoMetaModel();
     QDjangoMetaModel& operator=(const QDjangoMetaModel &other);
 
-    void isValid() const;
+    bool isValid() const;
 
     bool createTable() const;
     QStringList createTableSql() const;

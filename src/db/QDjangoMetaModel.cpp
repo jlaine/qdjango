@@ -396,9 +396,9 @@ QDjangoMetaModel::~QDjangoMetaModel()
 /*!
     Determine whether this is a valid model, or just default constructed
  */
-void QDjangoMetaModel::isValid() const
+bool QDjangoMetaModel::isValid() const
 {
-    return !table.isNull();
+    return !d->table.isNull();
 }
 
 /*!
