@@ -21,9 +21,12 @@
 #include <QMap>
 #include <QSharedDataPointer>
 #include <QVariant>
+#include <QPair>
+#include <QStringList>
 
 #include "QDjango_p.h"
 
+class QDjangoValidator;
 class QDjangoMetaFieldPrivate;
 class QDjangoMetaModelPrivate;
 
@@ -80,6 +83,10 @@ public:
     QObject *foreignKey(const QObject *model, const char *name) const;
     void setForeignKey(QObject *model, const char *name, QObject *value) const;
 
+    QHash<QByteArray, QString> cleanFields(const QObject *model,
+                                           const QStringList &fields = QStringList()) const;
+    void addValidator(const char *name, QDjangoValidator *validator) const;
+
     QDjangoMetaField localField(const char *name) const;
     QList<QDjangoMetaField> localFields() const;
     QMap<QByteArray, QByteArray> foreignFields() const;
@@ -88,6 +95,7 @@ public:
 
 private:
     QSharedDataPointer<QDjangoMetaModelPrivate> d;
+
 };
 
 #endif

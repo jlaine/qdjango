@@ -23,9 +23,9 @@
 #include "QDjango.h"
 #include "QDjangoMetaModel.h"
 #include "QDjangoQuerySet_p.h"
+#include "QDjangoValidator.h"
 
 // python-compatible hash
-
 static long string_hash(const QString &s)
 {
     if (s.isEmpty())
@@ -55,7 +55,6 @@ static long stringlist_hash(const QStringList &l)
 }
 
 // django-compatible digest
-
 static QString stringlist_digest(const QStringList &l)
 {
     return QString::number(labs(stringlist_hash(l)) % 4294967296L, 16);
@@ -231,11 +230,18 @@ static bool stringToBool(const QString &value)
 class QDjangoMetaModelPrivate : public QSharedData
 {
 public:
+    ~QDjangoMetaModelPrivate() {
+        qDeleteAll(validators);
+        validators.clear();
+    }
+
     QList<QDjangoMetaField> localFields;
     QMap<QByteArray, QByteArray> foreignFields;
+    QMultiHash<QByteArray, QDjangoValidator*> validators;
     QByteArray primaryKey;
     QString table;
     QList<QByteArray> uniqueTogether;
+    static QRegExp classFinder;
 };
 
 /*!
@@ -264,8 +270,7 @@ QDjangoMetaModel::QDjangoMetaModel(const QMetaObject *meta)
     }
 
     const int count = meta->propertyCount();
-    for(int i = QObject::staticMetaObject.propertyCount(); i < count; ++i)
-    {
+    for (int i = QObject::staticMetaObject.propertyCount(); i < count; ++i) {
         const QString typeName = QString::fromLatin1(meta->property(i).typeName());
         if (!qstrcmp(meta->property(i).name(), "pk"))
             continue;
@@ -282,8 +287,7 @@ QDjangoMetaModel::QDjangoMetaModel(const QMetaObject *meta)
         bool blankOption = false;
         ForeignKeyConstraint deleteConstraint = NoAction;
         const int infoIndex = meta->indexOfClassInfo(meta->property(i).name());
-        if (infoIndex >= 0)
-        {
+        if (infoIndex >= 0) {
             QMap<QString, QString> options = parseOptions(meta->classInfo(infoIndex).value());
             QMapIterator<QString, QString> option(options);
             while (option.hasNext()) {
@@ -429,8 +433,7 @@ QStringList QDjangoMetaModel::createTableSql() const
     QStringList propSql;
     QStringList constraintSql;
     const QString quotedTable = db.driver()->escapeIdentifier(d->table, QSqlDriver::TableName);
-    foreach (const QDjangoMetaField &field, d->localFields)
-    {
+    foreach (const QDjangoMetaField &field, d->localFields) {
         QString fieldSql = driver->escapeIdentifier(field.column(), QSqlDriver::FieldName);
         switch (field.d->type) {
         case QVariant::Bool:
@@ -504,8 +507,7 @@ QStringList QDjangoMetaModel::createTableSql() const
         }
 
         // foreign key
-        if (!field.d->foreignModel.isEmpty())
-        {
+        if (!field.d->foreignModel.isEmpty()) {
             const QDjangoMetaModel foreignMeta = QDjango::metaModel(field.d->foreignModel);
             const QDjangoMetaField foreignField = foreignMeta.localField("pk");
             if (driverName == QLatin1String("QMYSQL") || driverName == QLatin1String("QMYSQL3")) {
@@ -717,6 +719,7 @@ QDjangoMetaField QDjangoMetaModel::localField(const char *name) const
         if (field.d->name == fieldName)
             return field;
     }
+
     return QDjangoMetaField();
 }
 
@@ -812,6 +815,72 @@ bool QDjangoMetaModel::save(QObject *model) const
         if (!qs.sqlInsert(fields))
             return false;
     }
+
     return true;
+}
+
+QHash<QByteArray, QString> QDjangoMetaModel::cleanFields(const QObject *model,
+                                                         const QStringList &fields) const
+{
+    QHash<QByteArray, QString> result;
+    QList<QByteArray> fieldNames;
+    if (fields.isEmpty()) {
+        foreach (const QDjangoMetaField &field, d->localFields) {
+            QByteArray fieldName = field.name().toLatin1();
+            if (fieldName != d->primaryKey)
+                fieldNames << fieldName;
+        }
+    } else {
+        QStringList properties;
+        const QMetaObject *mo = model->metaObject();
+        for (int i = mo->propertyOffset(); i < mo->propertyCount(); ++i)
+            properties << mo->property(i).name();
+
+        foreach (const QString &field, fields) {
+            if (!properties.contains(field)) {
+                qDebug() << Q_FUNC_INFO << "invalid field: " << field;
+                continue;
+            }
+
+            fieldNames << field.toLatin1();
+        }
+    }
+
+    foreach (QByteArray fieldName, fieldNames) {
+        if (!d->validators.contains(fieldName)) {
+            qDebug() << "no validator defined for field: " << fieldName;
+            continue;
+        }
+
+        foreach (QDjangoValidator *validator, d->validators.values(fieldName)) {
+            if (!validator->validate(model->property(fieldName))) {
+                result.insert(fieldName, validator->message());
+            }
+        }
+    }
+
+    return result;
+}
+
+void QDjangoMetaModel::addValidator(const char *name, QDjangoValidator *validator) const
+{
+    const QByteArray prop(name);
+    bool validProperty = false;
+    for (int i = 0; i < d->localFields.size(); ++i) {
+        if (d->localFields.at(i).name() == prop) {
+            validProperty = true;
+            break;
+        }
+    }
+
+    if (!validProperty) {
+        qWarning("QDjangoMetaModel cannot set validator for invalid field '%s'", name);
+        delete validator;
+        return;
+    }
+
+    // NOTE: this is pretty dirty, but a limitation of how QDjangoModel and
+    //       QDjangoMetaModel interact unfortunately.
+    const_cast<QDjangoMetaModelPrivate*>(d.data())->validators.insert(name, validator);
 }
 
