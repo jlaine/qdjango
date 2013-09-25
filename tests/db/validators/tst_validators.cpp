@@ -12,6 +12,7 @@ class Publication : public QDjangoModel
     Q_PROPERTY(QString title READ title WRITE setTitle)
     Q_PROPERTY(QString content READ content WRITE setContent)
     Q_PROPERTY(QString website READ website WRITE setWebsite)
+    Q_PROPERTY(QString ipAddress READ ipAddress WRITE setIpAddress)
 
 public:
     Publication(QObject *parent = 0)
@@ -24,6 +25,7 @@ public:
         addValidator("content",
             new QDjangoRegExpValidator("[^&<>]*", tr("invalid content")));
         addValidator("website", new QDjangoUrlValidator(tr("invalid url")));
+        addValidator("ipAddress", new QDjangoIPv4Validator(tr("invalid ip address")));
     }
 
     QString title() const { return m_title; }
@@ -35,10 +37,14 @@ public:
     QString website() const { return m_website; }
     void setWebsite(const QString &site) { m_website = site; }
 
+    QString ipAddress() const { return m_ipAddress; }
+    void setIpAddress(const QString &address) { m_ipAddress = address; }
+
 private:
     QString m_title;
     QString m_content;
     QString m_website;
+    QString m_ipAddress;
 
 };
 
@@ -56,6 +62,9 @@ private slots:
 
     void testUrlValidator_data();
     void testUrlValidator();
+
+    void testIPv4Validator_data();
+    void testIPv4Validator();
 
     void cleanup();
     void cleanupTestCase();
@@ -149,7 +158,33 @@ void tst_Validators::testUrlValidator()
 
     Publication p;
     p.setWebsite(string);
-    QHash<QByteArray, QString> result = p.cleanFields();
+    QHash<QByteArray, QString> result = p.cleanFields(QStringList() << "website");
+    QCOMPARE(result.size(), errors);
+}
+
+void tst_Validators::testIPv4Validator_data()
+{
+    QTest::addColumn<QString>("string");
+    QTest::addColumn<int>("errors");
+
+    QTest::newRow("valid1") << "1.1.1.1" << 0;
+    QTest::newRow("valid2") << "255.0.0.0" << 0;
+    QTest::newRow("valid3") << "0.0.0.0" << 0;
+
+    QTest::newRow("invalid1") << "256.1.1.1" << 1;
+    QTest::newRow("invalid2") << "25.1.1." << 1;
+    QTest::newRow("invalid3") << "25,1,1,1" << 1;
+    QTest::newRow("invalid4") << "25.1 .1.1" << 1;
+}
+
+void tst_Validators::testIPv4Validator()
+{
+    QFETCH(QString, string);
+    QFETCH(int, errors);
+
+    Publication p;
+    p.setIpAddress(string);
+    QHash<QByteArray, QString> result = p.cleanFields(QStringList() << "ipAddress");
     QCOMPARE(result.size(), errors);
 }
 

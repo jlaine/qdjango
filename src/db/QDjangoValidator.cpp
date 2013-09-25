@@ -59,3 +59,13 @@ QDjangoUrlValidator::QDjangoUrlValidator(const QString &message)
 QDjangoUrlValidator::~QDjangoUrlValidator()
 {
 }
+
+QDjangoIPv4Validator::QDjangoIPv4Validator(const QString &message)
+    : QDjangoRegExpValidator("^(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)(\\.(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)){3}$", message)
+{
+}
+
+QDjangoIPv4Validator::~QDjangoIPv4Validator()
+{
+}
+

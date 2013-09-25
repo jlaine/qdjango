@@ -47,5 +47,13 @@ public:
     ~QDjangoUrlValidator();
 };
 
+class QDJANGO_EXPORT QDjangoIPv4Validator : public QDjangoRegExpValidator
+{
+public:
+    explicit QDjangoIPv4Validator(const QString &message);
+    ~QDjangoIPv4Validator();
+};
+
+
 #endif
 
