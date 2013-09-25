@@ -44,3 +44,18 @@ bool QDjangoRegExpValidator::validate(const QVariant &data)
     return m_regularExpression.exactMatch(data.toString());
 }
 
+QDjangoUrlValidator::QDjangoUrlValidator(const QString &message)
+    : QDjangoRegExpValidator(QRegExp(
+          "^(?:http|ftp)s?://" \
+          "(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\\.)+(?:[A-Z]{2,6}\\.?|[A-Z0-9-]{2,}\\.?)|" \
+          "localhost|" \
+          "\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}|" \
+          "\\[?[A-F0-9]*:[A-F0-9:]+\\]?)" \
+          "(?::\\d+)?" \
+          "(?:/?|[/?]\\S+)$", Qt::CaseInsensitive), message)
+{
+}
+
+QDjangoUrlValidator::~QDjangoUrlValidator()
+{
+}

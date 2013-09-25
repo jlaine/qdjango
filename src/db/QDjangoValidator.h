@@ -40,5 +40,12 @@ private:
 
 };
 
+class QDJANGO_EXPORT QDjangoUrlValidator : public QDjangoRegExpValidator
+{
+public:
+    explicit QDjangoUrlValidator(const QString &message);
+    ~QDjangoUrlValidator();
+};
+
 #endif
 
