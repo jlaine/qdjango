@@ -37,6 +37,7 @@ public:
 
 private:
     QRegExp m_regularExpression;
+    int m_matchCounter;
 
 };
 

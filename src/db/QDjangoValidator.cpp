@@ -26,14 +26,16 @@ QDjangoRegExpValidator::~QDjangoRegExpValidator()
 QDjangoRegExpValidator::QDjangoRegExpValidator(const QString &regexp,
                                                const QString &message)
     : QDjangoValidator(message),
-      m_regularExpression(regexp)
+      m_regularExpression(regexp),
+      m_matchCounter(0)
 {
 }
 
 QDjangoRegExpValidator::QDjangoRegExpValidator(const QRegExp &regexp,
                                                const QString &message)
     : QDjangoValidator(message),
-      m_regularExpression(regexp)
+      m_regularExpression(regexp),
+      m_matchCounter(0)
 {
 }
 
@@ -41,6 +43,17 @@ bool QDjangoRegExpValidator::validate(const QVariant &data)
 {
     if (!data.canConvert(QVariant::String))
         return false;
+
+    // TODO: migrate to QRegularExpression in Qt5
+    // due to a limitation of QRegExp, it seems that if you use the same
+    // expression over and over, it keeps results in an internal map
+    // so we opt for this less-than-ideal solution..
+    if (m_matchCounter >= 500) {
+        m_regularExpression = QRegExp(m_regularExpression);
+        m_matchCounter = 0;
+    }
+
+    m_matchCounter++;
     return m_regularExpression.exactMatch(data.toString());
 }
 
