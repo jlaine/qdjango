@@ -88,8 +88,7 @@ QDjangoWhere QDjangoWhere::operator!() const
 {
     QDjangoWhere result;
     result.d = d;
-    if (d->children.isEmpty())
-    {
+    if (d->children.isEmpty()) {
         switch (d->operation)
         {
         case None:
@@ -147,6 +146,12 @@ QDjangoWhere QDjangoWhere::operator&&(const QDjangoWhere &other) const
     else if (isNone() || other.isAll())
         return *this;
 
+    if (d->combine == QDjangoWherePrivate::AndCombine) {
+        QDjangoWhere result = *this;
+        result.d->children << other;
+        return result;
+    }
+
     QDjangoWhere result;
     result.d->combine = QDjangoWherePrivate::AndCombine;
     result.d->children << *this << other;
@@ -165,6 +170,12 @@ QDjangoWhere QDjangoWhere::operator||(const QDjangoWhere &other) const
     else if (isNone() || other.isAll())
         return other;
 
+    if (d->combine == QDjangoWherePrivate::OrCombine) {
+        QDjangoWhere result = *this;
+        result.d->children << other;
+        return result;
+    }
+
     QDjangoWhere result;
     result.d->combine = QDjangoWherePrivate::OrCombine;
     result.d->children << *this << other;
@@ -177,33 +188,24 @@ QDjangoWhere QDjangoWhere::operator||(const QDjangoWhere &other) const
  */
 void QDjangoWhere::bindValues(QDjangoQuery &query) const
 {
-    if (d->operation == QDjangoWhere::IsIn)
-    {
+    if (d->operation == QDjangoWhere::IsIn) {
         const QList<QVariant> values = d->data.toList();
         for (int i = 0; i < values.size(); i++)
             query.addBindValue(values[i]);
-    }
-    else if (d->operation == QDjangoWhere::IsNull)
-    {
+    } else if (d->operation == QDjangoWhere::IsNull) {
         // no data to bind
-    }
-    else if (d->operation == QDjangoWhere::StartsWith)
-    {
+    } else if (d->operation == QDjangoWhere::StartsWith) {
         query.addBindValue(escapeLike(d->data.toString()) + QLatin1String("%"));
-    }
-    else if (d->operation == QDjangoWhere::EndsWith)
-    {
+    } else if (d->operation == QDjangoWhere::EndsWith) {
         query.addBindValue(QLatin1String("%") + escapeLike(d->data.toString()));
-    }
-    else if (d->operation == QDjangoWhere::Contains)
-    {
+    } else if (d->operation == QDjangoWhere::Contains) {
         query.addBindValue(QLatin1String("%") + escapeLike(d->data.toString()) + QLatin1String("%"));
-    }
-    else if (d->operation != QDjangoWhere::None)
+    } else if (d->operation != QDjangoWhere::None) {
         query.addBindValue(d->data);
-    else
+    } else {
         foreach (const QDjangoWhere &child, d->children)
             child.bindValues(query);
+    }
 }
 
 /** Returns true if the current QDjangoWhere does not express any constraint.
@@ -224,8 +226,7 @@ bool QDjangoWhere::isNone() const
  */
 QString QDjangoWhere::sql(const QSqlDatabase &db) const
 {
-    switch (d->operation)
-    {
+    switch (d->operation) {
         case Equals:
             return d->key + QLatin1String(" = ?");
         case NotEquals:
@@ -261,19 +262,18 @@ QString QDjangoWhere::sql(const QSqlDatabase &db) const
                 return d->key + QLatin1String(" ") + op + QLatin1String(" ?");
         }
         case None:
-            if (d->combine == QDjangoWherePrivate::NoCombine)
-            {
+            if (d->combine == QDjangoWherePrivate::NoCombine) {
                 return d->negate ? QLatin1String("1 != 0") : QString();
             } else {
                 QStringList bits;
-                foreach (const QDjangoWhere &child, d->children)
-                {
+                foreach (const QDjangoWhere &child, d->children) {
                     QString atom = child.sql(db);
                     if (child.d->children.isEmpty())
                         bits << atom;
                     else
                         bits << QString::fromLatin1("(%1)").arg(atom);
                 }
+
                 QString combined;
                 if (d->combine == QDjangoWherePrivate::AndCombine)
                     combined = bits.join(QLatin1String(" AND "));

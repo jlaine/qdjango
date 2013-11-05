@@ -36,7 +36,7 @@ public:
     {
         NoCombine,
         AndCombine,
-        OrCombine,
+        OrCombine
     };
 
     QDjangoWherePrivate();

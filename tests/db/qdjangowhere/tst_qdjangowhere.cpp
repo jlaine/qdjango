@@ -287,6 +287,12 @@ void tst_QDjangoWhere::complexWhere()
 
     testQuery = queryId || (queryUsername && queryPassword);
     CHECKWHERE(testQuery, QLatin1String("id = ? OR (username = ? AND password = ?)"), QVariantList() << 1 << "foouser" << "foopass");
+
+    testQuery = queryId && queryUsername && queryPassword;
+    CHECKWHERE(testQuery, QLatin1String("id = ? AND username = ? AND password = ?"), QVariantList() << 1 << "foouser" << "foopass");
+
+    testQuery = queryId || queryUsername || queryPassword;
+    CHECKWHERE(testQuery, QLatin1String("id = ? OR username = ? OR password = ?"), QVariantList() << 1 << "foouser" << "foopass");
 }
 
 QTEST_MAIN(tst_QDjangoWhere)
