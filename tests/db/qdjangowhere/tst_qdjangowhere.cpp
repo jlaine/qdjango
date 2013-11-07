@@ -29,7 +29,9 @@ private slots:
     void initTestCase();
     void emptyWhere();
     void equalsWhere();
+    void iEqualsWhere();
     void notEqualsWhere();
+    void iNotEqualsWhere();
     void greaterThan();
     void greaterOrEquals();
     void lessThan();
@@ -37,8 +39,11 @@ private slots:
     void isIn();
     void isNull();
     void startsWith();
+    void iStartsWith();
     void endsWith();
+    void iEndsWith();
     void contains();
+    void iContains();
     void andWhere();
     void orWhere();
     void complexWhere();
@@ -81,6 +86,27 @@ void tst_QDjangoWhere::equalsWhere()
     CHECKWHERE(testQuery, QLatin1String("id != ?"), QVariantList() << 1);
 }
 
+/** Test case-insensitive "=" comparison.
+  */
+void tst_QDjangoWhere::iEqualsWhere()
+{
+    QString driverName = QDjango::database().driverName();
+     if (driverName == QLatin1String("QPSQL")) {
+        QDjangoWhere testQuery = QDjangoWhere("name", QDjangoWhere::IEquals, "abc");
+        CHECKWHERE(testQuery, QLatin1String("UPPER(name::text) LIKE UPPER(?)"), QVariantList() << "abc");
+
+        testQuery = !QDjangoWhere("name", QDjangoWhere::IEquals, "abc");
+        CHECKWHERE(testQuery, QLatin1String("UPPER(name::text) NOT LIKE UPPER(?)"), QVariantList() << "abc");
+    } else {
+         QDjangoWhere testQuery = QDjangoWhere("name", QDjangoWhere::IEquals, "abc");
+         CHECKWHERE(testQuery, QLatin1String("name LIKE ?"), QVariantList() << "abc");
+
+         testQuery = !QDjangoWhere("name", QDjangoWhere::IEquals, "abc");
+         CHECKWHERE(testQuery, QLatin1String("name NOT LIKE ?"), QVariantList() << "abc");
+     }
+}
+
+
 /** Test "!=" comparison.
  */
 void tst_QDjangoWhere::notEqualsWhere()
@@ -94,6 +120,26 @@ void tst_QDjangoWhere::notEqualsWhere()
     // negate the where clause
     testQuery = !QDjangoWhere("id", QDjangoWhere::NotEquals, 1);
     CHECKWHERE(testQuery, QLatin1String("id = ?"), QVariantList() << 1);
+}
+
+/** Test case-insensitive "!=" comparison.
+  */
+void tst_QDjangoWhere::iNotEqualsWhere()
+{
+    QString driverName = QDjango::database().driverName();
+    if (driverName == QLatin1String("QPSQL")) {
+        QDjangoWhere testQuery = QDjangoWhere("name", QDjangoWhere::INotEquals, "abc");
+        CHECKWHERE(testQuery, QLatin1String("UPPER(name::text) NOT LIKE UPPER(?)"), QVariantList() << "abc");
+
+        testQuery = !QDjangoWhere("name", QDjangoWhere::INotEquals, "abc");
+        CHECKWHERE(testQuery, QLatin1String("UPPER(name::text) LIKE UPPER(?)"), QVariantList() << "abc");
+    } else {
+        QDjangoWhere testQuery = QDjangoWhere("name", QDjangoWhere::INotEquals, "abc");
+        CHECKWHERE(testQuery, QLatin1String("name NOT LIKE ?"), QVariantList() << "abc");
+
+        testQuery = !QDjangoWhere("name", QDjangoWhere::INotEquals, "abc");
+        CHECKWHERE(testQuery, QLatin1String("name LIKE ?"), QVariantList() << "abc");
+    }
 }
 
 /** Test ">" comparison.
@@ -177,33 +223,126 @@ void tst_QDjangoWhere::isNull()
  */
 void tst_QDjangoWhere::startsWith()
 {
-    QDjangoWhere testQuery = QDjangoWhere("name", QDjangoWhere::StartsWith, "abc");
-    CHECKWHERE(testQuery, QLatin1String("name LIKE ?"), QVariantList() << "abc%");
+    QString driverName = QDjango::database().driverName();
+    if (driverName == QLatin1String("QMYSQL")) {
+        QDjangoWhere testQuery = QDjangoWhere("name", QDjangoWhere::StartsWith, "abc");
+        CHECKWHERE(testQuery, QLatin1String("name LIKE BINARY ?"), QVariantList() << "abc%");
 
-    testQuery = !QDjangoWhere("name", QDjangoWhere::StartsWith, "abc");
-    CHECKWHERE(testQuery, QLatin1String("name NOT LIKE ?"), QVariantList() << "abc%");
+        testQuery = !QDjangoWhere("name", QDjangoWhere::StartsWith, "abc");
+        CHECKWHERE(testQuery, QLatin1String("name NOT LIKE BINARY ?"), QVariantList() << "abc%");
+    } else {
+        QDjangoWhere testQuery = QDjangoWhere("name", QDjangoWhere::StartsWith, "abc");
+        CHECKWHERE(testQuery, QLatin1String("name LIKE ?"), QVariantList() << "abc%");
+
+        testQuery = !QDjangoWhere("name", QDjangoWhere::StartsWith, "abc");
+        CHECKWHERE(testQuery, QLatin1String("name NOT LIKE ?"), QVariantList() << "abc%");
+    }
+
+}
+
+/** Test "istartswith" comparison.
+  */
+
+void tst_QDjangoWhere::iStartsWith()
+{
+    QString driverName = QDjango::database().driverName();
+    if (driverName == QLatin1String("QPSQL")) {
+        QDjangoWhere testQuery = QDjangoWhere("name", QDjangoWhere::IStartsWith, "abc");
+        CHECKWHERE(testQuery, QLatin1String("UPPER(name::text) LIKE UPPER(?)"), QVariantList() << "abc%");
+
+        testQuery = !QDjangoWhere("name", QDjangoWhere::IStartsWith, "abc");
+        CHECKWHERE(testQuery, QLatin1String("UPPER(name::text) NOT LIKE UPPER(?)"), QVariantList() << "abc%");
+    } else {
+        QDjangoWhere testQuery = QDjangoWhere("name", QDjangoWhere::IStartsWith, "abc");
+        CHECKWHERE(testQuery, QLatin1String("name LIKE ?"), QVariantList() << "abc%");
+
+        testQuery = !QDjangoWhere("name", QDjangoWhere::IStartsWith, "abc");
+        CHECKWHERE(testQuery, QLatin1String("name NOT LIKE ?"), QVariantList() << "abc%");
+    }
 }
 
 /** Test "endswith" comparison.
  */
 void tst_QDjangoWhere::endsWith()
 {
-    QDjangoWhere testQuery = QDjangoWhere("name", QDjangoWhere::EndsWith, "abc");
-    CHECKWHERE(testQuery, QLatin1String("name LIKE ?"), QVariantList() << "%abc");
+    QString driverName = QDjango::database().driverName();
+    if (driverName == QLatin1String("QMYSQL")) {
+        QDjangoWhere testQuery = QDjangoWhere("name", QDjangoWhere::EndsWith, "abc");
+        CHECKWHERE(testQuery, QLatin1String("name LIKE BINARY ?"), QVariantList() << "%abc");
 
-    testQuery = !QDjangoWhere("name", QDjangoWhere::EndsWith, "abc");
-    CHECKWHERE(testQuery, QLatin1String("name NOT LIKE ?"), QVariantList() << "%abc");
+        testQuery = !QDjangoWhere("name", QDjangoWhere::EndsWith, "abc");
+        CHECKWHERE(testQuery, QLatin1String("name NOT LIKE BINARY ?"), QVariantList() << "%abc");
+    } else {
+        QDjangoWhere testQuery = QDjangoWhere("name", QDjangoWhere::EndsWith, "abc");
+        CHECKWHERE(testQuery, QLatin1String("name LIKE ?"), QVariantList() << "%abc");
+
+        testQuery = !QDjangoWhere("name", QDjangoWhere::EndsWith, "abc");
+        CHECKWHERE(testQuery, QLatin1String("name NOT LIKE ?"), QVariantList() << "%abc");
+    }
 }
+
+/** Test "iendswith" comparison.
+  */
+
+void tst_QDjangoWhere::iEndsWith()
+{
+    QString driverName = QDjango::database().driverName();
+    if (driverName == QLatin1String("QPSQL")) {
+        QDjangoWhere testQuery = QDjangoWhere("name", QDjangoWhere::IEndsWith, "abc");
+        CHECKWHERE(testQuery, QLatin1String("UPPER(name::text) LIKE UPPER(?)"), QVariantList() << "%abc");
+
+        testQuery = !QDjangoWhere("name", QDjangoWhere::IEndsWith, "abc");
+        CHECKWHERE(testQuery, QLatin1String("UPPER(name::text) NOT LIKE UPPER(?)"), QVariantList() << "%abc");
+    } else {
+        QDjangoWhere testQuery = QDjangoWhere("name", QDjangoWhere::IEndsWith, "abc");
+        CHECKWHERE(testQuery, QLatin1String("name LIKE ?"), QVariantList() << "%abc");
+
+        testQuery = !QDjangoWhere("name", QDjangoWhere::IEndsWith, "abc");
+        CHECKWHERE(testQuery, QLatin1String("name NOT LIKE ?"), QVariantList() << "%abc");
+    }
+
+}
+
 
 /** Test "contains" comparison.
  */
 void tst_QDjangoWhere::contains()
 {
-    QDjangoWhere testQuery = QDjangoWhere("name", QDjangoWhere::Contains, "abc");
-    CHECKWHERE(testQuery, QLatin1String("name LIKE ?"), QVariantList() << "%abc%");
+    QString driverName = QDjango::database().driverName();
+    if (driverName == QLatin1String("QMYSQL")) {
+        QDjangoWhere testQuery = QDjangoWhere("name", QDjangoWhere::Contains, "abc");
+        CHECKWHERE(testQuery, QLatin1String("name LIKE BINARY ?"), QVariantList() << "%abc%");
 
-    testQuery = !QDjangoWhere("name", QDjangoWhere::Contains, "abc");
-    CHECKWHERE(testQuery, QLatin1String("name NOT LIKE ?"), QVariantList() << "%abc%");
+        testQuery = !QDjangoWhere("name", QDjangoWhere::Contains, "abc");
+        CHECKWHERE(testQuery, QLatin1String("name NOT LIKE BINARY ?"), QVariantList() << "%abc%");
+    } else {
+        QDjangoWhere testQuery = QDjangoWhere("name", QDjangoWhere::Contains, "abc");
+        CHECKWHERE(testQuery, QLatin1String("name LIKE ?"), QVariantList() << "%abc%");
+
+        testQuery = !QDjangoWhere("name", QDjangoWhere::Contains, "abc");
+        CHECKWHERE(testQuery, QLatin1String("name NOT LIKE ?"), QVariantList() << "%abc%");
+    }
+}
+
+/** Test "icontains" comparison"
+  */
+
+void tst_QDjangoWhere::iContains()
+{
+    QString driverName = QDjango::database().driverName();
+    if (driverName == QLatin1String("QPSQL")) {
+        QDjangoWhere testQuery = QDjangoWhere("name", QDjangoWhere::IContains, "abc");
+        CHECKWHERE(testQuery, QLatin1String("UPPER(name::text) LIKE UPPER(?)"), QVariantList() << "%abc%");
+
+        testQuery = !QDjangoWhere("name", QDjangoWhere::IContains, "abc");
+        CHECKWHERE(testQuery, QLatin1String("UPPER(name::text) NOT LIKE UPPER(?)"), QVariantList() << "%abc%");
+    } else {
+        QDjangoWhere testQuery = QDjangoWhere("name", QDjangoWhere::IContains, "abc");
+        CHECKWHERE(testQuery, QLatin1String("name LIKE ?"), QVariantList() << "%abc%");
+
+        testQuery = !QDjangoWhere("name", QDjangoWhere::IContains, "abc");
+        CHECKWHERE(testQuery, QLatin1String("name NOT LIKE ?"), QVariantList() << "%abc%");
+    }
 }
 
 /** Test compound where clause, using the AND operator.
