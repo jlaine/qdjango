@@ -79,6 +79,9 @@ public:
 private:
     QSharedDataPointer<QDjangoWherePrivate> d;
     friend class QDjangoCompiler;
+    friend QDebug operatorHelper(QDebug dbg, const QDjangoWhere &where, int indent);
 };
+
+QDJANGO_EXPORT QDebug operator<<(QDebug, const QDjangoWhere &where);
 
 #endif

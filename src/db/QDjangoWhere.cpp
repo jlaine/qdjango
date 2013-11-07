@@ -16,6 +16,7 @@
  */
 
 #include <QStringList>
+#include <QDebug>
 
 #include "QDjango.h"
 #include "QDjangoWhere.h"
@@ -384,6 +385,70 @@ QString QDjangoWhere::sql(const QSqlDatabase &db) const
                 return combined;
             }
     }
+
     return QString();
+}
+
+QString QDjangoWherePrivate::operationToString(QDjangoWhere::Operation operation)
+{
+    switch (operation) {
+    case QDjangoWhere::Equals: return QLatin1String("Equals");
+    case QDjangoWhere::IEquals: return QLatin1String("IEquals");
+    case QDjangoWhere::NotEquals: return QLatin1String("NotEquals");
+    case QDjangoWhere::INotEquals: return QLatin1String("INotEquals");
+    case QDjangoWhere::GreaterThan: return QLatin1String("GreaterThan");
+    case QDjangoWhere::LessThan: return QLatin1String("LessThan");
+    case QDjangoWhere::GreaterOrEquals: return QLatin1String("GreaterOrEquals");
+    case QDjangoWhere::LessOrEquals: return QLatin1String("LessOrEquals");
+    case QDjangoWhere::StartsWith: return QLatin1String("StartsWith");
+    case QDjangoWhere::IStartsWith: return QLatin1String("IStartsWith");
+    case QDjangoWhere::EndsWith: return QLatin1String("EndsWith");
+    case QDjangoWhere::IEndsWith: return QLatin1String("IEndsWith");
+    case QDjangoWhere::Contains: return QLatin1String("Contains");
+    case QDjangoWhere::IContains: return QLatin1String("IContains");
+    case QDjangoWhere::IsIn: return QLatin1String("IsIn");
+    case QDjangoWhere::IsNull: return QLatin1String("IsNull");
+    case QDjangoWhere::None:
+    default:
+        return QLatin1String("");
+    }
+
+    return QString();
+}
+
+QString QDjangoWherePrivate::combineToString(QDjangoWherePrivate::Combine combine)
+{
+    switch (combine) {
+    case QDjangoWherePrivate::NoCombine: return QLatin1String("NoCombine");
+    case QDjangoWherePrivate::AndCombine: return QLatin1String("AndCombine");
+    case QDjangoWherePrivate::OrCombine: return QLatin1String("OrCombine");
+    }
+
+    return QString();
+}
+
+QDebug operatorHelper(QDebug dbg, const QDjangoWhere &where, const int indent)
+{
+    for (int i = 0; i < indent; ++i)
+        dbg.nospace() << "\t";
+
+    dbg.nospace() << "QDjangoWhere("
+                  << "key=" << where.d->key
+                  << ", operation=" << QDjangoWherePrivate::operationToString(where.d->operation)
+                  << ", value=" << where.d->data
+                  << ", combine=" << QDjangoWherePrivate::combineToString(where.d->combine)
+                  << ", negate=" << (where.d->negate ? "true":"false")
+                  << ")" << endl;
+
+    int newIndent = indent + 1;
+    foreach (QDjangoWhere childWhere, where.d->children)
+        operatorHelper(dbg, childWhere, newIndent);
+
+    return dbg.space();
+}
+
+QDebug operator<<(QDebug dbg, const QDjangoWhere &where)
+{
+    return operatorHelper(dbg, where, 0);
 }
 

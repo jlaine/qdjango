@@ -32,12 +32,15 @@
 class QDjangoWherePrivate : public QSharedData
 {
 public:
+    static QString operationToString(QDjangoWhere::Operation operation);
+
     enum Combine
     {
         NoCombine,
         AndCombine,
         OrCombine
     };
+    static QString combineToString(Combine combine);
 
     QDjangoWherePrivate();
 
