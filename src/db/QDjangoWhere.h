@@ -40,33 +40,25 @@ class QDjangoWherePrivate;
 class QDJANGO_EXPORT QDjangoWhere
 {
 public:
-    /** A comparison operation on a database column value. */
     enum Operation
     {
-        /** No comparison, always returns true. */
         None,
-        /** Returns true if the column value is equal to the given value. */
         Equals,
-        /** Returns true if the column value is not equal to the given value. */
         NotEquals,
-        /** Returns true if the column value is greater than the given value. */
         GreaterThan,
-        /** Returns true if the column value is less than the given value. */
         LessThan,
-        /** Returns true if the column value is greater or equal to the given value. */
         GreaterOrEquals,
-        /** Returns true if the column value is less or equal to the given value. */
         LessOrEquals,
-        /** Returns true if the column value starts with the given value (strings only). */
         StartsWith,
-        /** Returns true if the column value ends with the given value (strings only). */
         EndsWith,
-        /** Returns true if the column value contains the given value (strings only). */
         Contains,
-        /** Returns true if the column value is one of the given values. */
         IsIn,
-        /** Returns true if the column value is null. */
-        IsNull
+        IsNull,
+        IEquals,
+        INotEquals,
+        IStartsWith,
+        IEndsWith,
+        IContains
     };
 
     QDjangoWhere();

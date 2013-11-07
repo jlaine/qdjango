@@ -40,6 +40,62 @@ QDjangoWherePrivate::QDjangoWherePrivate()
 
 /// \endcond
 
+/*!
+    \enum QDjangoWhere::Operation
+    A comparison operation on a database column value.
+
+    \var QDjangoWhere::Operation QDjangoWhere::None
+    No comparison, always returns true.
+
+    \var QDjangoWhere::Operation QDjangoWhere::Equals
+    Returns true if the column value is equal to the given value.
+
+    \var QDjangoWhere::Operation QDjangoWhere::IEquals
+    Returns true if the column value is equal to the given value (case-insensitive)
+
+    \var QDjangoWhere::Operation QDjangoWhere::NotEquals
+    Returns true if the column value is not equal to the given value.
+
+    \var QDjangoWhere::Operation QDjangoWhere::INotEquals
+    Returns true if the column value is not equal to the given value (case-insensitive).
+
+    \var QDjangoWhere::Operation QDjangoWhere::GreaterThan,
+    Returns true if the column value is greater than the given value.
+
+    \var QDjangoWhere::Operation QDjangoWhere::LessThan,
+    Returns true if the column value is less than the given value.
+
+    \var QDjangoWhere::Operation QDjangoWhere::GreaterOrEquals,
+    Returns true if the column value is greater or equal to the given value.
+
+    \var QDjangoWhere::Operation QDjangoWhere::LessOrEquals,
+    Returns true if the column value is less or equal to the given value.
+
+    \var QDjangoWhere::Operation QDjangoWhere::StartsWith,
+    Returns true if the column value starts with the given value (strings only).
+
+    \var QDjangoWhere::Operation QDjangoWhere::IStartsWith,
+    Returns true if the column value starts with the given value (strings only, case-insensitive).
+
+    \var QDjangoWhere::Operation QDjangoWhere::EndsWith,
+    Returns true if the column value ends with the given value (strings only).
+
+    \var QDjangoWhere::Operation QDjangoWhere::IEndsWith,
+    Returns true if the column value ends with the given value (strings only, case-insensitive).
+
+    \var QDjangoWhere::Operation QDjangoWhere::Contains,
+    Returns true if the column value contains the given value (strings only).
+
+    \var QDjangoWhere::Operation QDjangoWhere::IContains,
+    Returns true if the column value contains the given value (strings only, case-insensitive).
+
+    \var QDjangoWhere::Operation QDjangoWhere::IsIn,
+    Returns true if the column value is one of the given values.
+
+    \var QDjangoWhere::Operation QDjangoWhere::IsNull
+    Returns true if the column value is null.
+*/
+
 /** Constructs an empty QDjangoWhere, which expresses no constraint.
  */
 QDjangoWhere::QDjangoWhere()
@@ -94,8 +150,11 @@ QDjangoWhere QDjangoWhere::operator!() const
         case None:
         case IsIn:
         case StartsWith:
+        case IStartsWith:
         case EndsWith:
+        case IEndsWith:
         case Contains:
+        case IContains:
             result.d->negate = !d->negate;
             break;
         case IsNull:
@@ -106,9 +165,17 @@ QDjangoWhere QDjangoWhere::operator!() const
             // simplify !(a = b) to a != b
             result.d->operation = NotEquals;
             break;
+        case IEquals:
+            // simplify !(a = b) to a != b
+            result.d->operation = INotEquals;
+            break;
         case NotEquals:
             // simplify !(a != b) to a = b
             result.d->operation = Equals;
+            break;
+        case INotEquals:
+            // simplify !(a != b) to a = b
+            result.d->operation = IEquals;
             break;
         case GreaterThan:
             // simplify !(a > b) to a <= b
@@ -194,11 +261,11 @@ void QDjangoWhere::bindValues(QDjangoQuery &query) const
             query.addBindValue(values[i]);
     } else if (d->operation == QDjangoWhere::IsNull) {
         // no data to bind
-    } else if (d->operation == QDjangoWhere::StartsWith) {
+    } else if (d->operation == QDjangoWhere::StartsWith || d->operation == QDjangoWhere::IStartsWith) {
         query.addBindValue(escapeLike(d->data.toString()) + QLatin1String("%"));
-    } else if (d->operation == QDjangoWhere::EndsWith) {
+    } else if (d->operation == QDjangoWhere::EndsWith || d->operation == QDjangoWhere::IEndsWith) {
         query.addBindValue(QLatin1String("%") + escapeLike(d->data.toString()));
-    } else if (d->operation == QDjangoWhere::Contains) {
+    } else if (d->operation == QDjangoWhere::Contains || d->operation == QDjangoWhere::IContains) {
         query.addBindValue(QLatin1String("%") + escapeLike(d->data.toString()) + QLatin1String("%"));
     } else if (d->operation != QDjangoWhere::None) {
         query.addBindValue(d->data);
@@ -223,6 +290,12 @@ bool QDjangoWhere::isNone() const
 }
 
 /** Returns the SQL code corresponding for the current QDjangoWhere.
+ */
+/* Note - SQLite is always case-insensitive because it can't figure out case when using non-Ascii charcters:
+        https://docs.djangoproject.com/en/dev/ref/databases/#sqlite-string-matching
+   Note - MySQL is only case-sensitive when the collation is set as such:
+        https://code.djangoproject.com/ticket/9682
+
  */
 QString QDjangoWhere::sql(const QSqlDatabase &db) const
 {
@@ -255,9 +328,36 @@ QString QDjangoWhere::sql(const QSqlDatabase &db) const
         case EndsWith:
         case Contains:
         {
+            QString op;
+            if (db.driverName() == QLatin1String("QMYSQL"))
+                op = QLatin1String(d->negate ? "NOT LIKE BINARY" : "LIKE BINARY");
+            else
+                op = QLatin1String(d->negate ? "NOT LIKE" : "LIKE");
+            if (db.driverName() == QLatin1String("QSQLITE") || db.driverName() == QLatin1String("QSQLITE2"))
+                return d->key + QLatin1String(" ") + op + QLatin1String(" ? ESCAPE '\\'");
+            else
+                return d->key + QLatin1String(" ") + op + QLatin1String(" ?");
+        }
+        case IStartsWith:
+        case IEndsWith:
+        case IContains:
+        case IEquals:
+        {
             const QString op = QLatin1String(d->negate ? "NOT LIKE" : "LIKE");
             if (db.driverName() == QLatin1String("QSQLITE") || db.driverName() == QLatin1String("QSQLITE2"))
                 return d->key + QLatin1String(" ") + op + QLatin1String(" ? ESCAPE '\\'");
+            else if (db.driverName() == QLatin1String("QPSQL"))
+                return QLatin1String("UPPER(") + d->key + QLatin1String("::text) ") + op + QLatin1String(" UPPER(?)");
+            else
+                return d->key + QLatin1String(" ") + op + QLatin1String(" ?");
+        }
+        case INotEquals:
+        {
+            const QString op = QLatin1String(d->negate ? "LIKE" : "NOT LIKE");
+            if (db.driverName() == QLatin1String("QSQLITE") || db.driverName() == QLatin1String("QSQLITE2"))
+                return d->key + QLatin1String(" ") + op + QLatin1String(" ? ESCAPE '\\'");
+            else if (db.driverName() == QLatin1String("QPSQL"))
+                return QLatin1String("UPPER(") + d->key + QLatin1String("::text) ") + op + QLatin1String(" UPPER(?)");
             else
                 return d->key + QLatin1String(" ") + op + QLatin1String(" ?");
         }
