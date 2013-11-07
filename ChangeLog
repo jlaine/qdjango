@@ -1,3 +1,7 @@
+QDjango 0.5.0 (UNRELEASED)
+ * Add support for case-insensitive lookups.
+ * Simplify SQL for multiple OR/AND clauses.
+
 QDjango 0.4.0 (2013-06-27)
  * Enable foreign key constraints on SQLite (issue #9).
  * Fix table creation with foreign key constraints on PostgreSQL (issue #10).
