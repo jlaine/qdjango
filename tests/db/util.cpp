@@ -64,6 +64,6 @@ QString normalizeSql(const QSqlDatabase &db, const QString &sql)
     if (driverName == "QMYSQL")
         modSql.replace("`", "\"");
     else if (driverName == "QSQLITE" || driverName == "QSQLITE2")
-        modSql.replace("LIKE ? ESCAPE '\\'", "LIKE ?");
+        modSql.replace("? ESCAPE '\\'", "?");
     return modSql;
 }
