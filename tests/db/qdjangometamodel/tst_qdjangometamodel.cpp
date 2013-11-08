@@ -266,7 +266,7 @@ void tst_QDjangoMetaModel::testTime()
 void tst_QDjangoMetaModel::testOptions()
 {
     QStringList sql;
-    if (QDjango::database().driverName() == QLatin1String("QPSQL"))
+    if (QDjango::database().driverName() == QLatin1String("QPSQL")) {
         sql << QLatin1String(
             "CREATE TABLE \"some_table\" ("
                 "\"id\" serial PRIMARY KEY, "
@@ -278,8 +278,9 @@ void tst_QDjangoMetaModel::testOptions()
                 "\"uniqueField\" integer NOT NULL UNIQUE, "
                 "UNIQUE (\"aField\", \"b_field\")"
             ")");
-    else if (QDjango::database().driverName() == QLatin1String("QMYSQL") ||
-             QDjango::database().driverName() == QLatin1String("QMYSQL3"))
+        sql << QLatin1String("CREATE INDEX \"some_table_ac243651\" ON \"some_table\" (\"indexField\")");
+    } else if (QDjango::database().driverName() == QLatin1String("QMYSQL") ||
+               QDjango::database().driverName() == QLatin1String("QMYSQL3")) {
         sql << QLatin1String(
             "CREATE TABLE `some_table` ("
                 "`id` integer NOT NULL PRIMARY KEY AUTO_INCREMENT, "
@@ -291,7 +292,8 @@ void tst_QDjangoMetaModel::testOptions()
                 "`uniqueField` integer NOT NULL UNIQUE, "
                 "UNIQUE (`aField`, `b_field`)"
                 ")");
-    else
+        sql << QLatin1String("CREATE INDEX `some_table_ac243651` ON `some_table` (`indexField`)");
+    } else {
         sql << QLatin1String(
             "CREATE TABLE \"some_table\" ("
                 "\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, "
@@ -303,8 +305,9 @@ void tst_QDjangoMetaModel::testOptions()
                 "\"uniqueField\" integer NOT NULL UNIQUE, "
                 "UNIQUE (\"aField\", \"b_field\")"
             ")");
+        sql << QLatin1String("CREATE INDEX \"some_table_ac243651\" ON \"some_table\" (\"indexField\")");
+    }
 
-    sql << QLatin1String("CREATE INDEX \"some_table_ac243651\" ON \"some_table\" (\"indexField\")");
     init<tst_Options>(sql);
 
     QDjangoMetaField metaField;
@@ -353,7 +356,7 @@ void tst_QDjangoMetaModel::testOptions()
 void tst_QDjangoMetaModel::testConstraints()
 {
     QStringList sql;
-    if (QDjango::database().driverName() == QLatin1String("QPSQL"))
+    if (QDjango::database().driverName() == QLatin1String("QPSQL")) {
         sql << QLatin1String("CREATE TABLE \"tst_fkconstraint\" ("
             "\"id\" serial PRIMARY KEY, "
             "\"noConstraint_id\" integer NOT NULL REFERENCES \"user\" (\"id\") DEFERRABLE INITIALLY DEFERRED, "
@@ -361,20 +364,28 @@ void tst_QDjangoMetaModel::testConstraints()
             "\"restrictConstraint_id\" integer NOT NULL REFERENCES \"user\" (\"id\") ON DELETE RESTRICT DEFERRABLE INITIALLY DEFERRED, "
             "\"nullConstraint_id\" integer REFERENCES \"user\" (\"id\") ON DELETE SET NULL DEFERRABLE INITIALLY DEFERRED"
             ")");
-    else if (QDjango::database().driverName() == QLatin1String("QMYSQL") ||
-             QDjango::database().driverName() == QLatin1String("QMYSQL3"))
+        sql << QLatin1String("CREATE INDEX \"tst_fkconstraint_f388fc3c\" ON \"tst_fkconstraint\" (\"noConstraint_id\")");
+        sql << QLatin1String("CREATE INDEX \"tst_fkconstraint_4634d592\" ON \"tst_fkconstraint\" (\"cascadeConstraint_id\")");
+        sql << QLatin1String("CREATE INDEX \"tst_fkconstraint_728cefe1\" ON \"tst_fkconstraint\" (\"restrictConstraint_id\")");
+        sql << QLatin1String("CREATE INDEX \"tst_fkconstraint_44c71620\" ON \"tst_fkconstraint\" (\"nullConstraint_id\")");
+    } else if (QDjango::database().driverName() == QLatin1String("QMYSQL") ||
+               QDjango::database().driverName() == QLatin1String("QMYSQL3")) {
         sql << QLatin1String("CREATE TABLE `tst_fkconstraint` ("
             "`id` integer NOT NULL PRIMARY KEY AUTO_INCREMENT, "
-            "`noConstraint_id` integer NOT NULL,"
-            "`cascadeConstraint_id` integer NOT NULL,"
-            "`restrictConstraint_id` integer NOT NULL,"
-            "`nullConstraint_id` integer,"
-            "CONSTRAINT `FK_noConstraint` FOREIGN KEY (`noConstraint_id`) REFERENCES `user` (`id`) ON DELETE CASCADE,"
-            "CONSTRAINT `FK_cascadeConstraint` FOREIGN KEY (`cascadeConstraint_id`) REFERENCES `user` (`id`) ON DELETE CASCADE,"
-            "CONSTRAINT `FK_restrictConstraint` FOREIGN KEY (`restrictConstraint_id`) REFERENCES `user` (`id`) ON DELETE RESTRICT,"
-            "CONSTRAINT `FK_nullConstraint` FOREIGN KEY (`nullConstraint_id`) REFERENCES `user` (`id`) ON DELETE SET NULL"
+            "`noConstraint_id` integer NOT NULL, "
+            "`cascadeConstraint_id` integer NOT NULL, "
+            "`restrictConstraint_id` integer NOT NULL, "
+            "`nullConstraint_id` integer, "
+            "CONSTRAINT `FK_noConstraint_id` FOREIGN KEY (`noConstraint_id`) REFERENCES `user` (`id`), "
+            "CONSTRAINT `FK_cascadeConstraint_id` FOREIGN KEY (`cascadeConstraint_id`) REFERENCES `user` (`id`) ON DELETE CASCADE, "
+            "CONSTRAINT `FK_restrictConstraint_id` FOREIGN KEY (`restrictConstraint_id`) REFERENCES `user` (`id`) ON DELETE RESTRICT, "
+            "CONSTRAINT `FK_nullConstraint_id` FOREIGN KEY (`nullConstraint_id`) REFERENCES `user` (`id`) ON DELETE SET NULL"
             ")");
-    else
+        sql << QLatin1String("CREATE INDEX `tst_fkconstraint_f388fc3c` ON `tst_fkconstraint` (`noConstraint_id`)");
+        sql << QLatin1String("CREATE INDEX `tst_fkconstraint_4634d592` ON `tst_fkconstraint` (`cascadeConstraint_id`)");
+        sql << QLatin1String("CREATE INDEX `tst_fkconstraint_728cefe1` ON `tst_fkconstraint` (`restrictConstraint_id`)");
+        sql << QLatin1String("CREATE INDEX `tst_fkconstraint_44c71620` ON `tst_fkconstraint` (`nullConstraint_id`)");
+    } else {
        sql << QLatin1String("CREATE TABLE \"tst_fkconstraint\" ("
             "\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, "
             "\"noConstraint_id\" integer NOT NULL REFERENCES \"user\" (\"id\"), "
@@ -382,10 +393,11 @@ void tst_QDjangoMetaModel::testConstraints()
             "\"restrictConstraint_id\" integer NOT NULL REFERENCES \"user\" (\"id\") ON DELETE RESTRICT, "
             "\"nullConstraint_id\" integer REFERENCES \"user\" (\"id\") ON DELETE SET NULL"
             ")");
-    sql << QLatin1String("CREATE INDEX \"tst_fkconstraint_f388fc3c\" ON \"tst_fkconstraint\" (\"noConstraint_id\")");
-    sql << QLatin1String("CREATE INDEX \"tst_fkconstraint_4634d592\" ON \"tst_fkconstraint\" (\"cascadeConstraint_id\")");
-    sql << QLatin1String("CREATE INDEX \"tst_fkconstraint_728cefe1\" ON \"tst_fkconstraint\" (\"restrictConstraint_id\")");
-    sql << QLatin1String("CREATE INDEX \"tst_fkconstraint_44c71620\" ON \"tst_fkconstraint\" (\"nullConstraint_id\")");
+        sql << QLatin1String("CREATE INDEX \"tst_fkconstraint_f388fc3c\" ON \"tst_fkconstraint\" (\"noConstraint_id\")");
+        sql << QLatin1String("CREATE INDEX \"tst_fkconstraint_4634d592\" ON \"tst_fkconstraint\" (\"cascadeConstraint_id\")");
+        sql << QLatin1String("CREATE INDEX \"tst_fkconstraint_728cefe1\" ON \"tst_fkconstraint\" (\"restrictConstraint_id\")");
+        sql << QLatin1String("CREATE INDEX \"tst_fkconstraint_44c71620\" ON \"tst_fkconstraint\" (\"nullConstraint_id\")");
+    }
 
     // create tables
     QDjangoMetaModel userModel = QDjango::registerModel<User>();
