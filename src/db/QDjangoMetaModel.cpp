@@ -427,6 +427,7 @@ QStringList QDjangoMetaModel::createTableSql() const
 
     QStringList queries;
     QStringList propSql;
+    QStringList constraintSql;
     const QString quotedTable = db.driver()->escapeIdentifier(d->table, QSqlDriver::TableName);
     foreach (const QDjangoMetaField &field, d->localFields)
     {
@@ -507,24 +508,54 @@ QStringList QDjangoMetaModel::createTableSql() const
         {
             const QDjangoMetaModel foreignMeta = QDjango::metaModel(field.d->foreignModel);
             const QDjangoMetaField foreignField = foreignMeta.localField("pk");
-            fieldSql += QString::fromLatin1(" REFERENCES %1 (%2)").arg(
-                driver->escapeIdentifier(foreignMeta.d->table, QSqlDriver::TableName),
-                driver->escapeIdentifier(foreignField.column(), QSqlDriver::FieldName));
+            if (driverName == QLatin1String("QMYSQL") || driverName == QLatin1String("QMYSQL3")) {
+                QString constraintName = QString::fromLatin1("FK_%1").arg(field.column());
+                QString constraint =
+                    QString::fromLatin1("CONSTRAINT %1 FOREIGN KEY (%2) REFERENCES %3 (%4)").arg(
+                        driver->escapeIdentifier(constraintName, QSqlDriver::FieldName),
+                        driver->escapeIdentifier(field.column(), QSqlDriver::FieldName),
+                        driver->escapeIdentifier(foreignMeta.d->table, QSqlDriver::TableName),
+                        driver->escapeIdentifier(foreignField.column(), QSqlDriver::FieldName)
+                    );
 
-            if (field.d->deleteConstraint != NoAction) {
-                fieldSql += " ON DELETE";
-                switch (field.d->deleteConstraint) {
-                case Cascade:
-                    fieldSql += " CASCADE";
-                    break;
-                case SetNull:
-                    fieldSql += " SET NULL";
-                    break;
-                case Restrict:
-                    fieldSql += " RESTRICT";
-                    break;
-                default:
-                    break;
+                if (field.d->deleteConstraint != NoAction) {
+                    constraint += " ON DELETE";
+                    switch (field.d->deleteConstraint) {
+                    case Cascade:
+                        constraint += " CASCADE";
+                        break;
+                    case SetNull:
+                        constraint += " SET NULL";
+                        break;
+                    case Restrict:
+                        constraint += " RESTRICT";
+                        break;
+                    default:
+                        break;
+                    }
+                }
+
+                constraintSql << constraint;
+            } else {
+                fieldSql += QString::fromLatin1(" REFERENCES %1 (%2)").arg(
+                    driver->escapeIdentifier(foreignMeta.d->table, QSqlDriver::TableName),
+                    driver->escapeIdentifier(foreignField.column(), QSqlDriver::FieldName));
+
+                if (field.d->deleteConstraint != NoAction) {
+                    fieldSql += " ON DELETE";
+                    switch (field.d->deleteConstraint) {
+                    case Cascade:
+                        fieldSql += " CASCADE";
+                        break;
+                    case SetNull:
+                        fieldSql += " SET NULL";
+                        break;
+                    case Restrict:
+                        fieldSql += " RESTRICT";
+                        break;
+                    default:
+                        break;
+                    }
                 }
             }
 
@@ -533,6 +564,10 @@ QStringList QDjangoMetaModel::createTableSql() const
         }
         propSql << fieldSql;
     }
+
+    // add constraints if we need them
+    if (!constraintSql.isEmpty())
+        propSql << constraintSql.join(QLatin1String(", "));
 
     // unique contraints
     if (!d->uniqueTogether.isEmpty()) {
