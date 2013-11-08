@@ -118,6 +118,9 @@ void tst_QDjangoMetaModel::testBool()
     QStringList sql;
     if (QDjango::database().driverName() == QLatin1String("QPSQL"))
         sql << QLatin1String("CREATE TABLE \"tst_bool\" (\"id\" serial PRIMARY KEY, \"value\" boolean NOT NULL)");
+    else if (QDjango::database().driverName() == QLatin1String("QMYSQL") ||
+             QDjango::database().driverName() == QLatin1String("QMYSQL3"))
+        sql << QLatin1String("CREATE TABLE `tst_bool` (`id` integer NOT NULL PRIMARY KEY AUTO_INCREMENT, `value` bool NOT NULL)");
     else
         sql << QLatin1String("CREATE TABLE \"tst_bool\" (\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, \"value\" bool NOT NULL)");
 
@@ -132,6 +135,9 @@ void tst_QDjangoMetaModel::testByteArray()
     QStringList sql;
     if (QDjango::database().driverName() == QLatin1String("QPSQL"))
         sql << QLatin1String("CREATE TABLE \"tst_bytearray\" (\"id\" serial PRIMARY KEY, \"value\" bytea NOT NULL)");
+    else if (QDjango::database().driverName() == QLatin1String("QMYSQL") ||
+             QDjango::database().driverName() == QLatin1String("QMYSQL3"))
+        sql << QLatin1String("CREATE TABLE `tst_bytearray` (`id` integer NOT NULL PRIMARY KEY AUTO_INCREMENT, `value` blob NOT NULL)");
     else
         sql << QLatin1String("CREATE TABLE \"tst_bytearray\" (\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, \"value\" blob NOT NULL)");
 
@@ -146,6 +152,9 @@ void tst_QDjangoMetaModel::testDate()
     QStringList sql;
     if (QDjango::database().driverName() == QLatin1String("QPSQL"))
         sql << QLatin1String("CREATE TABLE \"tst_date\" (\"id\" serial PRIMARY KEY, \"value\" date NOT NULL)");
+    else if (QDjango::database().driverName() == QLatin1String("QMYSQL") ||
+             QDjango::database().driverName() == QLatin1String("QMYSQL3"))
+        sql << QLatin1String("CREATE TABLE `tst_date` (`id` integer NOT NULL PRIMARY KEY AUTO_INCREMENT, `value` date NOT NULL)");
     else
         sql << QLatin1String("CREATE TABLE \"tst_date\" (\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, \"value\" date NOT NULL)");
 
@@ -159,6 +168,9 @@ void tst_QDjangoMetaModel::testDateTime()
     QStringList sql;
     if (QDjango::database().driverName() == QLatin1String("QPSQL"))
         sql << QLatin1String("CREATE TABLE \"tst_datetime\" (\"id\" serial PRIMARY KEY, \"value\" timestamp NOT NULL)");
+    else if (QDjango::database().driverName() == QLatin1String("QMYSQL") ||
+             QDjango::database().driverName() == QLatin1String("QMYSQL3"))
+        sql << QLatin1String("CREATE TABLE `tst_datetime` (`id` integer NOT NULL PRIMARY KEY AUTO_INCREMENT, `value` datetime NOT NULL)");
     else
         sql << QLatin1String("CREATE TABLE \"tst_datetime\" (\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, \"value\" datetime NOT NULL)");
 
@@ -172,6 +184,9 @@ void tst_QDjangoMetaModel::testDouble()
     QStringList sql;
     if (QDjango::database().driverName() == QLatin1String("QPSQL"))
         sql << QLatin1String("CREATE TABLE \"tst_double\" (\"id\" serial PRIMARY KEY, \"value\" real NOT NULL)");
+    else if (QDjango::database().driverName() == QLatin1String("QMYSQL") ||
+             QDjango::database().driverName() == QLatin1String("QMYSQL3"))
+        sql << QLatin1String("CREATE TABLE `tst_double` (`id` integer NOT NULL PRIMARY KEY AUTO_INCREMENT, `value` real NOT NULL)");
     else
         sql << QLatin1String("CREATE TABLE \"tst_double\" (\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, \"value\" real NOT NULL)");
 
@@ -185,6 +200,9 @@ void tst_QDjangoMetaModel::testInteger()
     QStringList sql;
     if (QDjango::database().driverName() == QLatin1String("QPSQL"))
         sql << QLatin1String("CREATE TABLE \"tst_integer\" (\"id\" serial PRIMARY KEY, \"value\" integer NOT NULL)");
+    else if (QDjango::database().driverName() == QLatin1String("QMYSQL") ||
+             QDjango::database().driverName() == QLatin1String("QMYSQL3"))
+        sql << QLatin1String("CREATE TABLE `tst_integer` (`id` integer NOT NULL PRIMARY KEY AUTO_INCREMENT, `value` integer NOT NULL)");
     else
         sql << QLatin1String("CREATE TABLE \"tst_integer\" (\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, \"value\" integer NOT NULL)");
 
@@ -200,6 +218,9 @@ void tst_QDjangoMetaModel::testLongLong()
     QStringList sql;
     if (QDjango::database().driverName() == QLatin1String("QPSQL"))
         sql << QLatin1String("CREATE TABLE \"tst_longlong\" (\"id\" serial PRIMARY KEY, \"value\" bigint NOT NULL)");
+    else if (QDjango::database().driverName() == QLatin1String("QMYSQL") ||
+             QDjango::database().driverName() == QLatin1String("QMYSQL3"))
+        sql << QLatin1String("CREATE TABLE `tst_longlong` (`id` integer NOT NULL PRIMARY KEY AUTO_INCREMENT, `value` bigint NOT NULL)");
     else
         sql << QLatin1String("CREATE TABLE \"tst_longlong\" (\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, \"value\" bigint NOT NULL)");
 
@@ -215,6 +236,9 @@ void tst_QDjangoMetaModel::testString()
     QStringList sql;
     if (QDjango::database().driverName() == QLatin1String("QPSQL"))
         sql << QLatin1String("CREATE TABLE \"tst_string\" (\"id\" serial PRIMARY KEY, \"value\" varchar(255) NOT NULL)");
+    else if (QDjango::database().driverName() == QLatin1String("QMYSQL") ||
+             QDjango::database().driverName() == QLatin1String("QMYSQL3"))
+        sql << QLatin1String("CREATE TABLE `tst_string` (`id` integer NOT NULL PRIMARY KEY AUTO_INCREMENT, `value` varchar(255) NOT NULL)");
     else
         sql << QLatin1String("CREATE TABLE \"tst_string\" (\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, \"value\" varchar(255) NOT NULL)");
 
@@ -228,6 +252,9 @@ void tst_QDjangoMetaModel::testTime()
     QStringList sql;
     if (QDjango::database().driverName() == QLatin1String("QPSQL"))
         sql << QLatin1String("CREATE TABLE \"tst_time\" (\"id\" serial PRIMARY KEY, \"value\" time NOT NULL)");
+    else if (QDjango::database().driverName() == QLatin1String("QMYSQL") ||
+             QDjango::database().driverName() == QLatin1String("QMYSQL3"))
+        sql << QLatin1String("CREATE TABLE `tst_time` (`id` integer NOT NULL PRIMARY KEY AUTO_INCREMENT, `value` time NOT NULL)");
     else
         sql << QLatin1String("CREATE TABLE \"tst_time\" (\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, \"value\" time NOT NULL)");
 
@@ -251,6 +278,19 @@ void tst_QDjangoMetaModel::testOptions()
                 "\"uniqueField\" integer NOT NULL UNIQUE, "
                 "UNIQUE (\"aField\", \"b_field\")"
             ")");
+    else if (QDjango::database().driverName() == QLatin1String("QMYSQL") ||
+             QDjango::database().driverName() == QLatin1String("QMYSQL3"))
+        sql << QLatin1String(
+            "CREATE TABLE `some_table` ("
+                "`id` integer NOT NULL PRIMARY KEY AUTO_INCREMENT, "
+                "`aField` integer NOT NULL, "
+                "`b_field` integer NOT NULL, "
+                "`blankField` integer NOT NULL, "
+                "`indexField` integer NOT NULL, "
+                "`nullField` integer, "
+                "`uniqueField` integer NOT NULL UNIQUE, "
+                "UNIQUE (`aField`, `b_field`)"
+                ")");
     else
         sql << QLatin1String(
             "CREATE TABLE \"some_table\" ("
@@ -321,6 +361,19 @@ void tst_QDjangoMetaModel::testConstraints()
             "\"restrictConstraint_id\" integer NOT NULL REFERENCES \"user\" (\"id\") ON DELETE RESTRICT DEFERRABLE INITIALLY DEFERRED, "
             "\"nullConstraint_id\" integer REFERENCES \"user\" (\"id\") ON DELETE SET NULL DEFERRABLE INITIALLY DEFERRED"
             ")");
+    else if (QDjango::database().driverName() == QLatin1String("QMYSQL") ||
+             QDjango::database().driverName() == QLatin1String("QMYSQL3"))
+        sql << QLatin1String("CREATE TABLE `tst_fkconstraint` ("
+            "`id` integer NOT NULL PRIMARY KEY AUTO_INCREMENT, "
+            "`noConstraint_id` integer NOT NULL,"
+            "`cascadeConstraint_id` integer NOT NULL,"
+            "`restrictConstraint_id` integer NOT NULL,"
+            "`nullConstraint_id` integer,"
+            "CONSTRAINT `FK_noConstraint` FOREIGN KEY (`noConstraint_id`) REFERENCES `user` (`id`) ON DELETE CASCADE,"
+            "CONSTRAINT `FK_cascadeConstraint` FOREIGN KEY (`cascadeConstraint_id`) REFERENCES `user` (`id`) ON DELETE CASCADE,"
+            "CONSTRAINT `FK_restrictConstraint` FOREIGN KEY (`restrictConstraint_id`) REFERENCES `user` (`id`) ON DELETE RESTRICT,"
+            "CONSTRAINT `FK_nullConstraint` FOREIGN KEY (`nullConstraint_id`) REFERENCES `user` (`id`) ON DELETE SET NULL"
+            ")");
     else
        sql << QLatin1String("CREATE TABLE \"tst_fkconstraint\" ("
             "\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, "
@@ -341,6 +394,7 @@ void tst_QDjangoMetaModel::testConstraints()
     QDjangoMetaModel metaModel = QDjango::registerModel<tst_FkConstraint>();
     QCOMPARE(metaModel.createTableSql(), sql);
     QCOMPARE(metaModel.createTable(), true);
+    QDjango::setDebugEnabled(false);
 
     // drop tables
     QCOMPARE(metaModel.dropTable(), true);
