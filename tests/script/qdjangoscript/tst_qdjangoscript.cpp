@@ -89,20 +89,37 @@ void tst_QDjangoScript::testWhereConstructor()
     where = engine->fromScriptValue<QDjangoWhere>(result);
     CHECKWHERE(where, QLatin1String("username >= ?"), QVariantList() << "foobar");
 
-    // starts with
-    result = engine->evaluate("Q({'username__startswith': 'foobar'})");
-    where = engine->fromScriptValue<QDjangoWhere>(result);
-    CHECKWHERE(where, QLatin1String("username LIKE ?"), QVariantList() << "foobar%");
+    if (QDjango::database().driverName() == QLatin1String("QMYSQL")) {
+        // starts with
+        result = engine->evaluate("Q({'username__startswith': 'foobar'})");
+        where = engine->fromScriptValue<QDjangoWhere>(result);
+        CHECKWHERE(where, QLatin1String("username LIKE BINARY ?"), QVariantList() << "foobar%");
 
-    // ends with
-    result = engine->evaluate("Q({'username__endswith': 'foobar'})");
-    where = engine->fromScriptValue<QDjangoWhere>(result);
-    CHECKWHERE(where, QLatin1String("username LIKE ?"), QVariantList() << "%foobar");
+        // ends with
+        result = engine->evaluate("Q({'username__endswith': 'foobar'})");
+        where = engine->fromScriptValue<QDjangoWhere>(result);
+        CHECKWHERE(where, QLatin1String("username LIKE BINARY ?"), QVariantList() << "%foobar");
 
-    // contains
-    result = engine->evaluate("Q({'username__contains': 'foobar'})");
-    where = engine->fromScriptValue<QDjangoWhere>(result);
-    CHECKWHERE(where, QLatin1String("username LIKE ?"), QVariantList() << "%foobar%");
+        // contains
+        result = engine->evaluate("Q({'username__contains': 'foobar'})");
+        where = engine->fromScriptValue<QDjangoWhere>(result);
+        CHECKWHERE(where, QLatin1String("username LIKE BINARY ?"), QVariantList() << "%foobar%");
+    } else {
+        // starts with
+        result = engine->evaluate("Q({'username__startswith': 'foobar'})");
+        where = engine->fromScriptValue<QDjangoWhere>(result);
+        CHECKWHERE(where, QLatin1String("username LIKE ?"), QVariantList() << "foobar%");
+
+        // ends with
+        result = engine->evaluate("Q({'username__endswith': 'foobar'})");
+        where = engine->fromScriptValue<QDjangoWhere>(result);
+        CHECKWHERE(where, QLatin1String("username LIKE ?"), QVariantList() << "%foobar");
+
+        // contains
+        result = engine->evaluate("Q({'username__contains': 'foobar'})");
+        where = engine->fromScriptValue<QDjangoWhere>(result);
+        CHECKWHERE(where, QLatin1String("username LIKE ?"), QVariantList() << "%foobar%");
+    }
 
     // in
     result = engine->evaluate("Q({'username__in': ['foobar', 'wiz']})");
