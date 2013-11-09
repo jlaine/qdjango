@@ -42,6 +42,7 @@ else:
     os.environ['LD_LIBRARY_PATH'] = ':'.join(path)
 
 # run tests
+failed = False
 for component in components:
     component_path = os.path.join(root, component)
     for test in os.listdir(component_path):
@@ -57,4 +58,11 @@ for component in components:
             cmd = [ prog ]
             if report_path:
                 cmd += ['-xunitxml', '-o',  os.path.join(report_path, test + '.xml') ]
-            subprocess.call(cmd)
+            try:
+                subprocess.check_call(cmd)
+            except subprocess.CalledProcessError:
+                failed = True
+
+# check for failure
+if failed:
+    sys.exit(1)
