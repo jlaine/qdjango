@@ -1,10 +1,14 @@
 language: cpp
 env:
   - QDJANGO_DB_DRIVER=QSQLITE
-  - QDJANGO_DB_DRIVER=QMYSQL QDJANGO_DB_NAME=test QDJANGO_DB_USER=root
+  - QDJANGO_DB_DRIVER=QMYSQL QDJANGO_DB_NAME=qdjango_test QDJANGO_DB_USER=travis
+  - QDJANGO_DB_DRIVER=QPSQL QDJANGO_DB_NAME=qdjango_test QDJANGO_DB_USER=postgres
 install:
   - sudo apt-get -qq update
-  - sudo apt-get -qq install libqt4-dev libqt4-sql-mysql libqt4-sql-psql libqt4-sql-sqlite mysql-server
+  - sudo apt-get -qq install libqt4-dev libqt4-sql-mysql libqt4-sql-psql libqt4-sql-sqlite
+before_script:
+  - mysql -e 'create database qdjango_test'
+  - psql -c 'create database qdjango_test' -U postgres
 script:
   - qmake
   - make
