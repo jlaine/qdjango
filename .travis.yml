@@ -1,7 +1,7 @@
 language: cpp
 env:
   - QDJANGO_DB_DRIVER=QSQLITE
-  - QDJANGO_DB_DRIVER=QMYSQL QDJANGO_DB_NAME=test QDJANGO_DB_USER=test QDJANGO_DB_PASSWORD=test
+  - QDJANGO_DB_DRIVER=QMYSQL QDJANGO_DB_NAME=test QDJANGO_DB_USER=root
 install:
   - sudo apt-get -qq update
   - sudo apt-get -qq install libqt4-dev libqt4-sql-mysql libqt4-sql-psql libqt4-sql-sqlite mysql-server
