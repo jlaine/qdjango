@@ -1,0 +1,7 @@
+language: cpp
+install:
+  - apt-get install libqt4-dev
+script:
+  - qmake
+  - make
+  - tests/run.py
