@@ -1,7 +1,7 @@
 language: cpp
 install:
   - sudo apt-get -qq update
-  - sudo apt-get -qq install libqt4-dev
+  - sudo apt-get -qq install libqt4-dev libqt4-sql-mysql libqt4-sql-psql libqt4-sql-sqlite
 script:
   - qmake
   - make
