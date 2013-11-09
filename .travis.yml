@@ -1,6 +1,7 @@
 language: cpp
 install:
-  - apt-get install libqt4-dev
+  - sudo apt-get -qq update
+  - sudo apt-get -qq install libqt4-dev
 script:
   - qmake
   - make
