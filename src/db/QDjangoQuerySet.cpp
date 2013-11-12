@@ -48,14 +48,22 @@ QString QDjangoCompiler::databaseColumn(const QString &name)
     QDjangoMetaModel model = baseModel;
     QString modelPath;
     QString modelRef = referenceModel(QString(), &model);
-
     QStringList bits = name.split(QLatin1String("__"));
+
     while (bits.size() > 1) {
         const QByteArray fk = bits.first().toLatin1();
-        if (!model.foreignFields().contains(fk))
-            break;
+        QDjangoMetaModel foreignModel;
+        if (!model.foreignFields().contains(fk)) {
+            // this might be a reverse relation, so look for the model
+            // and if it exists continue
+            foreignModel = QDjango::metaModel(fk);
+            if (!foreignModel.isValid())
+                break;
 
-        QDjangoMetaModel foreignModel = QDjango::metaModel(model.foreignFields()[fk]);
+            reverseModelRefs[bits.first()] = foreignModel.primaryKey();
+        } else {
+            foreignModel = QDjango::metaModel(model.foreignFields()[fk]);
+        }
 
         // store reference
         if (!modelPath.isEmpty())
@@ -104,7 +112,8 @@ QString QDjangoCompiler::fromSql()
             .arg(modelRefs[name].first)
             .arg(modelRefs[name].first)
             .arg(driver->escapeIdentifier(modelRefs[name].second.localField("pk").column(), QSqlDriver::FieldName))
-            .arg(databaseColumn(name + QLatin1String("_id")));
+            .arg(reverseModelRefs.contains(name) ? databaseColumn(reverseModelRefs[name]) :
+                                                   databaseColumn(name + QLatin1String("_id")));
     }
     return from;
 }

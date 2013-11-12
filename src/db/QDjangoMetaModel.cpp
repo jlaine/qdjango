@@ -394,6 +394,14 @@ QDjangoMetaModel::~QDjangoMetaModel()
 }
 
 /*!
+    Determine whether this is a valid model, or just default constructed
+ */
+bool QDjangoMetaModel::isValid() const
+{
+    return !d->table.isNull();
+}
+
+/*!
     Assigns \a other to this meta model.
 */
 QDjangoMetaModel& QDjangoMetaModel::operator=(const QDjangoMetaModel& other)
