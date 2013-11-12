@@ -837,6 +837,9 @@ QHash<QByteArray, QString> QDjangoMetaModel::cleanFields(const QObject *model,
             properties << mo->property(i).name();
 
         foreach (const QString &field, fields) {
+	    if (field == d->primaryKey)
+	        continue;
+
             if (!properties.contains(field)) {
                 qDebug() << Q_FUNC_INFO << "invalid field: " << field;
                 continue;
@@ -847,10 +850,8 @@ QHash<QByteArray, QString> QDjangoMetaModel::cleanFields(const QObject *model,
     }
 
     foreach (QByteArray fieldName, fieldNames) {
-        if (!d->validators.contains(fieldName)) {
-            qDebug() << "no validator defined for field: " << fieldName;
+        if (!d->validators.contains(fieldName))
             continue;
-        }
 
         foreach (QDjangoValidator *validator, d->validators.values(fieldName)) {
             if (!validator->validate(model->property(fieldName))) {
