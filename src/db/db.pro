@@ -16,13 +16,15 @@ HEADERS += \
     QDjangoQuerySet.h \
     QDjangoQuerySet_p.h \
     QDjangoWhere.h \
-    QDjangoWhere_p.h
+    QDjangoWhere_p.h \
+    QDjangoValidator.h
 SOURCES += \
     QDjango.cpp \
     QDjangoMetaModel.cpp \
     QDjangoModel.cpp \
     QDjangoQuerySet.cpp \
-    QDjangoWhere.cpp
+    QDjangoWhere.cpp \
+    QDjangoValidator.cpp
 
 # Installation
 include(../src.pri)

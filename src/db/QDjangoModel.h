@@ -20,6 +20,7 @@
 
 #include <QObject>
 #include <QVariant>
+#include <QStringList>
 
 #include "QDjango_p.h"
 
@@ -75,6 +76,8 @@
  *
  * \ingroup Database
  */
+
+class QDjangoValidator;
 class QDJANGO_EXPORT QDjangoModel : public QObject
 {
     Q_OBJECT
@@ -87,6 +90,8 @@ public:
     QVariant pk() const;
     void setPk(const QVariant &pk);
 
+    QHash<QByteArray, QString> cleanFields(const QStringList &fields = QStringList()) const;
+
 public slots:
     bool remove();
     bool save();
@@ -95,6 +100,9 @@ public slots:
 protected:
     QObject *foreignKey(const char *name) const;
     void setForeignKey(const char *name, QObject *value);
+
+    void addValidator(const char *name, QDjangoValidator *validator) const;
+
 };
 
 #endif

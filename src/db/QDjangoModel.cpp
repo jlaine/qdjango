@@ -92,6 +92,20 @@ bool QDjangoModel::save()
     return metaModel.save(this);
 }
 
+QHash<QByteArray, QString> QDjangoModel::cleanFields(const QStringList &fields) const
+{
+    const QDjangoMetaModel metaModel =
+        QDjango::metaModel(metaObject()->className());
+    return metaModel.cleanFields(this, fields);
+}
+
+void QDjangoModel::addValidator(const char *name, QDjangoValidator *validator) const
+{
+    const QDjangoMetaModel metaModel =
+        QDjango::metaModel(metaObject()->className());
+    metaModel.addValidator(name, validator);
+}
+
 /** Returns a string representation of the model instance.
  */
 QString QDjangoModel::toString() const

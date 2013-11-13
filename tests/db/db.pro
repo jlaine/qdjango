@@ -6,5 +6,5 @@ SUBDIRS = \
     qdjangoqueryset \
     qdjangowhere \
     auth \
-    shares
-
+    shares \
+    validators
