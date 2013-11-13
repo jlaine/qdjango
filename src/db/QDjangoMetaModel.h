@@ -21,7 +21,6 @@
 #include <QMap>
 #include <QSharedDataPointer>
 #include <QVariant>
-#include <QPair>
 #include <QStringList>
 
 #include "QDjango_p.h"

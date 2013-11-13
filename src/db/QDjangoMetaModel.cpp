@@ -241,7 +241,6 @@ public:
     QByteArray primaryKey;
     QString table;
     QList<QByteArray> uniqueTogether;
-    static QRegExp classFinder;
 };
 
 /*!
@@ -819,6 +818,13 @@ bool QDjangoMetaModel::save(QObject *model) const
     return true;
 }
 
+/*!
+    Perform field validation for a given model, optionally only on specified
+    fields
+
+    \param model
+    \param fields
+*/
 QHash<QByteArray, QString> QDjangoMetaModel::cleanFields(const QObject *model,
                                                          const QStringList &fields) const
 {
@@ -841,7 +847,7 @@ QHash<QByteArray, QString> QDjangoMetaModel::cleanFields(const QObject *model,
 	        continue;
 
             if (!properties.contains(field)) {
-                qDebug() << Q_FUNC_INFO << "invalid field: " << field;
+                qWarning() << Q_FUNC_INFO << "invalid field: " << field;
                 continue;
             }
 
@@ -863,6 +869,12 @@ QHash<QByteArray, QString> QDjangoMetaModel::cleanFields(const QObject *model,
     return result;
 }
 
+/*!
+    Add a validator for a specified field
+
+    \param name
+    \param validator
+*/
 void QDjangoMetaModel::addValidator(const char *name, QDjangoValidator *validator) const
 {
     const QByteArray prop(name);
