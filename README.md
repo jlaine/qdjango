@@ -14,13 +14,17 @@ It is released under the terms of the GNU Lesser General Public License, version
 Requirements
 ============
 
-On Debian
-----------
+QDjango builds and is auto-tested both with Qt 4 and Qt 5.
 
-    sudo aptitude install libqt4-dev libqt4-sql-sqlite
+Qt 4 on Debian:
 
-On Mac OS X
------------
+    sudo apt-get install libqt4-dev
+
+Qt 5 on Debian:
+
+    sudo apt-get install qtbase5-dev qtscript5-dev
+
+Qt 4 on Mac OS X:
 
     sudo port install qt4-mac
 
