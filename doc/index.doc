@@ -19,7 +19,9 @@
     \mainpage
 
     QDjango is a web framework written in C++ and built on top of the <a href="http://qt-project.org/">Qt library</a> (versions 4 or 5).
-    Where possible it tries to follow <a href="http://www.djangoproject.org/">django</a>'s API, hence its name.
+
+    Where possible it tries to follow <a href="http://www.djangoproject.com/">django</a>'s API, hence its name.
+
     It is released under the terms of the GNU Lesser General Public License, version 2.1 or later.
 
     \sa Database
