@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2010-2012 Jeremy Lainé
- * Contact: http://code.google.com/p/qdjango/
+ * Copyright (C) 2010-2013 Jeremy Lainé
+ * Contact: https://github.com/jlaine/qdjango
  *
  * This file is part of the QDjango Library.
  *
