@@ -4,7 +4,7 @@ env:
   - QDJANGO_DB_DRIVER=QMYSQL QDJANGO_DB_NAME=qdjango_test QDJANGO_DB_USER=travis
   - QDJANGO_DB_DRIVER=QPSQL QDJANGO_DB_NAME=qdjango_test QDJANGO_DB_USER=postgres
 install:
-  - sudo add-apt-repository ppa:ubuntu-sdk-team/ppa
+  - sudo add-apt-repository -y ppa:ubuntu-sdk-team/ppa
   - sudo apt-get -qq update
   - sudo apt-get -qq install libqt4-dev libqt4-sql-mysql libqt4-sql-psql libqt4-sql-sqlite
 before_script:
