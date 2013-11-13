@@ -3,6 +3,14 @@ Copyright (c) 2010-2012 Jeremy Lainé
 
 [![Build Status](https://travis-ci.org/jlaine/qdjango.png)](https://travis-ci.org/jlaine/qdjango)
 
+About
+=====
+
+QDjango is a web framework written in C++ and built on top of the Qt library.
+Where possible it tries to follow django's API, hence its name.
+
+It is released under the terms of the GNU Lesser General Public License, version 2.1 or later.
+
 Requirements
 ============
 
@@ -31,3 +39,8 @@ You can pass the following arguments to qmake:
                                         unix:  /usr/local on unix
                                         other: $$[QT_INSTALL_PREFIX]
     QDJANGO_LIBRARY_TYPE=staticlib  to build a static version of QDjango
+
+Mailing list
+============
+
+If you wish to discuss QDjango, you are welcome to join the [QDjango group](http://groups.google.com/group/qdjango).
