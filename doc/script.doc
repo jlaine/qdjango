@@ -15,7 +15,11 @@
  * Lesser General Public License for more details.
  */
 
-/*! \page scripting Scripting models
+/*!
+
+\defgroup Script
+
+\brief Scripting support for models
 
 The QDjangoScript class makes it easy to access your models from <a href="http://doc.qt.nokia.com/latest/qtscript.html">QtScript</a>.
 

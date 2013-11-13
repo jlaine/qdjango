@@ -27,8 +27,6 @@
 
 Q_DECLARE_METATYPE(QDjangoWhere)
 
-/** \defgroup Script */
-
 /** \brief The QDjangoScript class provides static methods for making models
  *  scriptable.
  *

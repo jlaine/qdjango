@@ -19,11 +19,13 @@
 
 \defgroup Database
 
+\brief Object Relation Mapper (ORM)
+
 QDjango's Object Relation Mapper (ORM) strives to be both powerful
 and simple to use. Where possible it tries to follow django's
 ORM API, with a similar lazy queryset mechanism.
 
-QDjango's object relation mapper builds upon <a href="http://doc.qt.nokia.com/latest/metaobjects.html">Qt's Meta-Object System</a>,
+The object relation mapper builds upon <a href="http://doc.qt.nokia.com/latest/metaobjects.html">Qt's Meta-Object System</a>,
 so if you are familiar with Qt, you should feel right at home. Features include:
 
 \li support for a wide range of database backends thanks to <a href="http://doc.qt.nokia.com/latest/qtsql.html">QtSql</a>
