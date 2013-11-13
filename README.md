@@ -6,10 +6,12 @@ Copyright (c) 2010-2012 Jeremy Lainé
 About
 =====
 
-QDjango is a web framework written in C++ and built on top of the Qt library.
+_QDjango_ is a web framework written in C++ and built on top of the Qt library.
 Where possible it tries to follow django's API, hence its name.
 
 It is released under the terms of the GNU Lesser General Public License, version 2.1 or later.
+
+To learn more about _QDjango_, please read [the online documentation](http://doc.qdjango.org/).
 
 Requirements
 ============
