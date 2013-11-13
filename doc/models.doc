@@ -129,4 +129,91 @@ meta.save(obj);
 meta.remove(obj);
 \endcode
 
+\section validation Using QDjangoValidator for field validation
+
+QDjango provides optional field validation through the use of QDjangoValidator subclasses. Validation occurs when the fields are "cleaned" (a term borrowed from django). Validators are generally added in a model's constructor, and the cleanFields() method is used to perform validation. Here is a simple example of providing URL validation on a field:
+
+\code
+class MyModel : public QDjangoModel
+{
+    Q_OBJECT
+    Q_PROPERTY(QString url READ url WRITE setUrl)
+    Q_PROPERTY(QString anotherUrl READ anotherUrl WRITE setAnotherUrl)
+public:
+    MyModel(QObject *parent = 0)	
+        : QDjangoModel(parent)
+    {
+        addValidator("url", new QDjangoUrlValidator);
+
+    }
+
+    QString url() const { return m_url; }
+    void setUrl(const QString &url) { m_url = url; }
+
+    QString anotherUrl() cons { return m_anotherUrl; }
+    void setAnotherUrl(const QString &url) { m_anotherUrl = url; }
+
+private:
+    QString m_url;
+    QString m_anotherUrl;
+
+};
+
+...
+
+MyModel model;
+model.setUrl("thisisnotaurl");
+QHash<QByteArray, QString> validationResult = model.cleanFields();
+if (!validationResult.isEmpty()) {
+    qDebug() << "invalid field data: " << validationResult;
+    return false;
+}
+
+\endcode
+
+QDjangoModel::cleanFields() also allows the user to specify which fields are to be validated:
+
+\code
+MyModel model;
+model.setUrl("thisisnotaurl");
+QHash<QByteArray, QString> validationResult = model.cleanFields(QStringList() << "url");
+if (!validationResult.isEmpty()) {
+    qDebug() << "url field is invalid: " << validationResult;
+    return false;
+}
+\endcode
+
+
+
+Custom validators can be implemented by subclassing QDjangoValidator like so:
+
+\code
+class ContainsFooValidator : public QDjangoValidator
+{
+public:
+    ContainsFooValidator()
+	: QDjangoValidator(QObject::tr("data must contain 'foo'!")
+    {
+    }
+
+    virtual bool validate(const QVariant &data) {
+        if (!data.canConvert<QString>())
+	    return false;
+
+	if (!data.toString().contains("foo"))
+	    return false;
+	return true;
+    }
+
+};
+
+\endcode
+
+For convenince, a number of pre-defined validators have been provided:
+ \li \c QDjangoRegExpValidator : uses a regular expression for data validation
+ \li \c QDjangoUrlValidator : check data for valid URL entries
+ \li \c QDjangoIPv4Validator : check data for valid IPv4 addresses
+
+\b important it is important to remember that ownership of the validator is passed to the model when added 
+
 */
