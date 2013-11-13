@@ -15,10 +15,24 @@
  * Lesser General Public License for more details.
  */
 
-/*! \page database Database configuration
+/*!
 
-QDjango relies on the <a href="http://doc.qt.nokia.com/latest/qtsql.html">QtSql module</a>
-for database access, which supports a wide array of database drivers.
+\defgroup Database
+
+QDjango's Object Relation Mapper (ORM) strives to be both powerful
+and simple to use. Where possible it tries to follow django's
+ORM API, with a similar lazy queryset mechanism.
+
+QDjango's object relation mapper builds upon <a href="http://doc.qt.nokia.com/latest/metaobjects.html">Qt's Meta-Object System</a>,
+so if you are familiar with Qt, you should feel right at home. Features include:
+
+\li support for a wide range of database backends thanks to <a href="http://doc.qt.nokia.com/latest/qtsql.html">QtSql</a>
+\li <a href="models.html">creating and registering database models</a> is easy using Qt's property system
+\li <a href="queries.html">performing queries using querysets</a>
+\li QDjango can <a href="database.html">create and drop database tables and indices</a> for registered models
+\li thread-aware access to the database
+
+\page database Database configuration
 
 \section setup Setting the database
 

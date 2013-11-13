@@ -118,19 +118,6 @@ bool QDjangoQuery::exec(const QString &query)
 /// \endcond
 
 /*!
-    \mainpage
-
-    QDjango is a simple yet powerful Object Relation Mapper (ORM) built
-    on top of the Qt library. Where possible it tries to follow django's
-    ORM API, hence its name.
-
-    \sa QDjango
-    \sa QDjangoModel
-    \sa QDjangoWhere
-    \sa QDjangoQuerySet
-*/
-
-/*!
     Returns the database used by QDjango.
 
     If you call this method from any thread but the application's main thread,
