@@ -58,7 +58,7 @@ static long stringlist_hash(const QStringList &l)
 
 static QString stringlist_digest(const QStringList &l)
 {
-    return QString::number(labs(stringlist_hash(l)) % 4294967296L, 16);
+    return QString::number(labs(stringlist_hash(l)) % 4294967296UL, 16);
 }
 
 enum ForeignKeyConstraint
