@@ -50,12 +50,14 @@ QByteArray QDjangoHttpRequest::body() const
  */
 QString QDjangoHttpRequest::get(const QString &key) const
 {
+    QString queryString = d->meta.value(QLatin1String("QUERY_STRING"));
+    queryString.replace('+', ' ');
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
-    QUrlQuery query(d->meta.value(QLatin1String("QUERY_STRING")));
-    return query.queryItemValue(key).replace("+", " ").replace("%2B", "+");
+    QUrlQuery query(queryString);
+    return query.queryItemValue(key).replace("%2B", "+");
 #else
     QUrl url;
-    url.setEncodedQuery(d->meta.value(QLatin1String("QUERY_STRING")).toLatin1());
+    url.setEncodedQuery(queryString.toLatin1());
     return url.queryItemValue(key);
 #endif
 }
@@ -87,12 +89,14 @@ QString QDjangoHttpRequest::path() const
  */
 QString QDjangoHttpRequest::post(const QString &key) const
 {
+    QByteArray buffer = d->buffer;
+    buffer.replace('+', ' ');
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
-    QUrlQuery query(QString::fromUtf8(d->buffer));
-    return query.queryItemValue(key).replace("+", " ").replace("%2B", "+");
+    QUrlQuery query(QString::fromUtf8(buffer));
+    return query.queryItemValue(key).replace("%2B", "+");
 #else
     QUrl url;
-    url.setEncodedQuery(d->buffer);
+    url.setEncodedQuery(buffer);
     return url.queryItemValue(key);
 #endif
 }
