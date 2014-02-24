@@ -86,30 +86,38 @@ public:
     }
 };
 
+static QString substitute(QString input, const QVariantMap &context);
 static QVariant evaluate(const QString &input, const QVariantMap &context)
 {
     const QStringList bits = input.split(".");
     QVariant value = context;
     foreach (const QString &bit, bits) {
-        value = value.toMap().value(bit);
+        value = value.toMap().value(substitute(bit, context));
     }
     //qDebug("evaluate(%s): %s", qPrintable(input), qPrintable(value.toString()));
     return value;
 }
 
-static QString substitute(const QString &input, const QVariantMap &context)
+static QString substitute(QString input, const QVariantMap &context)
 {
     QRegExp valRx("\\{\\{ +([a-z_\\.]+) +\\}\\}");
 
     QString output;
     int pos = 0;
     int lastPos = 0;
-    while ((pos = valRx.indexIn(input, lastPos)) != -1) {
-        output += input.mid(lastPos, pos - lastPos);
-        lastPos = pos + valRx.matchedLength();
-        output += evaluate(valRx.cap(1), context).toString();
+    forever {
+        output.clear();
+        lastPos = 0;
+        while ((pos = valRx.indexIn(input, lastPos)) != -1) {
+            output += input.mid(lastPos, pos - lastPos);
+            lastPos = pos + valRx.matchedLength();
+            output += evaluate(valRx.cap(1), context).toString();
+        }
+        if (lastPos == 0) return input;
+
+        output += input.mid(lastPos);
+        input = output;
     }
-    output += input.mid(lastPos);
     return output;
 }
 
