@@ -379,6 +379,8 @@ QDjangoHttpResponse* ModelAdmin::changeList(const QDjangoHttpRequest &request)
     QVariantMap context;
     context.insert("title", QString("Select %1 to change").arg(modelName));
     context.insert("add_link", QString("Add %1").arg(modelName));
+    context.insert("edit_link", QString("Edit"));
+    context.insert("delete_link", QString("Remove"));
     context.insert("model_name", modelName);
     context.insert("field_list", fieldList);
     context.insert("object_list", objectList);
