@@ -9,6 +9,7 @@
 {% for field in field_list %}
             <th>{{ field.name }}</th>
 {% endfor %}
+            <th>Actions</th>
         </tr>
 {% for object in object_list %}
         <tr id="{{ forloop.counter }}">
@@ -21,6 +22,8 @@
 {% if model_name == "group" %}
             <td><a href="{{ object.pk }}/">{{ object.name }}</a></td>
 {% endif %}
+            <td><a href="{{ object.pk }}/">{{ edit_link }}</a>
+                <a href="{{ object.pk }}/delete/">{{ delete_link }}</a></td>
         </tr>
 {% endfor %}
     </table>
