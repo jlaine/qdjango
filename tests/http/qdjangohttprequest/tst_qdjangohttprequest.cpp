@@ -54,6 +54,11 @@ void tst_QDjangoHttpRequest::testGet()
     request.d->meta.insert("QUERY_STRING", "foo=bar%2bmore&baz=qux");
     QCOMPARE(request.get(QLatin1String("foo")), QLatin1String("bar+more"));
     QCOMPARE(request.get(QLatin1String("baz")), QLatin1String("qux"));
+
+    // at encoded as %40
+    request.d->meta.insert("QUERY_STRING", "foo=bar%40example.com&baz=qux");
+    QCOMPARE(request.get(QLatin1String("foo")), QLatin1String("bar@example.com"));
+    QCOMPARE(request.get(QLatin1String("baz")), QLatin1String("qux"));
 }
 
 void tst_QDjangoHttpRequest::testPost()
@@ -78,6 +83,11 @@ void tst_QDjangoHttpRequest::testPost()
     // plus encoded as %2b
     request.d->buffer = QByteArray("foo=bar%2bmore&baz=qux");
     QCOMPARE(request.post(QLatin1String("foo")), QLatin1String("bar+more"));
+    QCOMPARE(request.post(QLatin1String("baz")), QLatin1String("qux"));
+
+    // at encoded as %40
+    request.d->buffer = QByteArray("foo=bar%40example.com&baz=qux");
+    QCOMPARE(request.post(QLatin1String("foo")), QLatin1String("bar@example.com"));
     QCOMPARE(request.post(QLatin1String("baz")), QLatin1String("qux"));
 }
 

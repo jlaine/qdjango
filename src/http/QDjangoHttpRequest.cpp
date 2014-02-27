@@ -54,7 +54,7 @@ QString QDjangoHttpRequest::get(const QString &key) const
     queryString.replace('+', ' ');
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
     QUrlQuery query(queryString);
-    return query.queryItemValue(key).replace("%2B", "+");
+    return query.queryItemValue(key, QUrl::FullyDecoded);
 #else
     QUrl url;
     url.setEncodedQuery(queryString.toLatin1());
@@ -93,7 +93,7 @@ QString QDjangoHttpRequest::post(const QString &key) const
     buffer.replace('+', ' ');
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
     QUrlQuery query(QString::fromUtf8(buffer));
-    return query.queryItemValue(key).replace("%2B", "+");
+    return query.queryItemValue(key, QUrl::FullyDecoded);
 #else
     QUrl url;
     url.setEncodedQuery(buffer);
