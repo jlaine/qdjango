@@ -129,7 +129,17 @@ QDjangoHttpResponse *QDjangoHttpController::serveNotFound(const QDjangoHttpReque
  */
 QDjangoHttpResponse *QDjangoHttpController::serveRedirect(const QDjangoHttpRequest &request, const QUrl &url, bool permanent)
 {
-    const QString urlString = url.toString();
+    return serveRedirect(request, url.toString(), permanent);
+}
+
+/** Respond to an HTTP \a request with a redirect.
+ *
+ * \param request
+ * \param urlString The URL to which the user is redirected.
+ * \param permanent Whether the redirect is permanent.
+ */
+QDjangoHttpResponse *QDjangoHttpController::serveRedirect(const QDjangoHttpRequest &request, const QString &urlString, bool permanent)
+{
     QDjangoHttpResponse *response = serveError(request, permanent ? QDjangoHttpResponse::MovedPermanently : QDjangoHttpResponse::Found,
         QString::fromLatin1("You are being redirect to <a href=\"%1\">%2</a>").arg(urlString, urlString));
     response->setHeader(QLatin1String("Location"), urlString);
