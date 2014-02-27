@@ -17,14 +17,16 @@ HEADERS += \
     QDjangoHttpResponse.h \
     QDjangoHttpServer.h \
     QDjangoHttpServer_p.h \
-    QDjangoUrlResolver.h
+    QDjangoUrlResolver.h \
+    QDjangoTemplate.cpp
 SOURCES += \
     QDjangoFastCgiServer.cpp \
     QDjangoHttpController.cpp \
     QDjangoHttpRequest.cpp \
     QDjangoHttpResponse.cpp \
     QDjangoHttpServer.cpp \
-    QDjangoUrlResolver.cpp
+    QDjangoUrlResolver.cpp \
+    QDjangoTemplate.cpp
 
 # Installation
 include(../src.pri)
