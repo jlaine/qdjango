@@ -41,7 +41,7 @@ public:
     virtual QDjangoModel *createObject() const = 0;
     virtual QVariantMap dumpObject(const QObject *object) const = 0;
     virtual QDjangoModel *getObject(const QString& objectId) const = 0;
-    virtual QVariantList listObjects() const = 0;
+    virtual QVariantList listObjects(const QList<QByteArray> &listFields) const = 0;
     virtual QString modelName() const = 0;
 };
 
@@ -71,12 +71,22 @@ public:
         return QDjangoQuerySet<T>().get(QDjangoWhere("pk", QDjangoWhere::Equals, objectId));
     }
 
-    QVariantList listObjects() const
+    QVariantList listObjects(const QList<QByteArray> &listFields) const
     {
         QVariantList objectList;
         QDjangoQuerySet<T> objects;
-        foreach (const T &obj, objects)
-            objectList << dumpObject(&obj);
+        foreach (const T &obj, objects) {
+            QVariantMap dump = dumpObject(&obj);
+
+            // get ordered list of properties to show
+            QVariantList propList;
+            foreach (const QByteArray &key, listFields) {
+                propList << dump.value(key);
+            }
+            dump.insert("value_list", propList);
+
+            objectList << dump;
+        }
         return objectList;
     }
 
@@ -365,7 +375,7 @@ QDjangoHttpResponse* ModelAdmin::changeForm(const QDjangoHttpRequest &request, c
 
 QDjangoHttpResponse* ModelAdmin::changeList(const QDjangoHttpRequest &request)
 {
-    QVariantList objectList = d->modelFetcher->listObjects();
+    QVariantList objectList = d->modelFetcher->listObjects(d->listFields);
 
     QVariantList fieldList;
     foreach (const QByteArray &key, d->listFields) {
