@@ -60,6 +60,8 @@ public:
     void setupSSL(const QSslKey &sslKey, const QSslCertificate &sslCert, const QList<QSslCertificate> &sslCaCerts = QList<QSslCertificate>());
 #endif
 
+    quint32 serverPort() const;
+
 signals:
     /** This signal is emitted when a request completes.
      */

@@ -368,6 +368,14 @@ void QDjangoHttpServer::setupSSL(const QSslKey &sslKey, const QSslCertificate &s
 }
 #endif
 
+/** Returns the server's port if the server is listening for connections; otherwise returns 0.
+ */
+quint32 QDjangoHttpServer::serverPort() const
+{
+    if (!d->tcpServer) return 0;
+    return d->tcpServer->serverPort();
+}
+
 /** Handles the creation of new HTTP connections.
  */
 
