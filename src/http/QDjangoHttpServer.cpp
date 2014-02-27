@@ -40,7 +40,7 @@
 
 /** Constructs a new HTTP connection.
  */
-QDjangoHttpConnection::QDjangoHttpConnection(QTcpSocket *device, QDjangoHttpServer *server)
+QDjangoHttpConnection::QDjangoHttpConnection(QAbstractSocket *device, QDjangoHttpServer *server)
     : QObject(server),
     m_closeAfterResponse(false),
     m_pendingRequest(0),
@@ -265,12 +265,41 @@ void QDjangoHttpConnection::_q_writeResponse()
 
 /// \endcond
 
+class TcpServer : public QTcpServer {
+public:
+    TcpServer(QDjangoHttpServer* a_djandoHttpServer) :
+        QTcpServer(a_djandoHttpServer), m_djandoHttpServer(a_djandoHttpServer) {}
+
+
+protected:
+    /** Call the HttpListener.incomingConnection passing the port of the server. */
+#if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
+    void incomingConnection(int a_socketDescriptor)
+#else
+    void incomingConnection(qintptr a_socketDescriptor) Q_DECL_OVERRIDE
+#endif
+    {
+        m_djandoHttpServer->_q_incomingConnection(a_socketDescriptor);
+    }
+
+private:
+    /** Reference to the HttpListener who owns the TcpServer */
+    QDjangoHttpServer* m_djandoHttpServer;
+};
+
 class QDjangoHttpServerPrivate
 {
 public:
     int connectionCount;
     QTcpServer *tcpServer;
     QDjangoUrlResolver *urlResolver;
+
+#ifndef QT_NO_OPENSSL
+    bool ssl;
+    QSslKey sslKey;
+    QSslCertificate sslCert;
+    QList<QSslCertificate> sslCaCerts;
+#endif
 };
 
 /** Constructs a new HTTP server.
@@ -282,6 +311,9 @@ QDjangoHttpServer::QDjangoHttpServer(QObject *parent)
     d->connectionCount = 0;
     d->tcpServer = 0;
     d->urlResolver = new QDjangoUrlResolver(this);
+#ifndef QT_NO_OPENSSL
+    d->ssl = false;
+#endif
 }
 
 /** Destroys the HTTP server.
@@ -306,13 +338,7 @@ void QDjangoHttpServer::close()
 bool QDjangoHttpServer::listen(const QHostAddress &address, quint16 port)
 {
     if (!d->tcpServer) {
-        bool check;
-        Q_UNUSED(check);
-
-        d->tcpServer = new QTcpServer(this);
-        check = connect(d->tcpServer, SIGNAL(newConnection()),
-                        this, SLOT(_q_newTcpConnection()));
-        Q_ASSERT(check);
+        d->tcpServer = new TcpServer(this);
     }
 
     return d->tcpServer->listen(address, port);
@@ -326,26 +352,73 @@ QDjangoUrlResolver* QDjangoHttpServer::urls() const
     return d->urlResolver;
 }
 
+/** Tells the server to use ssl and setup the:
+ *  \a sslKey: Ssl Key
+ *  \a sslCert: Local Certificate
+ *  \a sslCaCert: CA Certificates
+ * Qt need to be compiled with open ssl support
+ */
+#ifndef QT_NO_OPENSSL
+void QDjangoHttpServer::setupSSL(const QSslKey &sslKey, const QSslCertificate &sslCert, const QList<QSslCertificate> &sslCaCerts)
+{
+    d->ssl = true;
+    d->sslKey = sslKey;
+    d->sslCert =  sslCert;
+    d->sslCaCerts = sslCaCerts;
+}
+#endif
+
 /** Handles the creation of new HTTP connections.
  */
-void QDjangoHttpServer::_q_newTcpConnection()
+
+#if QT_VERSION > QT_VERSION_CHECK(5, 0, 0)
+void QDjangoHttpServer::_q_incomingConnection(qintptr socketDescriptor)
+#else
+void QDjangoHttpServer::_q_incomingConnection(int socketDescriptor)
+#endif
 {
     bool check;
     Q_UNUSED(check);
 
-    QTcpSocket *socket;
-    while ((socket = d->tcpServer->nextPendingConnection()) != 0) {
-        QDjangoHttpConnection *connection = new QDjangoHttpConnection(socket, this);
-#ifdef QDJANGO_DEBUG_HTTP
-        qDebug("Handling connection %i", d->connectionCount++);
+    QAbstractSocket *socket;
+
+#ifndef QT_NO_OPENSSL
+    if (d->ssl)
+        socket = new QSslSocket(this);
+    else
+#endif
+        socket = new QTcpSocket(this);
+
+    if (!socket->setSocketDescriptor(socketDescriptor)) {
+        qWarning("HttpConnectionHandler (%p): cannot initialize socket: %s",this, qPrintable(socket->errorString()));
+        return;
+    }
+
+#ifndef QT_NO_OPENSSL
+    if (d->ssl) {
+        QSslSocket* sslSocket = qobject_cast<QSslSocket*>(socket);
+
+        foreach (QSslCertificate c, d->sslCaCerts) {
+            sslSocket->addCaCertificate(c);
+        }
+
+        sslSocket->setProtocol(QSsl::AnyProtocol);
+        sslSocket->setPrivateKey(d->sslKey);
+        sslSocket->setLocalCertificate(d->sslCert);
+        sslSocket->startServerEncryption();
+    }
 #endif
 
-        check = connect(connection, SIGNAL(closed()),
-                        connection, SLOT(deleteLater()));
-        Q_ASSERT(check);
+    QDjangoHttpConnection *connection = new QDjangoHttpConnection(socket, this);
+#ifdef QDJANGO_DEBUG_HTTP
+    qDebug("Handling connection %i", d->connectionCount++);
+#endif
 
-        check = connect(connection, SIGNAL(requestFinished(QDjangoHttpRequest*,QDjangoHttpResponse*)),
-                        this, SIGNAL(requestFinished(QDjangoHttpRequest*,QDjangoHttpResponse*)));
-        Q_ASSERT(check);
-    }
+    check = connect(connection, SIGNAL(closed()),
+                    connection, SLOT(deleteLater()));
+    Q_ASSERT(check);
+
+    check = connect(connection, SIGNAL(requestFinished(QDjangoHttpRequest*,QDjangoHttpResponse*)),
+                    this, SIGNAL(requestFinished(QDjangoHttpRequest*,QDjangoHttpResponse*)));
+    Q_ASSERT(check);
 }
