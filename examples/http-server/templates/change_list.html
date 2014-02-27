@@ -14,7 +14,7 @@
 {% for object in object_list %}
         <tr id="{{ forloop.counter }}">
 {% for value in object.value_list %}
-            <td>{{ value }}</td>
+            <td>{% if forloop.counter == "1" %}<a href="{{ object.pk }}/">{{ value }}</a>{% else %}{{ value }}{% endif %}</td>
 {% endfor %}
             <td>
                 <a href="{{ object.pk }}/">{{ edit_link }}</a>
