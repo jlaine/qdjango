@@ -26,6 +26,7 @@
 //
 
 #include <QObject>
+#include <QUuid>
 
 #define FCGI_RECORD_SIZE (255*255 + 255 + 8)
 
@@ -59,6 +60,7 @@ private:
     QDjangoHttpRequest *m_pendingRequest;
     quint16 m_pendingRequestId;
     QDjangoFastCgiServer *m_server;
+    QUuid m_connectionUuid;
 };
 
 #endif

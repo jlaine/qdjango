@@ -46,7 +46,8 @@ QDjangoHttpConnection::QDjangoHttpConnection(QTcpSocket *device, QDjangoHttpServ
     m_pendingRequest(0),
     m_requestCount(0),
     m_server(server),
-    m_socket(device)
+    m_socket(device),
+    m_connectionUuid(QUuid::createUuid())
 {
     bool check;
     Q_UNUSED(check);
@@ -105,6 +106,7 @@ void QDjangoHttpConnection::_q_readyRead()
     QDjangoHttpRequest *request = m_pendingRequest;
     if (!request) {
         request = new QDjangoHttpRequest;
+        request->d->connectionUuid = m_connectionUuid;
         m_requestBytesRemaining = 0;
         m_requestHeaderLine = 0;
         m_requestHeaderReceived = false;

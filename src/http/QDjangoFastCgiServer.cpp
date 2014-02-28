@@ -75,7 +75,8 @@ QDjangoFastCgiConnection::QDjangoFastCgiConnection(QIODevice *device, QDjangoFas
     m_inputPos(0),
     m_pendingRequest(0),
     m_pendingRequestId(0),
-    m_server(server)
+    m_server(server),
+    m_connectionUuid(QUuid::createUuid())
 {
     bool check;
     Q_UNUSED(check);
@@ -219,6 +220,7 @@ void QDjangoFastCgiConnection::_q_readyRead()
                 break;
             }
             m_pendingRequest = new QDjangoHttpRequest;
+            m_pendingRequest->d->connectionUuid = m_connectionUuid;
             m_pendingRequestId = requestId;
             break;
         }
