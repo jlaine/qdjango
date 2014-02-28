@@ -26,6 +26,7 @@
 //
 
 #include <QMap>
+#include <QUuid>
 
 /** \internal
  */
@@ -36,6 +37,7 @@ public:
     QMap<QString, QString> meta;
     QString method;
     QString path;
+    QUuid connectionUuid;
 };
 
 #endif

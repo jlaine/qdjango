@@ -19,6 +19,7 @@
 #define QDJANGO_HTTP_REQUEST_H
 
 #include <QString>
+#include <QUuid>
 
 #include "QDjangoHttp_p.h"
 
@@ -40,6 +41,7 @@ public:
     QString method() const;
     QString path() const;
     QString post(const QString &key) const;
+    QUuid connectionUuid() const;
 
 private:
     Q_DISABLE_COPY(QDjangoHttpRequest)
