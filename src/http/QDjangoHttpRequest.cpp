@@ -101,6 +101,11 @@ QString QDjangoHttpRequest::post(const QString &key) const
 #endif
 }
 
+QUuid QDjangoHttpRequest::connectionUuid() const
+{
+    return d->connectionUuid;
+}
+
 QDjangoHttpTestRequest::QDjangoHttpTestRequest(const QString &method, const QString &path)
 {
     d->method = method;

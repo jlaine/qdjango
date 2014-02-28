@@ -29,6 +29,7 @@
 #include <QList>
 #include <QPair>
 #include <QString>
+#include <QUuid>
 
 class QDjangoHttpRequest;
 class QDjangoHttpResponse;
@@ -78,6 +79,8 @@ private:
     int m_requestMajorVersion;
     int m_requestMinorVersion;
     QString m_requestPath;
+
+    QUuid m_connectionUuid;
 };
 
 #endif
