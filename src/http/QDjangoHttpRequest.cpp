@@ -46,6 +46,11 @@ QByteArray QDjangoHttpRequest::body() const
     return d->buffer;
 }
 
+void QDjangoHttpRequest::setBody(const QByteArray &body)
+{
+    d->buffer = body;
+}
+
 /** Returns the GET data for the given \a key.
  */
 QString QDjangoHttpRequest::get(const QString &key) const

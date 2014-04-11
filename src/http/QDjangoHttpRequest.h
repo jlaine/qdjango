@@ -35,6 +35,7 @@ public:
     ~QDjangoHttpRequest();
 
     QByteArray body() const;
+    void setBody(const QByteArray &body);
     QString get(const QString &key) const;
     QString meta(const QString &key) const;
     QString method() const;
