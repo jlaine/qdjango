@@ -76,11 +76,29 @@ QString QDjangoHttpRequest::meta(const QString &key) const
     return d->meta.value(key);
 }
 
+/** Insert meta information.
+ *
+ * \param key
+ * \param value
+ */
+void QDjangoHttpRequest::insertMeta(const QString &key, const QString &value)
+{
+    d->meta.insert(key, value);
+}
+
 /** Returns the HTTP request's method (e.g. GET, POST).
  */
 QString QDjangoHttpRequest::method() const
 {
     return d->method;
+}
+
+/** Sets the HTTP request's method (e.g. GET, POST).
+ * \param method
+ */
+void QDjangoHttpRequest::setMethod(const QString &method)
+{
+    d->method = method;
 }
 
 /** Returns the HTTP request's path.

@@ -38,7 +38,9 @@ public:
     void setBody(const QByteArray &body);
     QString get(const QString &key) const;
     QString meta(const QString &key) const;
+    void insertMeta(const QString &key, const QString &value);
     QString method() const;
+    void setMethod(const QString &method);
     QString path() const;
     QString post(const QString &key) const;
 
