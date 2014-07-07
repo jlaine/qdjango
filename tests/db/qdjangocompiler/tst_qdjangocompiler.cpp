@@ -95,6 +95,25 @@ private:
     QString m_name;
 };
 
+class Top : public QDjangoModel
+{
+    Q_OBJECT
+    Q_PROPERTY(QString name READ name WRITE setName)
+    Q_PROPERTY(Owner *owner READ owner WRITE setOwner)
+
+public:
+    Top(QObject *parent = 0);
+
+    QString name() const;
+    void setName(const QString &name);
+
+    Owner *owner() const;
+    void setOwner(Owner *owner);
+
+private:
+    QString m_name;
+};
+
 class tst_QDjangoCompiler : public QObject
 {
     Q_OBJECT
@@ -196,12 +215,38 @@ void OwnerWithNullableItem::setItem2(Item *item2)
     setForeignKey("item2", item2);
 }
 
+Top::Top(QObject *parent)
+    : QDjangoModel(parent)
+{
+}
+
+QString Top::name() const
+{
+    return m_name;
+}
+
+void Top::setName(const QString &name)
+{
+    m_name = name;
+}
+
+Owner* Top::owner() const
+{
+    return qobject_cast<Owner*>(foreignKey("owner"));
+}
+
+void Top::setOwner(Owner *owner)
+{
+    setForeignKey("owner", owner);
+}
+
 void tst_QDjangoCompiler::initTestCase()
 {
     QVERIFY(initialiseDatabase());
     QDjango::registerModel<Item>();
     QDjango::registerModel<Owner>();
     QDjango::registerModel<OwnerWithNullableItem>();
+    QDjango::registerModel<Top>();
 }
 
 void tst_QDjangoCompiler::fieldNames_data()
@@ -259,6 +304,31 @@ void tst_QDjangoCompiler::fieldNames_data()
         .arg(escapeField(db, "id"))
         .arg(escapeTable(db, "ownerwithnullableitem"))
         .arg(escapeField(db, "item2_id"));
+
+    QTest::newRow("recurse two levels") << QByteArray("Top") << true << (QStringList()
+        << escapeTable(db, "top") + "." + escapeField(db, "id")
+        << escapeTable(db, "top") + "." + escapeField(db, "name")
+        << escapeTable(db, "top") + "." + escapeField(db, "owner_id")
+        << "T0." + escapeField(db, "id")
+        << "T0." + escapeField(db, "name")
+        << "T0." + escapeField(db, "item1_id")
+        << "T0." + escapeField(db, "item2_id")
+        << "T1." + escapeField(db, "id")
+        << "T1." + escapeField(db, "name")
+        << "T2." + escapeField(db, "id")
+        << "T2." + escapeField(db, "name"))
+    << QString("%1 INNER JOIN %2 T0 ON T0.%3 = %4.%5 INNER JOIN %6 T1 ON T1.%7 = T0.%8 INNER JOIN %9 T2 ON T2.%10 = T0.%11")
+        .arg(escapeTable(db, "top"))
+        .arg(escapeTable(db, "owner"))
+        .arg(escapeField(db, "id"))
+        .arg(escapeTable(db, "top"))
+        .arg(escapeField(db, "owner_id"))
+        .arg(escapeTable(db, "item"))
+        .arg(escapeField(db, "id"))
+        .arg(escapeField(db, "item1_id"))
+        .arg(escapeTable(db, "item"))
+        .arg(escapeField(db, "id"))
+        .arg(escapeTable(db, "item2_id"));
 }
 
 void tst_QDjangoCompiler::fieldNames()
