@@ -304,67 +304,67 @@ void tst_QDjangoCompiler::fieldNames_data()
     QTest::addColumn<QString>("fromSql");
 
     QTest::newRow("non recursive") << QByteArray("Owner") << false << (QStringList()
-        << escapeTable(db, "owner") + "." + escapeField(db, "id")
-        << escapeTable(db, "owner") + "." + escapeField(db, "name")
-        << escapeTable(db, "owner") + "." + escapeField(db, "item1_id")
-        << escapeTable(db, "owner") + "." + escapeField(db, "item2_id"))
+        << "\"owner\".\"id\""
+        << "\"owner\".\"name\""
+        << "\"owner\".\"item1_id\""
+        << "\"owner\".\"item2_id\"")
     << "\"owner\"";
 
     QTest::newRow("recurse one level") << QByteArray("Owner") << true << (QStringList()
-        << escapeTable(db, "owner") + "." + escapeField(db, "id")
-        << escapeTable(db, "owner") + "." + escapeField(db, "name")
-        << escapeTable(db, "owner") + "." + escapeField(db, "item1_id")
-        << escapeTable(db, "owner") + "." + escapeField(db, "item2_id")
-        << "T0." + escapeField(db, "id")
-        << "T0." + escapeField(db, "name")
-        << "T1." + escapeField(db, "id")
-        << "T1." + escapeField(db, "name"))
+        << "\"owner\".\"id\""
+        << "\"owner\".\"name\""
+        << "\"owner\".\"item1_id\""
+        << "\"owner\".\"item2_id\""
+        << "T0.\"id\""
+        << "T0.\"name\""
+        << "T1.\"id\""
+        << "T1.\"name\"")
     << "\"owner\""
        " INNER JOIN \"item\" T0 ON T0.\"id\" = \"owner\".\"item1_id\""
        " INNER JOIN \"item\" T1 ON T1.\"id\" = \"owner\".\"item2_id\"";
 
     QTest::newRow("recurse with nullable") << QByteArray("OwnerWithNullableItem") << true << (QStringList()
-        << escapeTable(db, "ownerwithnullableitem") + "." + escapeField(db, "id")
-        << escapeTable(db, "ownerwithnullableitem") + "." + escapeField(db, "name")
-        << escapeTable(db, "ownerwithnullableitem") + "." + escapeField(db, "item1_id")
-        << escapeTable(db, "ownerwithnullableitem") + "." + escapeField(db, "item2_id")
-        << "T0." + escapeField(db, "id")
-        << "T0." + escapeField(db, "name")
-        << "T1." + escapeField(db, "id")
-        << "T1." + escapeField(db, "name"))
+        << "\"ownerwithnullableitem\".\"id\""
+        << "\"ownerwithnullableitem\".\"name\""
+        << "\"ownerwithnullableitem\".\"item1_id\""
+        << "\"ownerwithnullableitem\".\"item2_id\""
+        << "T0.\"id\""
+        << "T0.\"name\""
+        << "T1.\"id\""
+        << "T1.\"name\"")
     << "\"ownerwithnullableitem\""
        " INNER JOIN \"item\" T0 ON T0.\"id\" = \"ownerwithnullableitem\".\"item1_id\""
        " LEFT OUTER JOIN \"item\" T1 ON T1.\"id\" = \"ownerwithnullableitem\".\"item2_id\"";
 
     QTest::newRow("recurse two levels") << QByteArray("Top") << true << (QStringList()
-        << escapeTable(db, "top") + "." + escapeField(db, "id")
-        << escapeTable(db, "top") + "." + escapeField(db, "name")
-        << escapeTable(db, "top") + "." + escapeField(db, "owner_id")
-        << "T0." + escapeField(db, "id")
-        << "T0." + escapeField(db, "name")
-        << "T0." + escapeField(db, "item1_id")
-        << "T0." + escapeField(db, "item2_id")
-        << "T1." + escapeField(db, "id")
-        << "T1." + escapeField(db, "name")
-        << "T2." + escapeField(db, "id")
-        << "T2." + escapeField(db, "name"))
+        << "\"top\".\"id\""
+        << "\"top\".\"name\""
+        << "\"top\".\"owner_id\""
+        << "T0.\"id\""
+        << "T0.\"name\""
+        << "T0.\"item1_id\""
+        << "T0.\"item2_id\""
+        << "T1.\"id\""
+        << "T1.\"name\""
+        << "T2.\"id\""
+        << "T2.\"name\"")
     << "\"top\""
        " INNER JOIN \"owner\" T0 ON T0.\"id\" = \"top\".\"owner_id\""
        " INNER JOIN \"item\" T1 ON T1.\"id\" = T0.\"item1_id\""
        " INNER JOIN \"item\" T2 ON T2.\"id\" = T0.\"item2_id\"";
 
     QTest::newRow("recurse two levels with nullable item") << QByteArray("TopWithNullableItem") << true << (QStringList()
-        << escapeTable(db, "topwithnullableitem") + "." + escapeField(db, "id")
-        << escapeTable(db, "topwithnullableitem") + "." + escapeField(db, "name")
-        << escapeTable(db, "topwithnullableitem") + "." + escapeField(db, "owner_id")
-        << "T0." + escapeField(db, "id")
-        << "T0." + escapeField(db, "name")
-        << "T0." + escapeField(db, "item1_id")
-        << "T0." + escapeField(db, "item2_id")
-        << "T1." + escapeField(db, "id")
-        << "T1." + escapeField(db, "name")
-        << "T2." + escapeField(db, "id")
-        << "T2." + escapeField(db, "name"))
+        << "\"topwithnullableitem\".\"id\""
+        << "\"topwithnullableitem\".\"name\""
+        << "\"topwithnullableitem\".\"owner_id\""
+        << "T0.\"id\""
+        << "T0.\"name\""
+        << "T0.\"item1_id\""
+        << "T0.\"item2_id\""
+        << "T1.\"id\""
+        << "T1.\"name\""
+        << "T2.\"id\""
+        << "T2.\"name\"")
     << "\"topwithnullableitem\""
        " INNER JOIN \"ownerwithnullableitem\" T0 ON T0.\"id\" = \"topwithnullableitem\".\"owner_id\""
        " INNER JOIN \"item\" T1 ON T1.\"id\" = T0.\"item1_id\""
@@ -381,7 +381,13 @@ void tst_QDjangoCompiler::fieldNames()
     QSqlDatabase db = QDjango::database();
 
     QDjangoCompiler compiler(modelName, db);
-    QCOMPARE(compiler.fieldNames(recursive), fieldNames);
+
+    QStringList normalizedNames;
+    QStringList rawNames = compiler.fieldNames(recursive);
+    foreach (const QString &rawName, rawNames) {
+        normalizedNames << normalizeSql(db, rawName);
+    }
+    QCOMPARE(normalizedNames, fieldNames);
     QCOMPARE(normalizeSql(db, compiler.fromSql()), fromSql);
 }
 
