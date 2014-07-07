@@ -32,6 +32,21 @@
 
 class QDjangoMetaModel;
 
+class QDJANGO_EXPORT QDjangoModelReference
+{
+public:
+    QDjangoModelReference(const QString &path = QString(), const QDjangoMetaModel &metaModel_ = QDjangoMetaModel(), bool nullable_ = false)
+        : first(path)
+        , metaModel(metaModel_)
+        , nullable(nullable_)
+    {
+    };
+
+    QString first;
+    QDjangoMetaModel metaModel;
+    bool nullable;
+};
+
 /** \internal
  */
 class QDJANGO_EXPORT QDjangoCompiler
@@ -39,17 +54,17 @@ class QDJANGO_EXPORT QDjangoCompiler
 public:
     QDjangoCompiler(const char *modelName, const QSqlDatabase &db);
     QString fromSql();
-    QStringList fieldNames(bool recurse, QDjangoMetaModel *metaModel = 0, const QString &modelPath = QString());
+    QStringList fieldNames(bool recurse, QDjangoMetaModel *metaModel = 0, const QString &modelPath = QString(), bool nullable = false);
     QString orderLimitSql(const QStringList orderBy, int lowMark, int highMark);
     void resolve(QDjangoWhere &where);
 
 private:
     QString databaseColumn(const QString &name);
-    QString referenceModel(const QString &modelPath, QDjangoMetaModel *metaModel);
+    QString referenceModel(const QString &modelPath, QDjangoMetaModel *metaModel, bool nullable);
 
     QSqlDriver *driver;
     QDjangoMetaModel baseModel;
-    QMap<QString, QPair<QString, QDjangoMetaModel> > modelRefs;
+    QMap<QString, QDjangoModelReference> modelRefs;
     QMap<QString, QString> reverseModelRefs;
     QMap<QString, QString> fieldColumnCache;
 };

@@ -375,7 +375,6 @@ void tst_QDjangoCompiler::fieldNames_data()
         .arg(escapeField(db, "id"))
         .arg(escapeTable(db, "item2_id"));
 
-#if 0
     QTest::newRow("recurse two levels with nullable item") << QByteArray("TopWithNullableItem") << true << (QStringList()
         << escapeTable(db, "topwithnullableitem") + "." + escapeField(db, "id")
         << escapeTable(db, "topwithnullableitem") + "." + escapeField(db, "name")
@@ -400,7 +399,6 @@ void tst_QDjangoCompiler::fieldNames_data()
         .arg(escapeTable(db, "item"))
         .arg(escapeField(db, "id"))
         .arg(escapeTable(db, "item2_id"));
-#endif
 }
 
 void tst_QDjangoCompiler::fieldNames()

@@ -30,7 +30,7 @@ QDjangoCompiler::QDjangoCompiler(const char *modelName, const QSqlDatabase &db)
     baseModel = QDjango::metaModel(modelName);
 }
 
-QString QDjangoCompiler::referenceModel(const QString &modelPath, QDjangoMetaModel *metaModel)
+QString QDjangoCompiler::referenceModel(const QString &modelPath, QDjangoMetaModel *metaModel, bool nullable)
 {
     if (modelPath.isEmpty())
         return driver->escapeIdentifier(baseModel.table(), QSqlDriver::TableName);
@@ -39,7 +39,7 @@ QString QDjangoCompiler::referenceModel(const QString &modelPath, QDjangoMetaMod
         return modelRefs.value(modelPath).first;
 
     const QString modelRef = QLatin1String("T") + QString::number(modelRefs.size());
-    modelRefs.insert(modelPath, qMakePair(modelRef, *metaModel));
+    modelRefs.insert(modelPath, QDjangoModelReference(modelRef, *metaModel, nullable));
     return modelRef;
 }
 
@@ -47,12 +47,13 @@ QString QDjangoCompiler::databaseColumn(const QString &name)
 {
     QDjangoMetaModel model = baseModel;
     QString modelPath;
-    QString modelRef = referenceModel(QString(), &model);
+    QString modelRef = referenceModel(QString(), &model, false);
     QStringList bits = name.split(QLatin1String("__"));
 
     while (bits.size() > 1) {
         const QByteArray fk = bits.first().toLatin1();
         QDjangoMetaModel foreignModel;
+        bool foreignNullable = false;
         if (!model.foreignFields().contains(fk)) {
             // this might be a reverse relation, so look for the model
             // and if it exists continue
@@ -63,13 +64,14 @@ QString QDjangoCompiler::databaseColumn(const QString &name)
             reverseModelRefs[bits.first()] = foreignModel.primaryKey();
         } else {
             foreignModel = QDjango::metaModel(model.foreignFields()[fk]);
+            foreignNullable = model.localField(fk + QByteArray("_id")).isNullable();;
         }
 
         // store reference
         if (!modelPath.isEmpty())
             modelPath += QLatin1String("__");
         modelPath += bits.first();
-        modelRef = referenceModel(modelPath, &foreignModel);
+        modelRef = referenceModel(modelPath, &foreignModel, foreignNullable);
 
         model = foreignModel;
         bits.takeFirst();
@@ -79,14 +81,14 @@ QString QDjangoCompiler::databaseColumn(const QString &name)
     return modelRef + QLatin1Char('.') + driver->escapeIdentifier(field.column(), QSqlDriver::FieldName);
 }
 
-QStringList QDjangoCompiler::fieldNames(bool recurse, QDjangoMetaModel *metaModel, const QString &modelPath)
+QStringList QDjangoCompiler::fieldNames(bool recurse, QDjangoMetaModel *metaModel, const QString &modelPath, bool nullable)
 {
     QStringList columns;
     if (!metaModel)
         metaModel = &baseModel;
 
     // store reference
-    const QString tableName = referenceModel(modelPath, metaModel);
+    const QString tableName = referenceModel(modelPath, metaModel, nullable);
     foreach (const QDjangoMetaField &field, metaModel->localFields())
         columns << tableName + QLatin1Char('.') + driver->escapeIdentifier(field.column(), QSqlDriver::FieldName);
     if (!recurse)
@@ -96,7 +98,8 @@ QStringList QDjangoCompiler::fieldNames(bool recurse, QDjangoMetaModel *metaMode
     const QString pathPrefix = modelPath.isEmpty() ? QString() : (modelPath + QLatin1String("__"));
     foreach (const QByteArray &fkName, metaModel->foreignFields().keys()) {
         QDjangoMetaModel metaForeign = QDjango::metaModel(metaModel->foreignFields()[fkName]);
-        columns += fieldNames(recurse, &metaForeign, pathPrefix + QString::fromLatin1(fkName));
+        bool nullableForeign = metaModel->localField(fkName + QByteArray("_id")).isNullable();
+        columns += fieldNames(recurse, &metaForeign, pathPrefix + QString::fromLatin1(fkName), nullableForeign);
     }
     return columns;
 }
@@ -105,13 +108,13 @@ QString QDjangoCompiler::fromSql()
 {
     QString from = driver->escapeIdentifier(baseModel.table(), QSqlDriver::TableName);
     foreach (const QString &name, modelRefs.keys()) {
-        const QPair<QString, QDjangoMetaModel> &ref = modelRefs[name];
+        const QDjangoModelReference &ref = modelRefs[name];
         from += QString::fromLatin1(" %1 %2 %3 ON %4.%5 = %6")
-            .arg(baseModel.localField(name.toLatin1() + QByteArray("_id")).isNullable() ? "LEFT OUTER JOIN" : "INNER JOIN")
-            .arg(driver->escapeIdentifier(ref.second.table(), QSqlDriver::TableName))
+            .arg(ref.nullable ? "LEFT OUTER JOIN" : "INNER JOIN")
+            .arg(driver->escapeIdentifier(ref.metaModel.table(), QSqlDriver::TableName))
             .arg(ref.first)
             .arg(ref.first)
-            .arg(driver->escapeIdentifier(ref.second.localField("pk").column(), QSqlDriver::FieldName))
+            .arg(driver->escapeIdentifier(ref.metaModel.localField("pk").column(), QSqlDriver::FieldName))
             .arg(reverseModelRefs.contains(name) ? databaseColumn(reverseModelRefs[name]) :
                                                    databaseColumn(name + QLatin1String("_id")));
     }
