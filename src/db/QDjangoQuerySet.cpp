@@ -36,7 +36,7 @@ QString QDjangoCompiler::referenceModel(const QString &modelPath, QDjangoMetaMod
         return driver->escapeIdentifier(baseModel.table(), QSqlDriver::TableName);
 
     if (modelRefs.contains(modelPath))
-        return modelRefs.value(modelPath).first;
+        return modelRefs.value(modelPath).tableReference;
 
     const QString modelRef = QLatin1String("T") + QString::number(modelRefs.size());
     modelRefs.insert(modelPath, QDjangoModelReference(modelRef, *metaModel, nullable));
@@ -112,8 +112,8 @@ QString QDjangoCompiler::fromSql()
         from += QString::fromLatin1(" %1 %2 %3 ON %4.%5 = %6")
             .arg(ref.nullable ? "LEFT OUTER JOIN" : "INNER JOIN")
             .arg(driver->escapeIdentifier(ref.metaModel.table(), QSqlDriver::TableName))
-            .arg(ref.first)
-            .arg(ref.first)
+            .arg(ref.tableReference)
+            .arg(ref.tableReference)
             .arg(driver->escapeIdentifier(ref.metaModel.localField("pk").column(), QSqlDriver::FieldName))
             .arg(reverseModelRefs.contains(name) ? databaseColumn(reverseModelRefs[name]) :
                                                    databaseColumn(name + QLatin1String("_id")));

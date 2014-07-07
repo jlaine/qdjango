@@ -35,14 +35,14 @@ class QDjangoMetaModel;
 class QDJANGO_EXPORT QDjangoModelReference
 {
 public:
-    QDjangoModelReference(const QString &path = QString(), const QDjangoMetaModel &metaModel_ = QDjangoMetaModel(), bool nullable_ = false)
-        : first(path)
+    QDjangoModelReference(const QString &tableReference_ = QString(), const QDjangoMetaModel &metaModel_ = QDjangoMetaModel(), bool nullable_ = false)
+        : tableReference(tableReference_)
         , metaModel(metaModel_)
         , nullable(nullable_)
     {
     };
 
-    QString first;
+    QString tableReference;
     QDjangoMetaModel metaModel;
     bool nullable;
 };
