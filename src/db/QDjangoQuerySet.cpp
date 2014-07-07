@@ -16,7 +16,9 @@
  * Lesser General Public License for more details.
  */
 
+#include <QDebug>
 #include <QSqlDriver>
+#include <QSqlRecord>
 
 #include "QDjango.h"
 #include "QDjangoQuerySet.h"
@@ -221,32 +223,16 @@ bool QDjangoQuerySetPrivate::sqlFetch()
     if (hasResults || whereClause.isNone())
         return true;
 
-    QSqlDatabase db = QDjango::database();
-
-    // build query
-    QDjangoCompiler compiler(m_modelName, db);
-    QDjangoWhere resolvedWhere(whereClause);
-    compiler.resolve(resolvedWhere);
-
-    const QStringList columns = compiler.fieldNames(selectRelated);
-    const QString where = resolvedWhere.sql(db);
-    const QString limit = compiler.orderLimitSql(orderBy, lowMark, highMark);
-    QString sql = QLatin1String("SELECT ") + columns.join(QLatin1String(", ")) + QLatin1String(" FROM ") + compiler.fromSql();
-    if (!where.isEmpty())
-        sql += QLatin1String(" WHERE ") + where;
-    sql += limit;
-    QDjangoQuery query(db);
-    query.prepare(sql);
-    resolvedWhere.bindValues(query);
-
     // execute query
+    QDjangoQuery query(selectQuery());
     if (!query.exec())
         return false;
 
     // store results
     while (query.next()) {
         QVariantList props;
-        for (int i = 0; i < columns.size(); ++i)
+        const int propCount = query.record().count();
+        for (int i = 0; i < propCount; ++i)
             props << query.value(i);
         properties.append(props);
     }
@@ -373,6 +359,30 @@ QDjangoQuery QDjangoQuerySetPrivate::insertQuery(const QVariantMap &fields) cons
                   fieldColumns.join(QLatin1String(", ")), fieldHolders.join(QLatin1String(", "))));
     foreach (const QString &name, fields.keys())
         query.addBindValue(fields.value(name));
+    return query;
+}
+
+/** Returns the SQL query to perform a SELECT on the current set.
+ */
+QDjangoQuery QDjangoQuerySetPrivate::selectQuery() const
+{
+    QSqlDatabase db = QDjango::database();
+
+    // build query
+    QDjangoCompiler compiler(m_modelName, db);
+    QDjangoWhere resolvedWhere(whereClause);
+    compiler.resolve(resolvedWhere);
+
+    const QStringList columns = compiler.fieldNames(selectRelated);
+    const QString where = resolvedWhere.sql(db);
+    const QString limit = compiler.orderLimitSql(orderBy, lowMark, highMark);
+    QString sql = QLatin1String("SELECT ") + columns.join(QLatin1String(", ")) + QLatin1String(" FROM ") + compiler.fromSql();
+    if (!where.isEmpty())
+        sql += QLatin1String(" WHERE ") + where;
+    sql += limit;
+    QDjangoQuery query(db);
+    query.prepare(sql);
+    resolvedWhere.bindValues(query);
     return query;
 }
 

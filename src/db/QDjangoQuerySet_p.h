@@ -90,6 +90,7 @@ public:
     QDjangoQuery countQuery() const;
     QDjangoQuery deleteQuery() const;
     QDjangoQuery insertQuery(const QVariantMap &fields) const;
+    QDjangoQuery selectQuery() const;
     QDjangoQuery updateQuery(const QVariantMap &fields) const;
 
     // reference counter
