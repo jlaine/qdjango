@@ -77,7 +77,7 @@ class BookWithNullAuthor : public TestModel
     Q_OBJECT
     Q_PROPERTY(Author* author READ author WRITE setAuthor)
     Q_PROPERTY(QString title READ title WRITE setTitle)
-    Q_CLASSINFO("author", "null=true")
+    Q_CLASSINFO("author", "null=true on_delete=cascade")
 
 public:
     BookWithNullAuthor(QObject *parent = 0) : TestModel(parent) {}
@@ -106,6 +106,7 @@ private slots:
     void setForeignKey();
     void filterRelated();
     void filterRelatedReverse();
+    void filterRelatedReverse_null();
     void selectRelated();
     void selectRelated_null();
     void cleanup();
@@ -147,6 +148,11 @@ void tst_QDjangoModel::init()
     BookWithNullAuthor book3;
     book3.setTitle("Book with null author");
     QCOMPARE(book3.save(), true);
+
+    BookWithNullAuthor book4;
+    book4.setAuthor(&author1);
+    book4.setTitle("Some book");
+    QCOMPARE(book4.save(), true);
 }
 
 void tst_QDjangoModel::deleteCascade()
@@ -209,6 +215,21 @@ void tst_QDjangoModel::filterRelatedReverse()
     QDjangoQuerySet<Author> authors;
     QDjangoQuerySet<Author> qs = authors.filter(
                 QDjangoWhere("book__title", QDjangoWhere::Equals, "Some book"));
+    QVERIFY(!qs.values().isEmpty());
+    QCOMPARE(qs.count(), 1);
+    QCOMPARE(qs.size(), 1);
+
+    Author *author = qs.at(0);
+    QVERIFY(author != 0);
+    QCOMPARE(author->name(), QLatin1String("First author"));
+    delete author;
+}
+
+void tst_QDjangoModel::filterRelatedReverse_null()
+{
+    QDjangoQuerySet<Author> authors;
+    QDjangoQuerySet<Author> qs = authors.filter(
+                QDjangoWhere("bookwithnullauthor__title", QDjangoWhere::Equals, "Some book"));
     QVERIFY(!qs.values().isEmpty());
     QCOMPARE(qs.count(), 1);
     QCOMPARE(qs.size(), 1);
