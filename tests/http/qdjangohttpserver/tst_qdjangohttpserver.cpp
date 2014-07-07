@@ -73,11 +73,15 @@ void tst_QDjangoHttpServer::testGet_data()
         "<head><title>Error</title></head>"
         "<body><p>%1</p></body>"
         "</html>");
-
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 3, 0))
+    int internalServerError = int(QNetworkReply::InternalServerError);
+#else
+    int internalServerError = int(QNetworkReply::UnknownContentError);
+#endif
     QTest::newRow("root") << "/" << int(QNetworkReply::NoError) << QByteArray("method=GET|path=/");
     QTest::newRow("query-string") << "/?message=bar" << int(QNetworkReply::NoError) << QByteArray("method=GET|path=/|get=bar");
     QTest::newRow("not-found") << "/not-found" << int(QNetworkReply::ContentNotFoundError) << errorTemplate.arg(QLatin1String("The document you requested was not found.")).toUtf8();
-    QTest::newRow("internal-server-error") << "/internal-server-error" << int(QNetworkReply::UnknownContentError) << errorTemplate.arg(QLatin1String("An internal server error was encountered.")).toUtf8();
+    QTest::newRow("internal-server-error") << "/internal-server-error" << internalServerError << errorTemplate.arg(QLatin1String("An internal server error was encountered.")).toUtf8();
 }
 
 void tst_QDjangoHttpServer::testGet()
