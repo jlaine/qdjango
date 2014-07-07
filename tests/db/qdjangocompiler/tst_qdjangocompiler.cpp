@@ -101,9 +101,8 @@ class tst_QDjangoCompiler : public QObject
 
 private slots:
     void initTestCase();
+    void fieldNames_data();
     void fieldNames();
-    void fieldNamesRecursive();
-    void fieldNamesNullable();
     void orderLimit();
     void resolve();
 };
@@ -205,25 +204,23 @@ void tst_QDjangoCompiler::initTestCase()
     QDjango::registerModel<OwnerWithNullableItem>();
 }
 
-void tst_QDjangoCompiler::fieldNames()
+void tst_QDjangoCompiler::fieldNames_data()
 {
     QSqlDatabase db = QDjango::database();
 
-    QDjangoCompiler compiler("Owner", db);
-    QCOMPARE(compiler.fieldNames(false), QStringList()
+    QTest::addColumn<QByteArray>("modelName");
+    QTest::addColumn<bool>("recursive");
+    QTest::addColumn<QStringList>("fieldNames");
+    QTest::addColumn<QString>("fromSql");
+
+    QTest::newRow("non recursive") << QByteArray("Owner") << false << (QStringList()
         << escapeTable(db, "owner") + "." + escapeField(db, "id")
         << escapeTable(db, "owner") + "." + escapeField(db, "name")
         << escapeTable(db, "owner") + "." + escapeField(db, "item1_id")
-        << escapeTable(db, "owner") + "." + escapeField(db, "item2_id"));
-    QCOMPARE(compiler.fromSql(), escapeTable(db, "owner"));
-}
+        << escapeTable(db, "owner") + "." + escapeField(db, "item2_id"))
+    << escapeTable(db, "owner");
 
-void tst_QDjangoCompiler::fieldNamesRecursive()
-{
-    QSqlDatabase db = QDjango::database();
-
-    QDjangoCompiler compiler("Owner", db);
-    QCOMPARE(compiler.fieldNames(true), QStringList()
+    QTest::newRow("recurse one level") << QByteArray("Owner") << true << (QStringList()
         << escapeTable(db, "owner") + "." + escapeField(db, "id")
         << escapeTable(db, "owner") + "." + escapeField(db, "name")
         << escapeTable(db, "owner") + "." + escapeField(db, "item1_id")
@@ -231,25 +228,19 @@ void tst_QDjangoCompiler::fieldNamesRecursive()
         << "T0." + escapeField(db, "id")
         << "T0." + escapeField(db, "name")
         << "T1." + escapeField(db, "id")
-        << "T1." + escapeField(db, "name"));
-    QCOMPARE(compiler.fromSql(), QString("%1 INNER JOIN %2 T0 ON T0.%3 = %4.%5 INNER JOIN %6 T1 ON T1.%7 = %8.%9").arg(
-        escapeTable(db, "owner"),
-        escapeTable(db, "item"),
-        escapeField(db, "id"),
-        escapeTable(db, "owner"),
-        escapeField(db, "item1_id"),
-        escapeTable(db, "item"),
-        escapeField(db, "id"),
-        escapeTable(db, "owner"),
-        escapeField(db, "item2_id")));
-}
+        << "T1." + escapeField(db, "name"))
+    << QString("%1 INNER JOIN %2 T0 ON T0.%3 = %4.%5 INNER JOIN %6 T1 ON T1.%7 = %8.%9")
+        .arg(escapeTable(db, "owner"))
+        .arg(escapeTable(db, "item"))
+        .arg(escapeField(db, "id"))
+        .arg(escapeTable(db, "owner"))
+        .arg(escapeField(db, "item1_id"))
+        .arg(escapeTable(db, "item"))
+        .arg(escapeField(db, "id"))
+        .arg(escapeTable(db, "owner"))
+        .arg(escapeField(db, "item2_id"));
 
-void tst_QDjangoCompiler::fieldNamesNullable()
-{
-    QSqlDatabase db = QDjango::database();
-
-    QDjangoCompiler compiler("OwnerWithNullableItem", db);
-    QCOMPARE(compiler.fieldNames(true), QStringList()
+    QTest::newRow("recurse with nullable") << QByteArray("OwnerWithNullableItem") << true << (QStringList()
         << escapeTable(db, "ownerwithnullableitem") + "." + escapeField(db, "id")
         << escapeTable(db, "ownerwithnullableitem") + "." + escapeField(db, "name")
         << escapeTable(db, "ownerwithnullableitem") + "." + escapeField(db, "item1_id")
@@ -257,17 +248,31 @@ void tst_QDjangoCompiler::fieldNamesNullable()
         << "T0." + escapeField(db, "id")
         << "T0." + escapeField(db, "name")
         << "T1." + escapeField(db, "id")
-        << "T1." + escapeField(db, "name"));
-    QCOMPARE(compiler.fromSql(), QString("%1 INNER JOIN %2 T0 ON T0.%3 = %4.%5 LEFT OUTER JOIN %6 T1 ON T1.%7 = %8.%9").arg(
-        escapeTable(db, "ownerwithnullableitem"),
-        escapeTable(db, "item"),
-        escapeField(db, "id"),
-        escapeTable(db, "ownerwithnullableitem"),
-        escapeField(db, "item1_id"),
-        escapeTable(db, "item"),
-        escapeField(db, "id"),
-        escapeTable(db, "ownerwithnullableitem"),
-        escapeField(db, "item2_id")));
+        << "T1." + escapeField(db, "name"))
+    << QString("%1 INNER JOIN %2 T0 ON T0.%3 = %4.%5 LEFT OUTER JOIN %6 T1 ON T1.%7 = %8.%9")
+        .arg(escapeTable(db, "ownerwithnullableitem"))
+        .arg(escapeTable(db, "item"))
+        .arg(escapeField(db, "id"))
+        .arg(escapeTable(db, "ownerwithnullableitem"))
+        .arg(escapeField(db, "item1_id"))
+        .arg(escapeTable(db, "item"))
+        .arg(escapeField(db, "id"))
+        .arg(escapeTable(db, "ownerwithnullableitem"))
+        .arg(escapeField(db, "item2_id"));
+}
+
+void tst_QDjangoCompiler::fieldNames()
+{
+    QFETCH(QByteArray, modelName);
+    QFETCH(bool, recursive);
+    QFETCH(QStringList, fieldNames);
+    QFETCH(QString, fromSql);
+
+    QSqlDatabase db = QDjango::database();
+
+    QDjangoCompiler compiler(modelName, db);
+    QCOMPARE(compiler.fieldNames(recursive), fieldNames);
+    QCOMPARE(compiler.fromSql(), fromSql);
 }
 
 void tst_QDjangoCompiler::orderLimit()
