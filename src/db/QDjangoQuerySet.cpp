@@ -105,12 +105,13 @@ QString QDjangoCompiler::fromSql()
 {
     QString from = driver->escapeIdentifier(baseModel.table(), QSqlDriver::TableName);
     foreach (const QString &name, modelRefs.keys()) {
+        const QPair<QString, QDjangoMetaModel> &ref = modelRefs[name];
         from += QString::fromLatin1(" %1 %2 %3 ON %4.%5 = %6")
             .arg(baseModel.localField(name.toLatin1() + QByteArray("_id")).isNullable() ? "LEFT OUTER JOIN" : "INNER JOIN")
-            .arg(driver->escapeIdentifier(modelRefs[name].second.table(), QSqlDriver::TableName))
-            .arg(modelRefs[name].first)
-            .arg(modelRefs[name].first)
-            .arg(driver->escapeIdentifier(modelRefs[name].second.localField("pk").column(), QSqlDriver::FieldName))
+            .arg(driver->escapeIdentifier(ref.second.table(), QSqlDriver::TableName))
+            .arg(ref.first)
+            .arg(ref.first)
+            .arg(driver->escapeIdentifier(ref.second.localField("pk").column(), QSqlDriver::FieldName))
             .arg(reverseModelRefs.contains(name) ? databaseColumn(reverseModelRefs[name]) :
                                                    databaseColumn(name + QLatin1String("_id")));
     }
