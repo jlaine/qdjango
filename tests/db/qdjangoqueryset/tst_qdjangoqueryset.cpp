@@ -55,6 +55,7 @@ private slots:
     void countQuery();
     void deleteQuery();
     void insertQuery();
+    void selectQuery();
     void updateQuery();
     void cleanupTestCase();
 
@@ -105,6 +106,32 @@ void tst_QDjangoQuerySetPrivate::insertQuery()
     QCOMPARE(query.boundValue(0), QVariant("abc"));
 }
 
+void tst_QDjangoQuerySetPrivate::selectQuery()
+{
+    QVariantMap data;
+    data.insert("foo", "abc");
+
+    {
+        QDjangoQuerySetPrivate qs("Object");
+        qs.addFilter(QDjangoWhere("pk", QDjangoWhere::Equals, 1));
+        QDjangoQuery query = qs.selectQuery();
+
+        QCOMPARE(normalizeSql(QDjango::database(), query.lastQuery()), QLatin1String("SELECT \"foo_table\".\"id\", \"foo_table\".\"foo\", \"foo_table\".\"bar_column\" FROM \"foo_table\" WHERE \"foo_table\".\"id\" = ?"));
+        QCOMPARE(query.boundValues().size(), 1);
+        QCOMPARE(query.boundValue(0), QVariant(1));
+    }
+
+    {
+        QDjangoQuerySetPrivate qs("Object");
+        qs.addFilter(QDjangoWhere("bar", QDjangoWhere::Equals, 3));
+        QDjangoQuery query = qs.selectQuery();
+
+        QCOMPARE(normalizeSql(QDjango::database(), query.lastQuery()), QLatin1String("SELECT \"foo_table\".\"id\", \"foo_table\".\"foo\", \"foo_table\".\"bar_column\" FROM \"foo_table\" WHERE \"foo_table\".\"bar_column\" = ?"));
+        QCOMPARE(query.boundValues().size(), 1);
+        QCOMPARE(query.boundValue(0), QVariant(3));
+    }
+}
+
 void tst_QDjangoQuerySetPrivate::updateQuery()
 {
     QVariantMap data;
@@ -127,6 +154,7 @@ void tst_QDjangoQuerySetPrivate::updateQuery()
         QDjangoQuery query = qs.updateQuery(data);
 
         QCOMPARE(normalizeSql(QDjango::database(), query.lastQuery()), QLatin1String("UPDATE \"foo_table\" SET \"foo\" = ? WHERE \"foo_table\".\"bar_column\" = ?"));
+        QCOMPARE(query.boundValues().size(), 2);
         QCOMPARE(query.boundValue(0), QVariant("abc"));
         QCOMPARE(query.boundValue(1), QVariant(3));
     }
