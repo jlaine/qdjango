@@ -82,6 +82,7 @@ public:
     QObject *foreignKey(const QObject *model, const char *name) const;
     void setForeignKey(QObject *model, const char *name, QObject *value) const;
 
+    QString className() const;
     QDjangoMetaField localField(const char *name) const;
     QList<QDjangoMetaField> localFields() const;
     QMap<QByteArray, QByteArray> foreignFields() const;

@@ -231,6 +231,7 @@ static bool stringToBool(const QString &value)
 class QDjangoMetaModelPrivate : public QSharedData
 {
 public:
+    QString className;
     QList<QDjangoMetaField> localFields;
     QMap<QByteArray, QByteArray> foreignFields;
     QByteArray primaryKey;
@@ -247,6 +248,7 @@ QDjangoMetaModel::QDjangoMetaModel(const QMetaObject *meta)
     if (!meta)
         return;
 
+    d->className = meta->className();
     d->table = QString::fromLatin1(meta->className()).toLower();
 
     // parse table options
@@ -392,6 +394,11 @@ QDjangoMetaModel::QDjangoMetaModel(const QDjangoMetaModel &other)
 QDjangoMetaModel::~QDjangoMetaModel()
 {
 }
+
+QString QDjangoMetaModel::className() const
+{
+    return d->className;
+};
 
 /*!
     Determine whether this is a valid model, or just default constructed

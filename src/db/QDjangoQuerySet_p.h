@@ -47,6 +47,13 @@ public:
     bool nullable;
 };
 
+class QDJANGO_EXPORT QDjangoReverseReference
+{
+public:
+    QString leftHandKey;
+    QString rightHandKey;
+};
+
 /** \internal
  */
 class QDJANGO_EXPORT QDjangoCompiler
@@ -65,7 +72,7 @@ private:
     QSqlDriver *driver;
     QDjangoMetaModel baseModel;
     QMap<QString, QDjangoModelReference> modelRefs;
-    QMap<QString, QString> reverseModelRefs;
+    QMap<QString, QDjangoReverseReference> reverseModelRefs;
     QMap<QString, QString> fieldColumnCache;
 };
 
