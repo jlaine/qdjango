@@ -447,6 +447,9 @@ void tst_QDjangoWhere::toString()
 
     testQuery = queryId || queryUsername;
     QCOMPARE(testQuery.toString(), QLatin1String("QDjangoWhere(key=\"id\", operation=\"Equals\", value=\"1\", negate=false) || QDjangoWhere(key=\"username\", operation=\"Equals\", value=\"foo\", negate=false)"));
+
+    testQuery = queryId && queryUsername;
+    QCOMPARE(testQuery.toString(), QLatin1String("QDjangoWhere(key=\"id\", operation=\"Equals\", value=\"1\", negate=false) && QDjangoWhere(key=\"username\", operation=\"Equals\", value=\"foo\", negate=false)"));
 }
 
 QTEST_MAIN(tst_QDjangoWhere)
