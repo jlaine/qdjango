@@ -1,11 +1,7 @@
 language: cpp
 env:
-  - QT_SELECT=qt4 QDJANGO_DB_DRIVER=QSQLITE
-  - QT_SELECT=qt4 QDJANGO_DB_DRIVER=QMYSQL QDJANGO_DB_NAME=qdjango_test QDJANGO_DB_USER=travis
-  - QT_SELECT=qt4 QDJANGO_DB_DRIVER=QPSQL QDJANGO_DB_NAME=qdjango_test QDJANGO_DB_USER=postgres
-  - QT_SELECT=qt5 QDJANGO_DB_DRIVER=QSQLITE
-  - QT_SELECT=qt5 QDJANGO_DB_DRIVER=QMYSQL QDJANGO_DB_NAME=qdjango_test QDJANGO_DB_USER=travis
-  - QT_SELECT=qt5 QDJANGO_DB_DRIVER=QPSQL QDJANGO_DB_NAME=qdjango_test QDJANGO_DB_USER=postgres
+  - QT_SELECT=qt4
+  - QT_SELECT=qt5
 install:
   - tests/install-build-depends
 before_script:
@@ -14,4 +10,6 @@ before_script:
 script:
   - qmake
   - make
-  - tests/run.py
+  - QDJANGO_DB_DRIVER=QSQLITE tests/run.py
+  - QDJANGO_DB_DRIVER=QMYSQL QDJANGO_DB_NAME=qdjango_test QDJANGO_DB_USER=travis tests/run.py
+  - QDJANGO_DB_DRIVER=QPSQL QDJANGO_DB_NAME=qdjango_test QDJANGO_DB_USER=postgres tests/run.py
