@@ -16,5 +16,7 @@ rm -f $TRACEFILE
 lcov --capture --directory src/db -o $TRACEFILE --no-external
 lcov --remove $TRACEFILE \*moc_\* -o $TRACEFILE.clean
 mv $TRACEFILE.clean $TRACEFILE
+
+rm -rf coverage
 genhtml -o coverage $TRACEFILE
 echo "ok"
