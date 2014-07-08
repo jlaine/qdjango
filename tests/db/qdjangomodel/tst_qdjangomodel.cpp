@@ -127,6 +127,8 @@ void tst_QDjangoModel::initTestCase()
  */
 void tst_QDjangoModel::init()
 {
+    QDjango::database().transaction();
+
     Author author1;
     author1.setName("First author");
     QCOMPARE(author1.save(), true);
@@ -284,9 +286,7 @@ void tst_QDjangoModel::selectRelated_null()
  */
 void tst_QDjangoModel::cleanup()
 {
-    QCOMPARE(QDjangoQuerySet<BookWithNullAuthor>().remove(), true);
-    QCOMPARE(QDjangoQuerySet<Book>().remove(), true);
-    QCOMPARE(QDjangoQuerySet<Author>().remove(), true);
+    QDjango::database().rollback();
 }
 
 /** Drop database tables after running tests.
