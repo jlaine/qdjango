@@ -47,6 +47,7 @@ private slots:
     void andWhere();
     void orWhere();
     void complexWhere();
+    void toString();
 };
 
 void tst_QDjangoWhere::initTestCase()
@@ -432,6 +433,20 @@ void tst_QDjangoWhere::complexWhere()
 
     testQuery = queryId || queryUsername || queryPassword;
     CHECKWHERE(testQuery, QLatin1String("id = ? OR username = ? OR password = ?"), QVariantList() << 1 << "foouser" << "foopass");
+}
+
+void tst_QDjangoWhere::toString()
+{
+    QDjangoWhere testQuery;
+
+    const QDjangoWhere queryId("id", QDjangoWhere::Equals, 1);
+    const QDjangoWhere queryUsername("username", QDjangoWhere::Equals, "foo");
+
+    testQuery = queryId;
+    QCOMPARE(testQuery.toString(), QLatin1String("QDjangoWhere(key=\"id\", operation=\"Equals\", value=\"1\", negate=false)"));
+
+    testQuery = queryId || queryUsername;
+    QCOMPARE(testQuery.toString(), QLatin1String("QDjangoWhere(key=\"id\", operation=\"Equals\", value=\"1\", negate=false) || QDjangoWhere(key=\"username\", operation=\"Equals\", value=\"foo\", negate=false)"));
 }
 
 QTEST_MAIN(tst_QDjangoWhere)

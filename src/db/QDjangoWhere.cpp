@@ -389,6 +389,27 @@ QString QDjangoWhere::sql(const QSqlDatabase &db) const
     return QString();
 }
 
+QString QDjangoWhere::toString() const
+{
+    if (d->combine == QDjangoWherePrivate::NoCombine) {
+        return QLatin1String("QDjangoWhere(")
+                  + "key=\"" + d->key + "\""
+                  + ", operation=\"" + QDjangoWherePrivate::operationToString(d->operation) + "\""
+                  + ", value=\"" + d->data.toString() + "\""
+                  + ", negate=" + (d->negate ? "true":"false")
+                  + ")";
+    } else {
+        QStringList bits;
+        foreach (const QDjangoWhere &childWhere, d->children) {
+            bits.append(childWhere.toString());
+        }
+        if (d->combine == QDjangoWherePrivate::OrCombine) {
+            return bits.join(" || ");
+        } else {
+            return bits.join(" && ");
+        }
+    }
+}
 QString QDjangoWherePrivate::operationToString(QDjangoWhere::Operation operation)
 {
     switch (operation) {
@@ -426,29 +447,3 @@ QString QDjangoWherePrivate::combineToString(QDjangoWherePrivate::Combine combin
 
     return QString();
 }
-
-QDebug operatorHelper(QDebug dbg, const QDjangoWhere &where, const int indent)
-{
-    for (int i = 0; i < indent; ++i)
-        dbg.nospace() << "\t";
-
-    dbg.nospace() << "QDjangoWhere("
-                  << "key=" << where.d->key
-                  << ", operation=" << QDjangoWherePrivate::operationToString(where.d->operation)
-                  << ", value=" << where.d->data
-                  << ", combine=" << QDjangoWherePrivate::combineToString(where.d->combine)
-                  << ", negate=" << (where.d->negate ? "true":"false")
-                  << ")" << endl;
-
-    int newIndent = indent + 1;
-    foreach (QDjangoWhere childWhere, where.d->children)
-        operatorHelper(dbg, childWhere, newIndent);
-
-    return dbg.space();
-}
-
-QDebug operator<<(QDebug dbg, const QDjangoWhere &where)
-{
-    return operatorHelper(dbg, where, 0);
-}
-

@@ -75,13 +75,11 @@ public:
     bool isAll() const;
     bool isNone() const;
     QString sql(const QSqlDatabase &db) const;
+    QString toString() const;
 
 private:
     QSharedDataPointer<QDjangoWherePrivate> d;
     friend class QDjangoCompiler;
-    friend QDebug operatorHelper(QDebug dbg, const QDjangoWhere &where, int indent);
 };
-
-QDJANGO_EXPORT QDebug operator<<(QDebug, const QDjangoWhere &where);
 
 #endif
