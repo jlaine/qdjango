@@ -141,6 +141,7 @@ private slots:
     void initTestCase();
     void fieldNames_data();
     void fieldNames();
+    void orderLimit_data();
     void orderLimit();
     void resolve();
 };
@@ -391,45 +392,46 @@ void tst_QDjangoCompiler::fieldNames()
     QCOMPARE(normalizeSql(db, compiler.fromSql()), fromSql);
 }
 
+void tst_QDjangoCompiler::orderLimit_data()
+{
+    QTest::addColumn<QByteArray>("modelName");
+    QTest::addColumn<QStringList>("orderBy");
+    QTest::addColumn<QString>("orderSql");
+    QTest::addColumn<QString>("fromSql");
+
+    QTest::newRow("order ascending") << QByteArray("Owner") << QStringList("name")
+        << QString(" ORDER BY \"owner\".\"name\" ASC")
+        << QString("\"owner\"");
+
+    QTest::newRow("order ascending foreign") << QByteArray("Owner") << QStringList("item1__name")
+        << QString(" ORDER BY T0.\"name\" ASC")
+     << "\"owner\""
+        " INNER JOIN \"item\" T0 ON T0.\"id\" = \"owner\".\"item1_id\"";
+
+    QTest::newRow("order ascending foreign double") << QByteArray("Owner") << (QStringList() << "item1__name" << "item2__name")
+        << QString(" ORDER BY T0.\"name\" ASC, T1.\"name\" ASC")
+     << "\"owner\""
+        " INNER JOIN \"item\" T0 ON T0.\"id\" = \"owner\".\"item1_id\""
+        " INNER JOIN \"item\" T1 ON T1.\"id\" = \"owner\".\"item2_id\"";
+
+    QTest::newRow("order descending") << QByteArray("Owner") << QStringList("-name")
+        << QString(" ORDER BY \"owner\".\"name\" DESC")
+        << QString("\"owner\"");
+}
+
 void tst_QDjangoCompiler::orderLimit()
 {
     QSqlDatabase db = QDjango::database();
 
-    QDjangoCompiler compiler("Owner", db);
-    QCOMPARE(compiler.orderLimitSql(QStringList("name"), 0, 0), QString(" ORDER BY %1.%2 ASC").arg(
-        escapeTable(db, "owner"),
-        escapeField(db, "name")));
-    QCOMPARE(compiler.fromSql(), escapeTable(db, "owner"));
+    QFETCH(QByteArray, modelName);
+    QFETCH(QStringList, orderBy);
+    QFETCH(QString, orderSql);
+    QFETCH(QString, fromSql);
 
-    compiler = QDjangoCompiler("Owner", db);
-    QCOMPARE(compiler.orderLimitSql(QStringList("-name"), 0, 0), QString(" ORDER BY %1.%2 DESC").arg(
-        escapeTable(db, "owner"),
-        escapeField(db, "name")));
-    QCOMPARE(compiler.fromSql(), escapeTable(db, "owner"));
+    QDjangoCompiler compiler(modelName, db);
 
-    compiler = QDjangoCompiler("Owner", db);
-    QCOMPARE(compiler.orderLimitSql(QStringList("item1__name"), 0, 0), QString(" ORDER BY T0.%1 ASC").arg(
-        escapeField(db, "name")));
-    QCOMPARE(compiler.fromSql(), QString("%1 INNER JOIN %2 T0 ON T0.%3 = %4.%5").arg(
-        escapeTable(db, "owner"),
-        escapeTable(db, "item"),
-        escapeField(db, "id"),
-        escapeTable(db, "owner"),
-        escapeField(db, "item1_id")));
-    compiler = QDjangoCompiler("Owner", db);
-    QCOMPARE(compiler.orderLimitSql(QStringList() << "item1__name" << "item2__name", 0, 0), QString(" ORDER BY T0.%1 ASC, T1.%2 ASC").arg(
-        escapeField(db, "name"),
-        escapeField(db, "name")));
-    QCOMPARE(compiler.fromSql(), QString("%1 INNER JOIN %2 T0 ON T0.%3 = %4.%5 INNER JOIN %6 T1 ON T1.%7 = %8.%9").arg(
-        escapeTable(db, "owner"),
-        escapeTable(db, "item"),
-        escapeField(db, "id"),
-        escapeTable(db, "owner"),
-        escapeField(db, "item1_id"),
-        escapeTable(db, "item"),
-        escapeField(db, "id"),
-        escapeTable(db, "owner"),
-        escapeField(db, "item2_id")));
+    QCOMPARE(normalizeSql(db, compiler.orderLimitSql(orderBy, 0, 0)), orderSql);
+    QCOMPARE(normalizeSql(db, compiler.fromSql()), fromSql);
 }
 
 void tst_QDjangoCompiler::resolve()
