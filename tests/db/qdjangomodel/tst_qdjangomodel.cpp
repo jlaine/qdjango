@@ -109,6 +109,7 @@ private slots:
     void filterRelatedReverse_null();
     void selectRelated();
     void selectRelated_null();
+    void toString();
     void cleanup();
     void cleanupTestCase();
 };
@@ -118,16 +119,15 @@ private slots:
 void tst_QDjangoModel::initTestCase()
 {
     QVERIFY(initialiseDatabase());
-    QCOMPARE(QDjango::registerModel<Author>().createTable(), true);
-    QCOMPARE(QDjango::registerModel<Book>().createTable(), true);
-    QCOMPARE(QDjango::registerModel<BookWithNullAuthor>().createTable(), true);
 }
 
 /** Load fixtures.
  */
 void tst_QDjangoModel::init()
 {
-    QDjango::database().transaction();
+    QCOMPARE(QDjango::registerModel<Author>().createTable(), true);
+    QCOMPARE(QDjango::registerModel<Book>().createTable(), true);
+    QCOMPARE(QDjango::registerModel<BookWithNullAuthor>().createTable(), true);
 
     Author author1;
     author1.setName("First author");
@@ -282,20 +282,28 @@ void tst_QDjangoModel::selectRelated_null()
     delete book;
 }
 
+void tst_QDjangoModel::toString()
+{
+    QDjangoQuerySet<Book> qs;
+    Book *book = qs.get(QDjangoWhere("title", QDjangoWhere::Equals, "Some book"));
+    QVERIFY(book != 0);
+    QCOMPARE(book->toString(), QLatin1String("Book(id=1)"));
+    delete book;
+}
+
 /** Clear database tables after each test.
  */
 void tst_QDjangoModel::cleanup()
 {
-    QDjango::database().rollback();
+    QCOMPARE(QDjango::registerModel<BookWithNullAuthor>().dropTable(), true);
+    QCOMPARE(QDjango::registerModel<Book>().dropTable(), true);
+    QCOMPARE(QDjango::registerModel<Author>().dropTable(), true);
 }
 
 /** Drop database tables after running tests.
  */
 void tst_QDjangoModel::cleanupTestCase()
 {
-    QCOMPARE(QDjango::registerModel<BookWithNullAuthor>().dropTable(), true);
-    QCOMPARE(QDjango::registerModel<Book>().dropTable(), true);
-    QCOMPARE(QDjango::registerModel<Author>().dropTable(), true);
 }
 
 QTEST_MAIN(tst_QDjangoModel)
