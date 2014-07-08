@@ -43,44 +43,34 @@ class QDjangoFastCgiClient : public QObject
     Q_OBJECT
 
 public:
-    QDjangoFastCgiClient(QLocalSocket *socket);
-    QDjangoFastCgiClient(QTcpSocket *socket);
+    QDjangoFastCgiClient(QIODevice *socket);
     void get(const QString &path);
 
 private:
-    void write(const QByteArray &data);
-
-    QLocalSocket *m_localSocket;
-    QTcpSocket *m_tcpSocket;
+    QIODevice *m_device;
 };
 
-QDjangoFastCgiClient::QDjangoFastCgiClient(QLocalSocket *socket)
-    : m_localSocket(socket)
-    , m_tcpSocket(0)
-{
-};
-
-QDjangoFastCgiClient::QDjangoFastCgiClient(QTcpSocket *socket)
-    : m_localSocket(0)
-    , m_tcpSocket(socket)
+QDjangoFastCgiClient::QDjangoFastCgiClient(QIODevice *socket)
+    : m_device(socket)
 {
 };
 
 void QDjangoFastCgiClient::get(const QString &path)
 {
-    QByteArray headerBuffer;
-    headerBuffer.resize(8);
+    QByteArray headerBuffer(8, '\0');
     FCGI_Header *header = (FCGI_Header*)headerBuffer.data();
- 
+
     QByteArray ba;
 
     // BEGIN REQUEST
     ba = QByteArray("\x01\x00\x00\x00\x00\x00\x00\x00", 8);
     header->version = 1;
     header->requestIdB0 = 1;
+    header->requestIdB1 = 0;
     header->type = 0x01;
     header->contentLengthB0 = ba.size();
-    write(headerBuffer + ba);
+    header->contentLengthB1 = 0;
+    m_device->write(headerBuffer + ba);
 
     QMap<QByteArray, QByteArray> params;
     params["PATH_INFO"] = path.toUtf8();
@@ -98,20 +88,12 @@ void QDjangoFastCgiClient::get(const QString &path)
     // FAST CGI PARAMS
     header->type = 0x04;
     header->contentLengthB0 = ba.size();
-    write(headerBuffer + ba);
+    m_device->write(headerBuffer + ba);
 
     // STDIN
     header->type = 0x05;
     header->contentLengthB0 = 0;
-    write(headerBuffer);
-}
-
-void QDjangoFastCgiClient::write(const QByteArray &data)
-{
-    if (m_tcpSocket)
-        m_tcpSocket->write(data);
-    else if (m_localSocket)
-        m_localSocket->write(data);
+    m_device->write(headerBuffer);
 }
 
 /** Test QDjangoFastCgiServer class.
@@ -159,6 +141,10 @@ void tst_QDjangoFastCgiServer::testLocal()
 
     QCOMPARE(socket.state(), QLocalSocket::ConnectedState);
     client.get("/");
+
+    QEventLoop loop;
+    QObject::connect(&socket, SIGNAL(readyRead()), &loop, SLOT(quit()));
+    loop.exec();
 }
 
 void tst_QDjangoFastCgiServer::testTcp()
