@@ -442,6 +442,13 @@ void tst_QDjangoCompiler::resolve()
         " INNER JOIN \"item\" T0 ON T0.\"id\" = \"owner\".\"item1_id\""));
 
     compiler = QDjangoCompiler("Owner", db);
+    where = QDjangoWhere("top__name", QDjangoWhere::Equals, "foo");
+    compiler.resolve(where);
+    CHECKWHERE(where, QLatin1String("T0.\"name\" = ?"), QVariantList() << "foo");
+    QCOMPARE(normalizeSql(db, compiler.fromSql()), QString("\"owner\""
+        " INNER JOIN \"top\" T0 ON T0.\"owner_id\" = \"owner\".\"id\""));
+
+    compiler = QDjangoCompiler("Owner", db);
     where = QDjangoWhere("item1__name", QDjangoWhere::Equals, "foo")
          && QDjangoWhere("item2__name", QDjangoWhere::Equals, "bar");
     compiler.resolve(where);
