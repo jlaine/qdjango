@@ -300,6 +300,9 @@ void tst_QDjangoCompiler::fieldNames_data()
     QTest::addColumn<QByteArray>("modelName");
     QTest::addColumn<bool>("recursive");
     QTest::addColumn<QStringList>("fieldNames");
+    QTest::addColumn<QDjangoWhere>("where");
+    QTest::addColumn<QString>("whereSql");
+    QTest::addColumn<QVariantList>("whereValues");
     QTest::addColumn<QStringList>("orderBy");
     QTest::addColumn<QString>("orderSql");
     QTest::addColumn<QString>("fromSql");
@@ -309,9 +312,17 @@ void tst_QDjangoCompiler::fieldNames_data()
         << "\"owner\".\"name\""
         << "\"owner\".\"item1_id\""
         << "\"owner\".\"item2_id\"")
-    << QStringList()
-    << ""
-    << "\"owner\"";
+
+        // filtering
+        << QDjangoWhere()
+        << ""
+        << QVariantList()
+
+        // ordering
+        << QStringList()
+        << ""
+
+        << "\"owner\"";
 
     QTest::newRow("recurse one level") << QByteArray("Owner") << true << (QStringList()
         << "\"owner\".\"id\""
@@ -322,11 +333,19 @@ void tst_QDjangoCompiler::fieldNames_data()
         << "T0.\"name\""
         << "T1.\"id\""
         << "T1.\"name\"")
-    << QStringList()
-    << ""
-    << "\"owner\""
-       " INNER JOIN \"item\" T0 ON T0.\"id\" = \"owner\".\"item1_id\""
-       " INNER JOIN \"item\" T1 ON T1.\"id\" = \"owner\".\"item2_id\"";
+
+        // filtering
+        << QDjangoWhere()
+        << ""
+        << QVariantList()
+
+        // ordering
+        << QStringList()
+        << ""
+
+        << "\"owner\""
+           " INNER JOIN \"item\" T0 ON T0.\"id\" = \"owner\".\"item1_id\""
+           " INNER JOIN \"item\" T1 ON T1.\"id\" = \"owner\".\"item2_id\"";
 
     QTest::newRow("recurse with nullable") << QByteArray("OwnerWithNullableItem") << true << (QStringList()
         << "\"ownerwithnullableitem\".\"id\""
@@ -337,11 +356,19 @@ void tst_QDjangoCompiler::fieldNames_data()
         << "T0.\"name\""
         << "T1.\"id\""
         << "T1.\"name\"")
-    << QStringList()
-    << ""
-    << "\"ownerwithnullableitem\""
-       " INNER JOIN \"item\" T0 ON T0.\"id\" = \"ownerwithnullableitem\".\"item1_id\""
-       " LEFT OUTER JOIN \"item\" T1 ON T1.\"id\" = \"ownerwithnullableitem\".\"item2_id\"";
+
+        // filtering
+        << QDjangoWhere()
+        << ""
+        << QVariantList()
+
+        // ordering
+        << QStringList()
+        << ""
+
+        << "\"ownerwithnullableitem\""
+           " INNER JOIN \"item\" T0 ON T0.\"id\" = \"ownerwithnullableitem\".\"item1_id\""
+           " LEFT OUTER JOIN \"item\" T1 ON T1.\"id\" = \"ownerwithnullableitem\".\"item2_id\"";
 
     QTest::newRow("recurse two levels") << QByteArray("Top") << true << (QStringList()
         << "\"top\".\"id\""
@@ -355,12 +382,20 @@ void tst_QDjangoCompiler::fieldNames_data()
         << "T1.\"name\""
         << "T2.\"id\""
         << "T2.\"name\"")
-    << QStringList()
-    << ""
-    << "\"top\""
-       " INNER JOIN \"owner\" T0 ON T0.\"id\" = \"top\".\"owner_id\""
-       " INNER JOIN \"item\" T1 ON T1.\"id\" = T0.\"item1_id\""
-       " INNER JOIN \"item\" T2 ON T2.\"id\" = T0.\"item2_id\"";
+
+        // filtering
+        << QDjangoWhere()
+        << ""
+        << QVariantList()
+
+        // ordering
+        << QStringList()
+        << ""
+
+        << "\"top\""
+           " INNER JOIN \"owner\" T0 ON T0.\"id\" = \"top\".\"owner_id\""
+           " INNER JOIN \"item\" T1 ON T1.\"id\" = T0.\"item1_id\""
+           " INNER JOIN \"item\" T2 ON T2.\"id\" = T0.\"item2_id\"";
 
     QTest::newRow("recurse two levels with nullable item") << QByteArray("TopWithNullableItem") << true << (QStringList()
         << "\"topwithnullableitem\".\"id\""
@@ -374,22 +409,37 @@ void tst_QDjangoCompiler::fieldNames_data()
         << "T1.\"name\""
         << "T2.\"id\""
         << "T2.\"name\"")
-    << QStringList()
-    << ""
-    << "\"topwithnullableitem\""
-       " INNER JOIN \"ownerwithnullableitem\" T0 ON T0.\"id\" = \"topwithnullableitem\".\"owner_id\""
-       " INNER JOIN \"item\" T1 ON T1.\"id\" = T0.\"item1_id\""
-       " LEFT OUTER JOIN \"item\" T2 ON T2.\"id\" = T0.\"item2_id\"";
 
-    // ordered
+        // filtering
+        << QDjangoWhere()
+        << ""
+        << QVariantList()
+
+        // ordering
+        << QStringList()
+        << ""
+
+        << "\"topwithnullableitem\""
+           " INNER JOIN \"ownerwithnullableitem\" T0 ON T0.\"id\" = \"topwithnullableitem\".\"owner_id\""
+           " INNER JOIN \"item\" T1 ON T1.\"id\" = T0.\"item1_id\""
+           " LEFT OUTER JOIN \"item\" T2 ON T2.\"id\" = T0.\"item2_id\"";
+
     QTest::newRow("order ascending") << QByteArray("Owner") << false
         << (QStringList()
             << "\"owner\".\"id\""
             << "\"owner\".\"name\""
             << "\"owner\".\"item1_id\""
             << "\"owner\".\"item2_id\"")
+
+        // filtering
+        << QDjangoWhere()
+        << ""
+        << QVariantList()
+
+        // ordering
         << QStringList("name")
         << QString(" ORDER BY \"owner\".\"name\" ASC")
+
         << QString("\"owner\"");
 
     QTest::newRow("order ascending foreign") << QByteArray("Owner") << false
@@ -398,8 +448,16 @@ void tst_QDjangoCompiler::fieldNames_data()
             << "\"owner\".\"name\""
             << "\"owner\".\"item1_id\""
             << "\"owner\".\"item2_id\"")
+
+        // filtering
+        << QDjangoWhere()
+        << ""
+        << QVariantList()
+
+        // ordering
         << QStringList("item1__name")
         << QString(" ORDER BY T0.\"name\" ASC")
+
         << "\"owner\""
            " INNER JOIN \"item\" T0 ON T0.\"id\" = \"owner\".\"item1_id\"";
 
@@ -409,6 +467,13 @@ void tst_QDjangoCompiler::fieldNames_data()
             << "\"owner\".\"name\""
             << "\"owner\".\"item1_id\""
             << "\"owner\".\"item2_id\"")
+
+        // filtering
+        << QDjangoWhere()
+        << ""
+        << QVariantList()
+
+        // ordering
         << (QStringList() << "item1__name" << "item2__name")
         << QString(" ORDER BY T0.\"name\" ASC, T1.\"name\" ASC")
         << "\"owner\""
@@ -421,8 +486,16 @@ void tst_QDjangoCompiler::fieldNames_data()
             << "\"owner\".\"name\""
             << "\"owner\".\"item1_id\""
             << "\"owner\".\"item2_id\"")
+
+        // filtering
+        << QDjangoWhere()
+        << ""
+        << QVariantList()
+
+        // ordering
         << QStringList("-name")
         << QString(" ORDER BY \"owner\".\"name\" DESC")
+
         << QString("\"owner\"");
 }
 
@@ -431,6 +504,9 @@ void tst_QDjangoCompiler::fieldNames()
     QFETCH(QByteArray, modelName);
     QFETCH(bool, recursive);
     QFETCH(QStringList, fieldNames);
+    QFETCH(QDjangoWhere, where);
+    QFETCH(QString, whereSql);
+    QFETCH(QVariantList, whereValues);
     QFETCH(QStringList, orderBy);
     QFETCH(QString, orderSql);
     QFETCH(QString, fromSql);
@@ -438,6 +514,9 @@ void tst_QDjangoCompiler::fieldNames()
     QSqlDatabase db = QDjango::database();
 
     QDjangoCompiler compiler(modelName, db);
+    compiler.resolve(where);
+    CHECKWHERE(where, whereSql, whereValues);
+
     QCOMPARE(normalizeNames(db, compiler.fieldNames(recursive)), fieldNames);
     QCOMPARE(normalizeSql(db, compiler.orderLimitSql(orderBy, 0, 0)), orderSql);
     QCOMPARE(normalizeSql(db, compiler.fromSql()), fromSql);
@@ -451,6 +530,8 @@ void tst_QDjangoCompiler::resolve_data()
     QTest::addColumn<QDjangoWhere>("where");
     QTest::addColumn<QString>("whereSql");
     QTest::addColumn<QVariantList>("whereValues");
+    QTest::addColumn<QStringList>("orderBy");
+    QTest::addColumn<QString>("orderSql");
     QTest::addColumn<QString>("fromSql");
 
     QTest::newRow("local field") << QByteArray("Owner") << false
@@ -459,9 +540,16 @@ void tst_QDjangoCompiler::resolve_data()
             << "\"owner\".\"name\""
             << "\"owner\".\"item1_id\""
             << "\"owner\".\"item2_id\"")
+
+        // filtering
         << QDjangoWhere("name", QDjangoWhere::Equals, "foo")
         << "\"owner\".\"name\" = ?"
         << (QVariantList() << "foo")
+
+        // ordering
+        << QStringList()
+        << ""
+
         << "\"owner\"";
 
     QTest::newRow("foreign field") << QByteArray("Owner") << false
@@ -470,9 +558,16 @@ void tst_QDjangoCompiler::resolve_data()
             << "\"owner\".\"name\""
             << "\"owner\".\"item1_id\""
             << "\"owner\".\"item2_id\"")
+
+        // filtering
         << QDjangoWhere("item1__name", QDjangoWhere::Equals, "foo")
         << "T0.\"name\" = ?"
         << (QVariantList() << "foo")
+
+        // ordering
+        << QStringList()
+        << ""
+
         << "\"owner\""
            " INNER JOIN \"item\" T0 ON T0.\"id\" = \"owner\".\"item1_id\"";
 
@@ -482,9 +577,16 @@ void tst_QDjangoCompiler::resolve_data()
             << "\"owner\".\"name\""
             << "\"owner\".\"item1_id\""
             << "\"owner\".\"item2_id\"")
+
+        // filtering
         << QDjangoWhere("top__name", QDjangoWhere::Equals, "foo")
         << "T0.\"name\" = ?"
         << (QVariantList() << "foo")
+
+        // ordering
+        << QStringList()
+        << ""
+
         << "\"owner\""
            " INNER JOIN \"top\" T0 ON T0.\"owner_id\" = \"owner\".\"id\"";
     
@@ -494,10 +596,17 @@ void tst_QDjangoCompiler::resolve_data()
             << "\"owner\".\"name\""
             << "\"owner\".\"item1_id\""
             << "\"owner\".\"item2_id\"")
+
+        // filtering
         << (QDjangoWhere("item1__name", QDjangoWhere::Equals, "foo")
            && QDjangoWhere("item2__name", QDjangoWhere::Equals, "bar"))
         << "T0.\"name\" = ? AND T1.\"name\" = ?"
         << (QVariantList() << "foo" << "bar")
+
+        // ordering
+        << QStringList()
+        << ""
+
         << "\"owner\""
            " INNER JOIN \"item\" T0 ON T0.\"id\" = \"owner\".\"item1_id\""
            " INNER JOIN \"item\" T1 ON T1.\"id\" = \"owner\".\"item2_id\"";
@@ -513,12 +622,16 @@ void tst_QDjangoCompiler::resolve()
     QFETCH(QDjangoWhere, where);
     QFETCH(QString, whereSql);
     QFETCH(QVariantList, whereValues);
+    QFETCH(QStringList, orderBy);
+    QFETCH(QString, orderSql);
     QFETCH(QString, fromSql);
 
-    QDjangoCompiler compiler("Owner", db);
+    QDjangoCompiler compiler(modelName, db);
     compiler.resolve(where);
     CHECKWHERE(where, whereSql, whereValues);
+
     QCOMPARE(normalizeNames(db, compiler.fieldNames(recursive)), fieldNames);
+    QCOMPARE(normalizeSql(db, compiler.orderLimitSql(orderBy, 0, 0)), orderSql);
     QCOMPARE(normalizeSql(db, compiler.fromSql()), fromSql);
 }
 
