@@ -13,7 +13,7 @@ QDJANGO_DB_DRIVER=QPSQL QDJANGO_DB_NAME=qdjango_test QDJANGO_DB_USER=postgres te
 # generate coverage report
 TRACEFILE=coverage.info
 rm -f $TRACEFILE
-lcov --capture --directory src/db -o $TRACEFILE --no-external
+lcov --capture --directory src -o $TRACEFILE --no-external
 lcov --remove $TRACEFILE \*moc_\* -o $TRACEFILE.clean
 mv $TRACEFILE.clean $TRACEFILE
 
