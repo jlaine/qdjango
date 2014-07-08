@@ -8,7 +8,7 @@ before_script:
   - mysql -e 'create database qdjango_test'
   - psql -c 'create database qdjango_test' -U postgres
 script:
-  - qmake
+  - qmake QDJANGO_PROFILE=true
   - make
   - QDJANGO_DB_DRIVER=QSQLITE tests/run.py
   - QDJANGO_DB_DRIVER=QMYSQL QDJANGO_DB_NAME=qdjango_test QDJANGO_DB_USER=travis tests/run.py

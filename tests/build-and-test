@@ -1,0 +1,20 @@
+#!/bin/sh
+set -e
+
+# compile
+qmake QDJANGO_PROFILE=true
+make
+
+# run tests
+QDJANGO_DB_DRIVER=QSQLITE tests/run.py
+QDJANGO_DB_DRIVER=QMYSQL QDJANGO_DB_NAME=qdjango_test QDJANGO_DB_USER=travis tests/run.py
+QDJANGO_DB_DRIVER=QPSQL QDJANGO_DB_NAME=qdjango_test QDJANGO_DB_USER=postgres tests/run.py
+
+# generate coverage report
+TRACEFILE=coverage.info
+rm -f $TRACEFILE
+lcov --capture --directory src/db -o $TRACEFILE --no-external
+lcov --remove $TRACEFILE \*moc_\* -o $TRACEFILE.clean
+mv $TRACEFILE.clean $TRACEFILE
+genhtml -o coverage $TRACEFILE
+echo "ok"
