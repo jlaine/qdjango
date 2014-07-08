@@ -260,6 +260,9 @@ void QDjangoFastCgiConnection::_q_readyRead()
                 const QByteArray value(p, valueLength);
                 p += valueLength;
 
+#ifdef QDJANGO_DEBUG_FCGI
+                qDebug() << name << ":" << value;
+#endif
                 if (name == "PATH_INFO") {
                     m_pendingRequest->d->path = QString::fromUtf8(value);
                 } else if (name == "REQUEST_METHOD") {
