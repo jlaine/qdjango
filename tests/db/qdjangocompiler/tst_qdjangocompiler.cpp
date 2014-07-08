@@ -23,6 +23,15 @@
 
 #include "util.h"
 
+static QStringList normalizeNames(const QSqlDatabase &db, const QStringList &rawNames)
+{
+    QStringList normalizedNames;
+    foreach (const QString &rawName, rawNames) {
+        normalizedNames << normalizeSql(db, rawName);
+    }
+    return normalizedNames;
+}
+
 class Item : public QDjangoModel
 {
     Q_OBJECT
@@ -372,13 +381,7 @@ void tst_QDjangoCompiler::fieldNames()
     QSqlDatabase db = QDjango::database();
 
     QDjangoCompiler compiler(modelName, db);
-
-    QStringList normalizedNames;
-    QStringList rawNames = compiler.fieldNames(recursive);
-    foreach (const QString &rawName, rawNames) {
-        normalizedNames << normalizeSql(db, rawName);
-    }
-    QCOMPARE(normalizedNames, fieldNames);
+    QCOMPARE(normalizeNames(db, compiler.fieldNames(recursive)), fieldNames);
     QCOMPARE(normalizeSql(db, compiler.fromSql()), fromSql);
 }
 
@@ -432,12 +435,22 @@ void tst_QDjangoCompiler::resolve()
     QDjangoWhere where("name", QDjangoWhere::Equals, "foo");
     compiler.resolve(where);
     CHECKWHERE(where, QLatin1String("\"owner\".\"name\" = ?"), QVariantList() << "foo");
+    QCOMPARE(normalizeNames(db, compiler.fieldNames(false)), (QStringList()
+        << "\"owner\".\"id\""
+        << "\"owner\".\"name\""
+        << "\"owner\".\"item1_id\""
+        << "\"owner\".\"item2_id\""));
     QCOMPARE(normalizeSql(db, compiler.fromSql()), QString("\"owner\""));
 
     compiler = QDjangoCompiler("Owner", db);
     where = QDjangoWhere("item1__name", QDjangoWhere::Equals, "foo");
     compiler.resolve(where);
     CHECKWHERE(where, QLatin1String("T0.\"name\" = ?"), QVariantList() << "foo");
+    QCOMPARE(normalizeNames(db, compiler.fieldNames(false)), (QStringList()
+        << "\"owner\".\"id\""
+        << "\"owner\".\"name\""
+        << "\"owner\".\"item1_id\""
+        << "\"owner\".\"item2_id\""));
     QCOMPARE(normalizeSql(db, compiler.fromSql()), QString("\"owner\""
         " INNER JOIN \"item\" T0 ON T0.\"id\" = \"owner\".\"item1_id\""));
 
@@ -445,6 +458,11 @@ void tst_QDjangoCompiler::resolve()
     where = QDjangoWhere("top__name", QDjangoWhere::Equals, "foo");
     compiler.resolve(where);
     CHECKWHERE(where, QLatin1String("T0.\"name\" = ?"), QVariantList() << "foo");
+    QCOMPARE(normalizeNames(db, compiler.fieldNames(false)), (QStringList()
+        << "\"owner\".\"id\""
+        << "\"owner\".\"name\""
+        << "\"owner\".\"item1_id\""
+        << "\"owner\".\"item2_id\""));
     QCOMPARE(normalizeSql(db, compiler.fromSql()), QString("\"owner\""
         " INNER JOIN \"top\" T0 ON T0.\"owner_id\" = \"owner\".\"id\""));
 
@@ -453,6 +471,11 @@ void tst_QDjangoCompiler::resolve()
          && QDjangoWhere("item2__name", QDjangoWhere::Equals, "bar");
     compiler.resolve(where);
     CHECKWHERE(where, QLatin1String("T0.\"name\" = ? AND T1.\"name\" = ?"), QVariantList() << "foo" << "bar");
+    QCOMPARE(normalizeNames(db, compiler.fieldNames(false)), (QStringList()
+        << "\"owner\".\"id\""
+        << "\"owner\".\"name\""
+        << "\"owner\".\"item1_id\""
+        << "\"owner\".\"item2_id\""));
     QCOMPARE(normalizeSql(db, compiler.fromSql()), QString("\"owner\""
         " INNER JOIN \"item\" T0 ON T0.\"id\" = \"owner\".\"item1_id\""
         " INNER JOIN \"item\" T1 ON T1.\"id\" = \"owner\".\"item2_id\""));
