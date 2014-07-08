@@ -33,26 +33,6 @@
 
 //#define QDJANGO_DEBUG_FCGI
 
-#define FCGI_HEADER_LEN  8
-
-#define FCGI_BEGIN_REQUEST       1
-#define FCGI_ABORT_REQUEST       2
-#define FCGI_END_REQUEST         3
-#define FCGI_PARAMS              4
-#define FCGI_STDIN               5
-#define FCGI_STDOUT              6
-
-typedef struct {
-    unsigned char version;
-    unsigned char type;
-    unsigned char requestIdB1;
-    unsigned char requestIdB0;
-    unsigned char contentLengthB1;
-    unsigned char contentLengthB0;
-    unsigned char paddingLength;
-    unsigned char reserved;
-} FCGI_Header;
-
 #ifdef QDJANGO_DEBUG_FCGI
 static void hDebug(FCGI_Header *header, const char *dir)
 {
