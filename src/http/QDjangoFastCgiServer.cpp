@@ -15,6 +15,7 @@
  * Lesser General Public License for more details.
  */
 
+#include <QDebug>
 #include <QLocalServer>
 #include <QLocalSocket>
 #include <QTcpServer>
@@ -53,7 +54,7 @@ typedef struct {
 } FCGI_Header;
 
 #ifdef QDJANGO_DEBUG_FCGI
-static void qDebug(FCGI_Header *header, const char *dir)
+static void hDebug(FCGI_Header *header, const char *dir)
 {
     const quint16 requestId = (header->requestIdB1 << 8) | header->requestIdB0;
     const quint16 contentLength = (header->contentLengthB1 << 8) | header->contentLengthB0;
@@ -127,7 +128,7 @@ void QDjangoFastCgiConnection::writeResponse(quint16 requestId, QDjangoHttpRespo
         memcpy(m_outputBuffer + FCGI_HEADER_LEN, ptr, contentLength);
         m_device->write(m_outputBuffer, FCGI_HEADER_LEN + contentLength);
 #ifdef QDJANGO_DEBUG_FCGI
-        qDebug(header, "sent");
+        hDebug(header, "sent");
         qDebug("[STDOUT]");
 #endif
 
@@ -146,7 +147,7 @@ void QDjangoFastCgiConnection::writeResponse(quint16 requestId, QDjangoHttpRespo
     memset(m_outputBuffer + FCGI_HEADER_LEN, 0, contentLength);
     m_device->write(m_outputBuffer, FCGI_HEADER_LEN + contentLength);
 #ifdef QDJANGO_DEBUG_FCGI
-    qDebug(header, "sent");
+    hDebug(header, "sent");
     qDebug("[END REQUEST]");
 #endif
 }
@@ -200,7 +201,7 @@ void QDjangoFastCgiConnection::_q_readyRead()
 
         // process record
 #ifdef QDJANGO_DEBUG_FCGI
-        qDebug(header, "received");
+        hDebug(header, "received");
 #endif
         const quint16 requestId = (header->requestIdB1 << 8) | header->requestIdB0;
         char *p = m_inputBuffer + FCGI_HEADER_LEN;
