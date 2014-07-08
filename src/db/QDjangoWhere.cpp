@@ -436,14 +436,3 @@ QString QDjangoWherePrivate::operationToString(QDjangoWhere::Operation operation
 
     return QString();
 }
-
-QString QDjangoWherePrivate::combineToString(QDjangoWherePrivate::Combine combine)
-{
-    switch (combine) {
-    case QDjangoWherePrivate::NoCombine: return QLatin1String("NoCombine");
-    case QDjangoWherePrivate::AndCombine: return QLatin1String("AndCombine");
-    case QDjangoWherePrivate::OrCombine: return QLatin1String("OrCombine");
-    }
-
-    return QString();
-}
