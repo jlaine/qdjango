@@ -23,16 +23,6 @@
 
 #include "util.h"
 
-static QString escapeField(const QSqlDatabase &db, const QString &name)
-{
-    return db.driver()->escapeIdentifier(name, QSqlDriver::FieldName);
-}
-
-static QString escapeTable(const QSqlDatabase &db, const QString &name)
-{
-    return db.driver()->escapeIdentifier(name, QSqlDriver::TableName);
-}
-
 class Item : public QDjangoModel
 {
     Q_OBJECT
@@ -442,34 +432,23 @@ void tst_QDjangoCompiler::resolve()
     QDjangoWhere where("name", QDjangoWhere::Equals, "foo");
     compiler.resolve(where);
     CHECKWHERE(where, QLatin1String("\"owner\".\"name\" = ?"), QVariantList() << "foo");
-    QCOMPARE(compiler.fromSql(), escapeTable(db, "owner"));
+    QCOMPARE(normalizeSql(db, compiler.fromSql()), QString("\"owner\""));
 
     compiler = QDjangoCompiler("Owner", db);
     where = QDjangoWhere("item1__name", QDjangoWhere::Equals, "foo");
     compiler.resolve(where);
     CHECKWHERE(where, QLatin1String("T0.\"name\" = ?"), QVariantList() << "foo");
-    QCOMPARE(compiler.fromSql(), QString("%1 INNER JOIN %2 T0 ON T0.%3 = %4.%5").arg(
-        escapeTable(db, "owner"),
-        escapeTable(db, "item"),
-        escapeField(db, "id"),
-        escapeTable(db, "owner"),
-        escapeField(db, "item1_id")));
+    QCOMPARE(normalizeSql(db, compiler.fromSql()), QString("\"owner\""
+        " INNER JOIN \"item\" T0 ON T0.\"id\" = \"owner\".\"item1_id\""));
 
     compiler = QDjangoCompiler("Owner", db);
     where = QDjangoWhere("item1__name", QDjangoWhere::Equals, "foo")
          && QDjangoWhere("item2__name", QDjangoWhere::Equals, "bar");
     compiler.resolve(where);
     CHECKWHERE(where, QLatin1String("T0.\"name\" = ? AND T1.\"name\" = ?"), QVariantList() << "foo" << "bar");
-    QCOMPARE(compiler.fromSql(), QString("%1 INNER JOIN %2 T0 ON T0.%3 = %4.%5 INNER JOIN %6 T1 ON T1.%7 = %8.%9").arg(
-        escapeTable(db, "owner"),
-        escapeTable(db, "item"),
-        escapeField(db, "id"),
-        escapeTable(db, "owner"),
-        escapeField(db, "item1_id"),
-        escapeTable(db, "item"),
-        escapeField(db, "id"),
-        escapeTable(db, "owner"),
-        escapeField(db, "item2_id")));
+    QCOMPARE(normalizeSql(db, compiler.fromSql()), QString("\"owner\""
+        " INNER JOIN \"item\" T0 ON T0.\"id\" = \"owner\".\"item1_id\""
+        " INNER JOIN \"item\" T1 ON T1.\"id\" = \"owner\".\"item2_id\""));
 }
 
 QTEST_MAIN(tst_QDjangoCompiler)
