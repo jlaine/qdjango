@@ -28,6 +28,8 @@ class tst_QDjangoHttpResponse : public QObject
 private slots:
     void testBody();
     void testHeader();
+    void testStatusCode_data();
+    void testStatusCode();
 };
 
 void tst_QDjangoHttpResponse::testBody()
@@ -47,6 +49,35 @@ void tst_QDjangoHttpResponse::testHeader()
     response.setHeader("Content-Type", "application/json");
     QCOMPARE(response.header("Content-Type"), QString("application/json"));
     QCOMPARE(response.header("content-type"), QString("application/json"));
+}
+
+void tst_QDjangoHttpResponse::testStatusCode_data()
+{
+    QTest::addColumn<int>("statusCode");
+    QTest::addColumn<QString>("reasonPhrase");
+
+    QTest::newRow("200") << int(200) << QString("OK");
+    QTest::newRow("301") << int(301) << QString("Moved Permanently");
+    QTest::newRow("302") << int(302) << QString("Found");
+    QTest::newRow("304") << int(304) << QString("Not Modified");
+    QTest::newRow("400") << int(400) << QString("Bad Request");
+    QTest::newRow("401") << int(401) << QString("Authorization Required");
+    QTest::newRow("403") << int(403) << QString("Forbidden");
+    QTest::newRow("403") << int(404) << QString("Not Found");
+    QTest::newRow("405") << int(405) << QString("Method Not Allowed");
+    QTest::newRow("500") << int(500) << QString("Internal Server Error");
+    QTest::newRow("501") << int(501) << QString();
+}
+
+void tst_QDjangoHttpResponse::testStatusCode()
+{
+    QFETCH(int, statusCode);
+    QFETCH(QString, reasonPhrase);
+
+    QDjangoHttpResponse response;
+    response.setStatusCode(statusCode);
+    QCOMPARE(response.statusCode(), statusCode);
+    QCOMPARE(response.reasonPhrase(), reasonPhrase);
 }
 
 QTEST_MAIN(tst_QDjangoHttpResponse)

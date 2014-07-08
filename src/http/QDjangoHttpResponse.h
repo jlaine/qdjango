@@ -59,6 +59,7 @@ public:
 
     virtual bool isReady() const;
 
+    QString reasonPhrase() const;
     int statusCode() const;
     void setStatusCode(int code);
 

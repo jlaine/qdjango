@@ -101,6 +101,13 @@ bool QDjangoHttpResponse::isReady() const
     return true;
 }
 
+/** Returns the reason for the HTTP response status line.
+ */
+QString QDjangoHttpResponse::reasonPhrase() const
+{
+    return d->reasonPhrase;
+}
+
 /** Returns the code for the HTTP response status line.
  */
 int QDjangoHttpResponse::statusCode() const
