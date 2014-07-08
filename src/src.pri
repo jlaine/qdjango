@@ -20,5 +20,6 @@ equals(QDJANGO_LIBRARY_TYPE,staticlib) {
 equals(QDJANGO_PROFILE,true) {
     QMAKE_CXXFLAGS += -fprofile-arcs -ftest-coverage
     QMAKE_LIBS += -lgcov
+    QMAKE_CLEAN += *.gcda *.gcov *.gcno
 }
 unix:QMAKE_CLEAN += -r pkgconfig lib$${TARGET}.prl
