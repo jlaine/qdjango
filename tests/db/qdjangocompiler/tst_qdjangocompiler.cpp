@@ -140,8 +140,6 @@ private slots:
     void initTestCase();
     void fieldNames_data();
     void fieldNames();
-    void resolve_data();
-    void resolve();
 };
 
 Item::Item(QObject *parent)
@@ -497,44 +495,8 @@ void tst_QDjangoCompiler::fieldNames_data()
         << QString(" ORDER BY \"owner\".\"name\" DESC")
 
         << QString("\"owner\"");
-}
 
-void tst_QDjangoCompiler::fieldNames()
-{
-    QFETCH(QByteArray, modelName);
-    QFETCH(bool, recursive);
-    QFETCH(QStringList, fieldNames);
-    QFETCH(QDjangoWhere, where);
-    QFETCH(QString, whereSql);
-    QFETCH(QVariantList, whereValues);
-    QFETCH(QStringList, orderBy);
-    QFETCH(QString, orderSql);
-    QFETCH(QString, fromSql);
-
-    QSqlDatabase db = QDjango::database();
-
-    QDjangoCompiler compiler(modelName, db);
-    compiler.resolve(where);
-    CHECKWHERE(where, whereSql, whereValues);
-
-    QCOMPARE(normalizeNames(db, compiler.fieldNames(recursive)), fieldNames);
-    QCOMPARE(normalizeSql(db, compiler.orderLimitSql(orderBy, 0, 0)), orderSql);
-    QCOMPARE(normalizeSql(db, compiler.fromSql()), fromSql);
-}
-
-void tst_QDjangoCompiler::resolve_data()
-{
-    QTest::addColumn<QByteArray>("modelName");
-    QTest::addColumn<bool>("recursive");
-    QTest::addColumn<QStringList>("fieldNames");
-    QTest::addColumn<QDjangoWhere>("where");
-    QTest::addColumn<QString>("whereSql");
-    QTest::addColumn<QVariantList>("whereValues");
-    QTest::addColumn<QStringList>("orderBy");
-    QTest::addColumn<QString>("orderSql");
-    QTest::addColumn<QString>("fromSql");
-
-    QTest::newRow("local field") << QByteArray("Owner") << false
+    QTest::newRow("filter local field") << QByteArray("Owner") << false
         << (QStringList()
             << "\"owner\".\"id\""
             << "\"owner\".\"name\""
@@ -552,7 +514,7 @@ void tst_QDjangoCompiler::resolve_data()
 
         << "\"owner\"";
 
-    QTest::newRow("foreign field") << QByteArray("Owner") << false
+    QTest::newRow("filter foreign field") << QByteArray("Owner") << false
         << (QStringList()
             << "\"owner\".\"id\""
             << "\"owner\".\"name\""
@@ -571,7 +533,7 @@ void tst_QDjangoCompiler::resolve_data()
         << "\"owner\""
            " INNER JOIN \"item\" T0 ON T0.\"id\" = \"owner\".\"item1_id\"";
 
-    QTest::newRow("reverse field") << QByteArray("Owner") << false
+    QTest::newRow("filter reverse field") << QByteArray("Owner") << false
         << (QStringList()
             << "\"owner\".\"id\""
             << "\"owner\".\"name\""
@@ -590,7 +552,7 @@ void tst_QDjangoCompiler::resolve_data()
         << "\"owner\""
            " INNER JOIN \"top\" T0 ON T0.\"owner_id\" = \"owner\".\"id\"";
     
-    QTest::newRow("multiple fields") << QByteArray("Owner") << false
+    QTest::newRow("filter multiple fields") << QByteArray("Owner") << false
         << (QStringList()
             << "\"owner\".\"id\""
             << "\"owner\".\"name\""
@@ -612,10 +574,8 @@ void tst_QDjangoCompiler::resolve_data()
            " INNER JOIN \"item\" T1 ON T1.\"id\" = \"owner\".\"item2_id\"";
 }
 
-void tst_QDjangoCompiler::resolve()
+void tst_QDjangoCompiler::fieldNames()
 {
-    QSqlDatabase db = QDjango::database();
-
     QFETCH(QByteArray, modelName);
     QFETCH(bool, recursive);
     QFETCH(QStringList, fieldNames);
@@ -625,6 +585,8 @@ void tst_QDjangoCompiler::resolve()
     QFETCH(QStringList, orderBy);
     QFETCH(QString, orderSql);
     QFETCH(QString, fromSql);
+
+    QSqlDatabase db = QDjango::database();
 
     QDjangoCompiler compiler(modelName, db);
     compiler.resolve(where);
