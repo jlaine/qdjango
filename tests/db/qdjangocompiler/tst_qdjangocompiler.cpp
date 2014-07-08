@@ -440,6 +440,24 @@ void tst_QDjangoCompiler::fieldNames_data()
 
         << QString("\"owner\"");
 
+    QTest::newRow("order ascending explicit") << QByteArray("Owner") << false
+        << (QStringList()
+            << "\"owner\".\"id\""
+            << "\"owner\".\"name\""
+            << "\"owner\".\"item1_id\""
+            << "\"owner\".\"item2_id\"")
+
+        // filtering
+        << QDjangoWhere()
+        << ""
+        << QVariantList()
+
+        // ordering
+        << QStringList("+name")
+        << QString(" ORDER BY \"owner\".\"name\" ASC")
+
+        << QString("\"owner\"");
+
     QTest::newRow("order ascending foreign") << QByteArray("Owner") << false
         << (QStringList()
             << "\"owner\".\"id\""
