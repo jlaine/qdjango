@@ -17,4 +17,8 @@ equals(QDJANGO_LIBRARY_TYPE,staticlib) {
 } else {
     QMAKE_PKGCONFIG_CFLAGS = -DQDJANGO_SHARED
 }
+equals(QDJANGO_PROFILE,true) {
+    QMAKE_CXXFLAGS += -fprofile-arcs -ftest-coverage
+    QMAKE_LIBS += -lgcov
+}
 unix:QMAKE_CLEAN += -r pkgconfig lib$${TARGET}.prl
