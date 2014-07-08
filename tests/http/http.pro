@@ -1,2 +1,6 @@
 TEMPLATE = subdirs
-SUBDIRS = qdjangohttprequest qdjangohttpserver qdjangourlresolver
+SUBDIRS = \
+    qdjangohttprequest \
+    qdjangohttpresponse \
+    qdjangohttpserver \
+    qdjangourlresolver
