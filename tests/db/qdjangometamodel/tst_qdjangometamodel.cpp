@@ -406,7 +406,6 @@ void tst_QDjangoMetaModel::testConstraints()
     QDjangoMetaModel metaModel = QDjango::registerModel<tst_FkConstraint>();
     QCOMPARE(metaModel.createTableSql(), sql);
     QCOMPARE(metaModel.createTable(), true);
-    QDjango::setDebugEnabled(false);
 
     // drop tables
     QCOMPARE(metaModel.dropTable(), true);
