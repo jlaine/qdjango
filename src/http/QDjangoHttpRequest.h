@@ -47,6 +47,7 @@ private:
     friend class QDjangoFastCgiConnection;
     friend class QDjangoHttpConnection;
     friend class QDjangoHttpTestRequest;
+    friend class tst_QDjangoHttpController;
     friend class tst_QDjangoHttpRequest;
 };
 

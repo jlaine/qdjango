@@ -20,6 +20,7 @@
 
 #include "QDjangoHttpController.h"
 #include "QDjangoHttpRequest.h"
+#include "QDjangoHttpRequest_p.h"
 #include "QDjangoHttpResponse.h"
 
 /** Test QDjangoHttpController class.
@@ -44,6 +45,18 @@ void tst_QDjangoHttpController::testBasicAuth()
 
     QString username, password;
     QCOMPARE(QDjangoHttpController::getBasicAuth(request, username, password), false);
+    QCOMPARE(username, QString());
+    QCOMPARE(password, QString());
+
+    request.d->meta.insert("HTTP_AUTHORIZATION", "Basic bad");
+    QCOMPARE(QDjangoHttpController::getBasicAuth(request, username, password), false);
+    QCOMPARE(username, QString());
+    QCOMPARE(password, QString());
+
+    request.d->meta.insert("HTTP_AUTHORIZATION", "Basic Zm9vOmJhcg==");
+    QCOMPARE(QDjangoHttpController::getBasicAuth(request, username, password), true);
+    QCOMPARE(username, QString("foo"));
+    QCOMPARE(password, QString("bar"));
 }
 
 void tst_QDjangoHttpController::testDateTime()
