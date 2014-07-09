@@ -51,6 +51,7 @@ private:
 
 void tst_QDjangoHttpServer::cleanupTestCase()
 {
+    httpServer->close();
     delete httpServer;
 }
 
