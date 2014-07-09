@@ -123,12 +123,12 @@ void tst_QDjangoHttpController::testServeStatic()
     response = QDjangoHttpController::serveStatic(request, ":/not-found");
     QCOMPARE(response->statusCode(), 404);
     delete response;
-    
+
     response = QDjangoHttpController::serveStatic(request, ":/test.css");
     QCOMPARE(response->statusCode(), 200);
     QCOMPARE(response->header("content-type"), QString("text/css"));
     QVERIFY(!response->header("last-modified").isEmpty());
-    
+
     response = QDjangoHttpController::serveStatic(request, ":/test.html");
     QCOMPARE(response->statusCode(), 200);
     QCOMPARE(response->header("content-type"), QString("text/html"));
