@@ -36,6 +36,7 @@ class tst_QDjangoHttpServer : public QObject
 private slots:
     void cleanupTestCase();
     void initTestCase();
+    void testCloseConnection();
     void testGet_data();
     void testGet();
     void testPost_data();
@@ -61,6 +62,26 @@ void tst_QDjangoHttpServer::initTestCase()
     httpServer->urls()->set(QRegExp(QLatin1String(QLatin1String("^$"))), this, "_q_index");
     httpServer->urls()->set(QRegExp(QLatin1String("^internal-server-error$")), this, "_q_error");
     QCOMPARE(httpServer->listen(QHostAddress::LocalHost, 8123), true);
+}
+
+void tst_QDjangoHttpServer::testCloseConnection()
+{
+    QNetworkAccessManager network;
+
+    QNetworkRequest req(QUrl("http://127.0.0.1:8123/"));
+    req.setRawHeader("Connection", "close");
+
+    QNetworkReply *reply = network.get(req);
+
+    QEventLoop loop;
+    QObject::connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
+    loop.exec();
+
+    QVERIFY(reply);
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
+    //QCOMPARE(reply->readAll(), body);
+    delete reply;
+
 }
 
 void tst_QDjangoHttpServer::testGet_data()
