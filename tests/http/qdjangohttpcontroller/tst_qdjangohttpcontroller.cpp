@@ -129,6 +129,11 @@ void tst_QDjangoHttpController::testServeStatic()
     QCOMPARE(response->header("content-type"), QString("text/css"));
     QVERIFY(!response->header("last-modified").isEmpty());
 
+    response = QDjangoHttpController::serveStatic(request, ":/test.js");
+    QCOMPARE(response->statusCode(), 200);
+    QCOMPARE(response->header("content-type"), QString("application/javascript"));
+    QVERIFY(!response->header("last-modified").isEmpty());
+
     response = QDjangoHttpController::serveStatic(request, ":/test.html");
     QCOMPARE(response->statusCode(), 200);
     QCOMPARE(response->header("content-type"), QString("text/html"));

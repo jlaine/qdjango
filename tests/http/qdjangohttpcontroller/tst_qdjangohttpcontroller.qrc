@@ -2,6 +2,7 @@
 <RCC version="1.0">
 <qresource>
     <file>test.css</file>
+    <file>test.js</file>
     <file>test.html</file>
 </qresource>
 </RCC>
