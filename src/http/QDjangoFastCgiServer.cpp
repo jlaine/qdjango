@@ -203,6 +203,12 @@ void QDjangoFastCgiConnection::_q_readyRead()
 #ifdef QDJANGO_DEBUG_FCGI
         hDebug(header, "received");
 #endif
+        if (header->version != 1) {
+            qWarning("Received FastCGI frame with an invalid version %i", header->version);
+            m_device->close();
+            emit closed();
+            return;
+        }
         const quint16 requestId = FCGI_Header_requestId(header);
         if (header->type != FCGI_BEGIN_REQUEST && (!m_pendingRequest || requestId != m_pendingRequestId)) {
             qWarning("Received FastCGI frame for an invalid request %i", requestId);
