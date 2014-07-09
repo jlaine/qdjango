@@ -179,8 +179,6 @@ QDjangoHttpResponse *QDjangoHttpController::serveStatic(const QDjangoHttpRequest
         mimeType = QLatin1String("text/html");
     else if (fileName.endsWith(QLatin1String(".js")))
         mimeType = QLatin1String("application/javascript");
-    else if (fileName.endsWith(QLatin1String(".png")))
-        mimeType = QLatin1String("image/png");
     else
         mimeType = QLatin1String("application/octet-stream");
     response->setHeader(QLatin1String("Content-Type"), mimeType);
