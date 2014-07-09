@@ -53,6 +53,9 @@ typedef struct {
     unsigned char reserved;
 } FCGI_Header;
 
+quint16 FCGI_Header_contentLength(FCGI_Header *header);
+quint16 FCGI_Header_requestId(FCGI_Header *header);
+
 class QDjangoFastCgiConnection : public QObject
 {
     Q_OBJECT

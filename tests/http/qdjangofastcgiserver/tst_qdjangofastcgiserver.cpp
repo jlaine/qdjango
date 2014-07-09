@@ -154,8 +154,8 @@ void QDjangoFastCgiClient::_q_readyRead()
             return;
         }
 
-        const quint16 requestId = (header->requestIdB1 << 8) | header->requestIdB0;
-        const quint16 contentLength = (header->contentLengthB1 << 8) | header->contentLengthB0;
+        const quint16 contentLength = FCGI_Header_contentLength(header);
+        const quint16 requestId = FCGI_Header_requestId(header);
         const quint16 bodyLength = contentLength + header->paddingLength;
         if (m_device->read(inputBuffer + FCGI_HEADER_LEN, bodyLength) != bodyLength) {
             qWarning("body read fail");

@@ -32,19 +32,26 @@
 #include "QDjangoHttpServer.h"
 #include "QDjangoUrlResolver.h"
 
-//#define QDJANGO_DEBUG_FCGI
+#define QDJANGO_DEBUG_FCGI
+
+quint16 FCGI_Header_contentLength(FCGI_Header *header)
+{
+    return (header->contentLengthB1 << 8) | header->contentLengthB0;
+}
+
+quint16 FCGI_Header_requestId(FCGI_Header *header)
+{
+    return (header->requestIdB1 << 8) | header->requestIdB0;
+}
 
 #ifdef QDJANGO_DEBUG_FCGI
 static void hDebug(FCGI_Header *header, const char *dir)
 {
-    const quint16 requestId = (header->requestIdB1 << 8) | header->requestIdB0;
-    const quint16 contentLength = (header->contentLengthB1 << 8) | header->contentLengthB0;
-
     qDebug("--- FCGI Record %s ---", dir);
     qDebug("version: %i", header->version);
     qDebug("type: %i", header->type);
-    qDebug("requestId: %i", requestId);
-    qDebug("contentLength: %i", contentLength);
+    qDebug("requestId: %i", FCGI_Header_requestId(header));
+    qDebug("contentLength: %i", FCGI_Header_contentLength(header));
     qDebug("paddingLength: %i", header->paddingLength);
 }
 #endif
@@ -160,7 +167,7 @@ void QDjangoFastCgiConnection::_q_readyRead()
 
         // read record body
         FCGI_Header *header = (FCGI_Header*)m_inputBuffer;
-        const quint16 contentLength = (header->contentLengthB1 << 8) | header->contentLengthB0;
+        const quint16 contentLength = FCGI_Header_contentLength(header);
         const quint16 bodyLength = contentLength + header->paddingLength;
         const qint64 length = m_device->read(m_inputBuffer + m_inputPos, bodyLength + FCGI_HEADER_LEN - m_inputPos);
         if (length < 0) {
@@ -178,7 +185,7 @@ void QDjangoFastCgiConnection::_q_readyRead()
 #ifdef QDJANGO_DEBUG_FCGI
         hDebug(header, "received");
 #endif
-        const quint16 requestId = (header->requestIdB1 << 8) | header->requestIdB0;
+        const quint16 requestId = FCGI_Header_requestId(header);
         char *p = m_inputBuffer + FCGI_HEADER_LEN;
         switch (header->type) {
         case FCGI_BEGIN_REQUEST: {
