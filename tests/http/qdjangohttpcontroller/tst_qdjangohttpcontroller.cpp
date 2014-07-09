@@ -125,6 +125,7 @@ void tst_QDjangoHttpController::testServeStatic()
     QCOMPARE(response->statusCode(), 404);
     QCOMPARE(response->header("content-type"), QString("text/html; charset=utf-8"));
     QCOMPARE(response->header("content-length"), QString("107"));
+    QCOMPARE(response->header("expires"), QString());
     QVERIFY(response->header("last-modified").isEmpty());
     delete response;
 
@@ -132,6 +133,7 @@ void tst_QDjangoHttpController::testServeStatic()
     QCOMPARE(response->statusCode(), 200);
     QCOMPARE(response->header("content-type"), QString("application/octet-stream"));
     QCOMPARE(response->header("content-length"), QString("6"));
+    QCOMPARE(response->header("expires"), QString());
     QVERIFY(!response->header("last-modified").isEmpty());
     delete response;
 
@@ -139,6 +141,7 @@ void tst_QDjangoHttpController::testServeStatic()
     QCOMPARE(response->statusCode(), 200);
     QCOMPARE(response->header("content-type"), QString("text/css"));
     QCOMPARE(response->header("content-length"), QString("27"));
+    QCOMPARE(response->header("expires"), QString());
     QVERIFY(!response->header("last-modified").isEmpty());
     QCOMPARE(response->body().size(), 27);
     delete response;
@@ -147,6 +150,7 @@ void tst_QDjangoHttpController::testServeStatic()
     QCOMPARE(response->statusCode(), 200);
     QCOMPARE(response->header("content-type"), QString("application/javascript"));
     QCOMPARE(response->header("content-length"), QString("21"));
+    QCOMPARE(response->header("expires"), QString());
     QVERIFY(!response->header("last-modified").isEmpty());
     QCOMPARE(response->body().size(), 21);
     delete response;
@@ -155,6 +159,18 @@ void tst_QDjangoHttpController::testServeStatic()
     QCOMPARE(response->statusCode(), 200);
     QCOMPARE(response->header("content-type"), QString("text/html"));
     QCOMPARE(response->header("content-length"), QString("48"));
+    QCOMPARE(response->header("expires"), QString());
+    QVERIFY(!response->header("last-modified").isEmpty());
+    QCOMPARE(response->body().size(), 48);
+    delete response;
+
+    // expires
+    const QDateTime expires(QDate(2014, 7, 14), QTime(11, 22, 33), Qt::UTC);
+    response = QDjangoHttpController::serveStatic(request, ":/test.html", expires);
+    QCOMPARE(response->statusCode(), 200);
+    QCOMPARE(response->header("content-type"), QString("text/html"));
+    QCOMPARE(response->header("content-length"), QString("48"));
+    QCOMPARE(response->header("expires"), QString("Mon, 14 Jul 2014 11:22:33 GMT"));
     QVERIFY(!response->header("last-modified").isEmpty());
     QCOMPARE(response->body().size(), 48);
     delete response;
@@ -165,6 +181,7 @@ void tst_QDjangoHttpController::testServeStatic()
     QCOMPARE(response->statusCode(), 200);
     QCOMPARE(response->header("content-type"), QString("text/html"));
     QCOMPARE(response->header("content-length"), QString("48"));
+    QCOMPARE(response->header("expires"), QString());
     QVERIFY(!response->header("last-modified").isEmpty());
     QCOMPARE(response->body().size(), 0);
     delete response;
