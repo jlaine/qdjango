@@ -217,14 +217,14 @@ void QDjangoFastCgiConnection::_q_readyRead()
             return;
         }
 
-        char *p = m_inputBuffer + FCGI_HEADER_LEN;
+        quint8 *d = (quint8*)(m_inputBuffer + FCGI_HEADER_LEN);
         switch (header->type) {
         case FCGI_BEGIN_REQUEST: {
 #ifdef QDJANGO_DEBUG_FCGI
-            const quint16 role = (p[0] << 8) | p[1];
+            const quint16 role = (d[0] << 8) | d[1];
             qDebug("[BEGIN REQUEST]");
             qDebug("role: %i", role);
-            qDebug("flags: %i", p[2]);
+            qDebug("flags: %i", d[2]);
 #endif
             if (m_pendingRequest) {
                 qWarning("Received FCGI_BEGIN_REQUEST inside a request");
@@ -247,27 +247,27 @@ void QDjangoFastCgiConnection::_q_readyRead()
 #ifdef QDJANGO_DEBUG_FCGI
             qDebug("[PARAMS]");
 #endif
-            while (p < m_inputBuffer + FCGI_HEADER_LEN + contentLength) {
+            while (d < (quint8*)(m_inputBuffer + FCGI_HEADER_LEN + contentLength)) {
                 quint32 nameLength;
                 quint32 valueLength;
-                if (p[0] >> 7) {
-                    nameLength = ((p[0] & 0x7f) << 24) | (p[1] << 16) | (p[2] << 8) | p[3];
-                    p += 4;
+                if (d[0] >> 7) {
+                    nameLength = ((d[0] & 0x7f) << 24) | (d[1] << 16) | (d[2] << 8) | d[3];
+                    d += 4;
                 } else {
-                    nameLength = p[0];
-                    p++;
+                    nameLength = d[0];
+                    d++;
                 }
-                if (p[0] >> 7) {
-                    valueLength = ((p[0] & 0x7f) << 24) | (p[1] << 16) | (p[2] << 8) | p[3];
-                    p += 4;
+                if (d[0] >> 7) {
+                    valueLength = ((d[0] & 0x7f) << 24) | (d[1] << 16) | (d[2] << 8) | d[3];
+                    d += 4;
                 } else {
-                    valueLength = p[0];
-                    p++;
+                    valueLength = d[0];
+                    d++;
                 }
-                const QByteArray name(p, nameLength);
-                p += nameLength;
-                const QByteArray value(p, valueLength);
-                p += valueLength;
+                const QByteArray name((char*)d, nameLength);
+                d += nameLength;
+                const QByteArray value((char*)d, valueLength);
+                d += valueLength;
 
 #ifdef QDJANGO_DEBUG_FCGI
                 qDebug() << name << ":" << value;
@@ -287,7 +287,7 @@ void QDjangoFastCgiConnection::_q_readyRead()
             qDebug("[STDIN]");
 #endif
             if (contentLength) {
-                m_pendingRequest->d->buffer.append(p, contentLength);
+                m_pendingRequest->d->buffer.append((char*)d, contentLength);
             } else {
                 QDjangoHttpRequest *request = m_pendingRequest;
                 const quint16 requestId = m_pendingRequestId;
