@@ -40,6 +40,12 @@
     "\r\n" \
     "<html><head><title>Error</title></head><body><p>The document you requested was not found.</p></body></html>")
 
+#define POST_DATA QByteArray("Status: 200 OK\r\n" \
+        "Content-Length: 27\r\n" \
+        "Content-Type: text/plain\r\n" \
+        "\r\n" \
+        "method=POST|path=/|post=bar")
+
 #define ROOT_DATA QByteArray("Status: 200 OK\r\n" \
     "Content-Length: 17\r\n" \
     "Content-Type: text/plain\r\n" \
@@ -72,15 +78,12 @@ class QDjangoFastCgiClient : public QObject
 
 public:
     QDjangoFastCgiClient(QIODevice *socket);
-    QDjangoFastCgiReply* get(const QUrl &url);
-    QDjangoFastCgiReply* post(const QUrl &url, const QByteArray &data);
+    QDjangoFastCgiReply* request(const QString &method, const QUrl &url, const QByteArray &data);
 
 private slots:
     void _q_readyRead();
 
 private:
-    QDjangoFastCgiReply* request(const QByteArray &method, const QUrl &url, const QByteArray &data);
-
     QIODevice *m_device;
     QMap<quint16, QDjangoFastCgiReply*> m_replies;
     quint16 m_requestId;
@@ -93,17 +96,7 @@ QDjangoFastCgiClient::QDjangoFastCgiClient(QIODevice *socket)
     connect(socket, SIGNAL(readyRead()), this, SLOT(_q_readyRead()));
 };
 
-QDjangoFastCgiReply* QDjangoFastCgiClient::get(const QUrl &url)
-{
-    return request("GET", url, QByteArray());
-}
-
-QDjangoFastCgiReply* QDjangoFastCgiClient::post(const QUrl &url, const QByteArray &data)
-{
-    return request("POST", url, data);
-}
-
-QDjangoFastCgiReply* QDjangoFastCgiClient::request(const QByteArray &method, const QUrl &url, const QByteArray &data)
+QDjangoFastCgiReply* QDjangoFastCgiClient::request(const QString &method, const QUrl &url, const QByteArray &data)
 {
     const quint16 requestId = ++m_requestId;
 
@@ -130,7 +123,7 @@ QDjangoFastCgiReply* QDjangoFastCgiClient::request(const QByteArray &method, con
     params["QUERY_STRING"] = url.encodedQuery();
 #endif
     params["REQUEST_URI"] = url.toString().toUtf8();
-    params["REQUEST_METHOD"] = method;
+    params["REQUEST_METHOD"] = method.toUtf8();
 
     ba.clear();
     foreach (const QByteArray &key, params.keys()) {
@@ -203,7 +196,6 @@ private slots:
     void init();
     void testLocal_data();
     void testLocal();
-    void testPost();
     void testTcp_data();
     void testTcp();
 
@@ -229,18 +221,23 @@ void tst_QDjangoFastCgiServer::init()
 
 void tst_QDjangoFastCgiServer::testLocal_data()
 {
+    QTest::addColumn<QString>("method");
     QTest::addColumn<QString>("path");
     QTest::addColumn<QByteArray>("data");
-    QTest::newRow("root") << "/" << ROOT_DATA;
-    QTest::newRow("query-string") << "/?message=bar" << QUERY_STRING_DATA;
-    QTest::newRow("not-found") << "/not-found" << NOT_FOUND_DATA;
-    QTest::newRow("internal-server-error") << "/internal-server-error" << ERROR_DATA;
+    QTest::addColumn<QByteArray>("response");
+    QTest::newRow("root") << "GET" << "/" << QByteArray() << ROOT_DATA;
+    QTest::newRow("query-string") << "GET" << "/?message=bar" << QByteArray() << QUERY_STRING_DATA;
+    QTest::newRow("not-found") << "GET" << "/not-found" << QByteArray() << NOT_FOUND_DATA;
+    QTest::newRow("internal-server-error") << "GET" << "/internal-server-error" << QByteArray() << ERROR_DATA;
+    QTest::newRow("post") << "POST" << "/" << QByteArray("message=bar") << POST_DATA;
 }
 
 void tst_QDjangoFastCgiServer::testLocal()
 {
+    QFETCH(QString, method);
     QFETCH(QString, path);
     QFETCH(QByteArray, data);
+    QFETCH(QByteArray, response);
 
     const QString name("/tmp/qdjangofastcgi.socket");
     QCOMPARE(server->listen(name), true);
@@ -255,44 +252,12 @@ void tst_QDjangoFastCgiServer::testLocal()
     QCOMPARE(socket.state(), QLocalSocket::ConnectedState);
 
     // wait for reply
-    QDjangoFastCgiReply *reply = client.get(path);
+    QDjangoFastCgiReply *reply = client.request(method, path, data);
     QObject::connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
     loop.exec();
 
     QCOMPARE(socket.state(), QLocalSocket::ConnectedState);
-    QCOMPARE(reply->data, data);
-
-    // wait for connection to close
-    QObject::connect(&socket, SIGNAL(disconnected()), &loop, SLOT(quit()));
-    loop.exec();
-
-    QCOMPARE(socket.state(), QLocalSocket::UnconnectedState);
-}
-
-void tst_QDjangoFastCgiServer::testPost()
-{
-    const QString name("/tmp/qdjangofastcgi.socket");
-
-    QCOMPARE(server->listen(name), true);
-
-    QLocalSocket socket;
-    socket.connectToServer(name);
-    QCOMPARE(socket.state(), QLocalSocket::ConnectedState);
-
-    QEventLoop loop;
-    QDjangoFastCgiClient client(&socket);
-
-    // wait for reply
-    QDjangoFastCgiReply *reply = client.post(QUrl("/"), QByteArray("message=bar"));
-    QObject::connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
-    loop.exec();
-
-    QCOMPARE(socket.state(), QLocalSocket::ConnectedState);
-    QCOMPARE(reply->data, QByteArray("Status: 200 OK\r\n" \
-        "Content-Length: 27\r\n" \
-        "Content-Type: text/plain\r\n" \
-        "\r\n" \
-        "method=POST|path=/|post=bar"));
+    QCOMPARE(reply->data, response);
 
     // wait for connection to close
     QObject::connect(&socket, SIGNAL(disconnected()), &loop, SLOT(quit()));
@@ -303,18 +268,23 @@ void tst_QDjangoFastCgiServer::testPost()
 
 void tst_QDjangoFastCgiServer::testTcp_data()
 {
+    QTest::addColumn<QString>("method");
     QTest::addColumn<QString>("path");
     QTest::addColumn<QByteArray>("data");
-    QTest::newRow("root") << "/" << ROOT_DATA;
-    QTest::newRow("query-string") << "/?message=bar" << QUERY_STRING_DATA;
-    QTest::newRow("not-found") << "/not-found" << NOT_FOUND_DATA;
-    QTest::newRow("internal-server-error") << "/internal-server-error" << ERROR_DATA;
+    QTest::addColumn<QByteArray>("response");
+    QTest::newRow("root") << "GET" << "/" << QByteArray() << ROOT_DATA;
+    QTest::newRow("query-string") << "GET" << "/?message=bar" << QByteArray() << QUERY_STRING_DATA;
+    QTest::newRow("not-found") << "GET" << "/not-found" << QByteArray() << NOT_FOUND_DATA;
+    QTest::newRow("internal-server-error") << "GET" << "/internal-server-error" << QByteArray() << ERROR_DATA;
+    QTest::newRow("post") << "POST" << "/" << QByteArray("message=bar") << POST_DATA;
 }
 
 void tst_QDjangoFastCgiServer::testTcp()
 {
+    QFETCH(QString, method);
     QFETCH(QString, path);
     QFETCH(QByteArray, data);
+    QFETCH(QByteArray, response);
 
     QCOMPARE(server->listen(QHostAddress::LocalHost, 8123), true);
 
@@ -331,12 +301,12 @@ void tst_QDjangoFastCgiServer::testTcp()
     QCOMPARE(socket.state(), QAbstractSocket::ConnectedState);
 
     // wait for reply
-    QDjangoFastCgiReply *reply = client.get(path);
+    QDjangoFastCgiReply *reply = client.request(method, path, data);
     QObject::connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
     loop.exec();
 
     QCOMPARE(socket.state(), QAbstractSocket::ConnectedState);
-    QCOMPARE(reply->data, data);
+    QCOMPARE(reply->data, response);
 
     // wait for connection to close
     QObject::connect(&socket, SIGNAL(disconnected()), &loop, SLOT(quit()));
