@@ -289,6 +289,7 @@ void tst_QDjangoFastCgiServer::testBadBegin()
 
     // check socket is connected
     QCOMPARE(socket.state(), QLocalSocket::ConnectedState);
+    QTest::ignoreMessage(QtWarningMsg, "Received new FastCGI request 2 while already handling request 1");
 
     // BEGIN REQUEST
     const QByteArray ba("\x01\x00\x00\x00\x00\x00\x00\x00", 8);
@@ -297,7 +298,7 @@ void tst_QDjangoFastCgiServer::testBadBegin()
     socket.write(headerBuffer + ba);
 
     // BEGIN REQUEST again
-    header->type = FCGI_BEGIN_REQUEST;
+    FCGI_Header_setRequestId(header, 2);
     FCGI_Header_setContentLength(header, ba.size());
     socket.write(headerBuffer + ba);
 
@@ -324,6 +325,7 @@ void tst_QDjangoFastCgiServer::testBadRequestId()
 
     // check socket is connected
     QCOMPARE(socket.state(), QLocalSocket::ConnectedState);
+    QTest::ignoreMessage(QtWarningMsg, "Received FastCGI record for an invalid request 1");
 
     // ABORT REQUEST
     header->type = FCGI_ABORT_REQUEST;
@@ -353,6 +355,7 @@ void tst_QDjangoFastCgiServer::testBadRequestType()
 
     // check socket is connected
     QCOMPARE(socket.state(), QLocalSocket::ConnectedState);
+    QTest::ignoreMessage(QtWarningMsg, "Received FastCGI record with an invalid type 7");
 
     // BEGIN REQUEST
     const QByteArray ba("\x01\x00\x00\x00\x00\x00\x00\x00", 8);
@@ -388,6 +391,7 @@ void tst_QDjangoFastCgiServer::testBadVersion()
 
     // check socket is connected
     QCOMPARE(socket.state(), QLocalSocket::ConnectedState);
+    QTest::ignoreMessage(QtWarningMsg, "Received FastCGI record with an invalid version 2");
 
     // BEGIN REQUEST
     const QByteArray ba("\x01\x00\x00\x00\x00\x00\x00\x00", 8);
