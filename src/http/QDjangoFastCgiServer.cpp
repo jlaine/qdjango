@@ -118,8 +118,9 @@ void QDjangoFastCgiConnection::writeResponse(quint16 requestId, QDjangoHttpRespo
     header->version = 1;
     FCGI_Header_setRequestId(header, requestId);
 
-    for (qint64 bytesRemaining = data.size(); bytesRemaining > 0; ) {
+    for (qint64 bytesRemaining = data.size(); ; ) {
         const quint16 contentLength = qMin(bytesRemaining, qint64(32768));
+
         header->type = FCGI_STDOUT;
         FCGI_Header_setContentLength(header, contentLength);
         memcpy(m_outputBuffer + FCGI_HEADER_LEN, ptr, contentLength);
@@ -128,8 +129,13 @@ void QDjangoFastCgiConnection::writeResponse(quint16 requestId, QDjangoHttpRespo
         hDebug(header, "sent");
         qDebug("[STDOUT]");
 #endif
-        ptr += contentLength;
-        bytesRemaining -= contentLength;
+
+        if (contentLength > 0) {
+            ptr += contentLength;
+            bytesRemaining -= contentLength;
+        } else {
+            break;
+        }
     }
 
     quint16 contentLength = 8;
