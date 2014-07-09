@@ -113,7 +113,11 @@ QDjangoFastCgiReply* QDjangoFastCgiClient::get(const QUrl &url)
 
     QMap<QByteArray, QByteArray> params;
     params["PATH_INFO"] = url.path().toUtf8();
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
     params["QUERY_STRING"] = url.query().toUtf8();
+#else
+    params["QUERY_STRING"] = url.encodedQuery();
+#endif
     params["REQUEST_URI"] = url.toString().toUtf8();
     params["REQUEST_METHOD"] = "GET";
 
