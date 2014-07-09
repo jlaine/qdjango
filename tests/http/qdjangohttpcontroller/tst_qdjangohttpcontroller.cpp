@@ -37,6 +37,7 @@ private slots:
     void testServeInternalServerError();
     void testServeNotFound();
     void testServeRedirect();
+    void testServeStatic();
 };
 
 void tst_QDjangoHttpController::testBasicAuth()
@@ -111,6 +112,27 @@ void tst_QDjangoHttpController::testServeRedirect()
     response = QDjangoHttpController::serveRedirect(request, QUrl("/bye"), true);
     QCOMPARE(response->statusCode(), 301);
     QCOMPARE(response->header("location"), QString("/bye"));
+    delete response;
+}
+
+void tst_QDjangoHttpController::testServeStatic()
+{
+    QDjangoHttpRequest request;
+    QDjangoHttpResponse *response;
+
+    response = QDjangoHttpController::serveStatic(request, ":/not-found");
+    QCOMPARE(response->statusCode(), 404);
+    delete response;
+    
+    response = QDjangoHttpController::serveStatic(request, ":/test.css");
+    QCOMPARE(response->statusCode(), 200);
+    QCOMPARE(response->header("content-type"), QString("text/css"));
+    QVERIFY(!response->header("last-modified").isEmpty());
+    
+    response = QDjangoHttpController::serveStatic(request, ":/test.html");
+    QCOMPARE(response->statusCode(), 200);
+    QCOMPARE(response->header("content-type"), QString("text/html"));
+    QVERIFY(!response->header("last-modified").isEmpty());
     delete response;
 }
 

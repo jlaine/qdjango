@@ -1,0 +1,7 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+<qresource>
+    <file>test.css</file>
+    <file>test.html</file>
+</qresource>
+</RCC>
