@@ -71,12 +71,13 @@ static void hDebug(FCGI_Header *header, const char *dir)
 /// \cond
 
 QDjangoFastCgiConnection::QDjangoFastCgiConnection(QIODevice *device, QDjangoFastCgiServer *server)
-    : QObject(server),
-    m_device(device),
-    m_inputPos(0),
-    m_pendingRequest(0),
-    m_pendingRequestId(0),
-    m_server(server)
+    : QObject(server)
+    , m_device(device)
+    , m_inputPos(0)
+    , m_keepConnection(false)
+    , m_pendingRequest(0)
+    , m_pendingRequestId(0)
+    , m_server(server)
 {
     bool check;
     Q_UNUSED(check);
@@ -157,7 +158,7 @@ void QDjangoFastCgiConnection::writeResponse(quint16 requestId, QDjangoHttpRespo
 void QDjangoFastCgiConnection::_q_bytesWritten(qint64 bytes)
 {
     Q_UNUSED(bytes);
-    if (!m_device->bytesToWrite()) {
+    if (!m_device->bytesToWrite() && !m_keepConnection) {
 #ifdef QDJANGO_DEBUG_FCGI
         qDebug("Closing connection");
 #endif
@@ -233,6 +234,7 @@ void QDjangoFastCgiConnection::_q_readyRead()
                 emit closed();
                 return;
             }
+            m_keepConnection = (d[2] & FCGI_KEEP_CONN);
             m_pendingRequest = new QDjangoHttpRequest;
             m_pendingRequestId = requestId;
             break;

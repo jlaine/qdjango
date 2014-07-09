@@ -37,6 +37,8 @@
 #define FCGI_STDIN               5
 #define FCGI_STDOUT              6
 
+#define FCGI_KEEP_CONN 1
+
 class QDjangoFastCgiServer;
 class QDjangoHttpRequest;
 class QDjangoHttpResponse;
@@ -79,6 +81,7 @@ private:
     QIODevice *m_device;
     char m_inputBuffer[FCGI_RECORD_SIZE];
     int m_inputPos;
+    bool m_keepConnection;
     char m_outputBuffer[FCGI_RECORD_SIZE];
     QDjangoHttpRequest *m_pendingRequest;
     quint16 m_pendingRequestId;
