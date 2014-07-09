@@ -66,7 +66,7 @@ class QDjangoFastCgiClient : public QObject
 
 public:
     QDjangoFastCgiClient(QIODevice *socket);
-    QDjangoFastCgiReply* get(const QString &path);
+    QDjangoFastCgiReply* get(const QUrl &url);
 
 private slots:
     void _q_readyRead();
@@ -84,7 +84,7 @@ QDjangoFastCgiClient::QDjangoFastCgiClient(QIODevice *socket)
     connect(socket, SIGNAL(readyRead()), this, SLOT(_q_readyRead()));
 };
 
-QDjangoFastCgiReply* QDjangoFastCgiClient::get(const QString &path)
+QDjangoFastCgiReply* QDjangoFastCgiClient::get(const QUrl &url)
 {
     const quint16 requestId = ++m_requestId;
 
@@ -106,7 +106,9 @@ QDjangoFastCgiReply* QDjangoFastCgiClient::get(const QString &path)
     m_device->write(headerBuffer + ba);
 
     QMap<QByteArray, QByteArray> params;
-    params["PATH_INFO"] = path.toUtf8();
+    params["PATH_INFO"] = url.path().toUtf8();
+    params["QUERY_STRING"] = url.query().toUtf8();
+    params["REQUEST_URI"] = url.toString().toUtf8();
     params["REQUEST_METHOD"] = "GET";
 
     ba.clear();
