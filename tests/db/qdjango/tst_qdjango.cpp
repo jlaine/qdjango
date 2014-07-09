@@ -28,8 +28,14 @@ class tst_QDjango : public QObject
     Q_OBJECT
 
 private slots:
+    void database();
     void debugEnabled();
 };
+
+void tst_QDjango::database()
+{
+    QCOMPARE(QDjango::database().isOpen(), false);
+}
 
 void tst_QDjango::debugEnabled()
 {
