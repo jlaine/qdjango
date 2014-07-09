@@ -18,8 +18,6 @@
 #include <QSqlDriver>
 
 #include "QDjango.h"
-#include "QDjangoQuerySet.h"
-#include "QDjangoWhere.h"
 
 #include "util.h"
 
@@ -30,11 +28,14 @@ class tst_QDjango : public QObject
 private slots:
     void database();
     void debugEnabled();
+    void debugQuery();
 };
 
 void tst_QDjango::database()
 {
     QCOMPARE(QDjango::database().isOpen(), false);
+    QVERIFY(initialiseDatabase());
+    QCOMPARE(QDjango::database().isOpen(), true);
 }
 
 void tst_QDjango::debugEnabled()
@@ -44,6 +45,15 @@ void tst_QDjango::debugEnabled()
     QCOMPARE(QDjango::isDebugEnabled(), true);
     QDjango::setDebugEnabled(false);
     QCOMPARE(QDjango::isDebugEnabled(), false);
+}
+
+void tst_QDjango::debugQuery()
+{
+    QDjangoQuery query(QDjango::database());
+    QDjango::setDebugEnabled(true);
+    QTest::ignoreMessage(QtDebugMsg, "SQL query \"SELECT foo\"");
+    QVERIFY(!query.exec("SELECT foo"));
+    QDjango::setDebugEnabled(false);
 }
 
 QTEST_MAIN(tst_QDjango)
