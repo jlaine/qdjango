@@ -73,12 +73,13 @@ class QDjangoFastCgiClient : public QObject
 public:
     QDjangoFastCgiClient(QIODevice *socket);
     QDjangoFastCgiReply* get(const QUrl &url);
+    QDjangoFastCgiReply* post(const QUrl &url, const QByteArray &data);
 
 private slots:
     void _q_readyRead();
 
 private:
-    QDjangoFastCgiReply* request(const QByteArray &method, const QUrl &url);
+    QDjangoFastCgiReply* request(const QByteArray &method, const QUrl &url, const QByteArray &data);
 
     QIODevice *m_device;
     QMap<quint16, QDjangoFastCgiReply*> m_replies;
@@ -94,10 +95,15 @@ QDjangoFastCgiClient::QDjangoFastCgiClient(QIODevice *socket)
 
 QDjangoFastCgiReply* QDjangoFastCgiClient::get(const QUrl &url)
 {
-    return request("GET", url);
+    return request("GET", url, QByteArray());
 }
 
-QDjangoFastCgiReply* QDjangoFastCgiClient::request(const QByteArray &method, const QUrl &url)
+QDjangoFastCgiReply* QDjangoFastCgiClient::post(const QUrl &url, const QByteArray &data)
+{
+    return request("POST", url, data);
+}
+
+QDjangoFastCgiReply* QDjangoFastCgiClient::request(const QByteArray &method, const QUrl &url, const QByteArray &data)
 {
     const quint16 requestId = ++m_requestId;
 
@@ -142,8 +148,8 @@ QDjangoFastCgiReply* QDjangoFastCgiClient::request(const QByteArray &method, con
 
     // STDIN
     header->type = FCGI_STDIN;
-    FCGI_Header_setContentLength(header, 0);
-    m_device->write(headerBuffer);
+    FCGI_Header_setContentLength(header, data.size());
+    m_device->write(headerBuffer + data);
 
     return reply;
 }
@@ -191,6 +197,7 @@ private slots:
     void init();
     void testLocal_data();
     void testLocal();
+    void testPost();
     void testTcp_data();
     void testTcp();
 
@@ -244,6 +251,30 @@ void tst_QDjangoFastCgiServer::testLocal()
     loop.exec();
 
     QCOMPARE(reply->data, data);
+}
+
+void tst_QDjangoFastCgiServer::testPost()
+{
+    const QString name("/tmp/qdjangofastcgi.socket");
+
+    QCOMPARE(server->listen(name), true);
+
+    QLocalSocket socket;
+    socket.connectToServer(name);
+    QCOMPARE(socket.state(), QLocalSocket::ConnectedState);
+
+    QDjangoFastCgiClient client(&socket);
+    QDjangoFastCgiReply *reply = client.post(QUrl("/"), QByteArray());
+
+    QEventLoop loop;
+    QObject::connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
+    loop.exec();
+
+    QCOMPARE(reply->data, QByteArray("Status: 200 OK\r\n" \
+        "Content-Length: 18\r\n" \
+        "Content-Type: text/plain\r\n" \
+        "\r\n" \
+        "method=POST|path=/"));
 }
 
 void tst_QDjangoFastCgiServer::testTcp_data()
