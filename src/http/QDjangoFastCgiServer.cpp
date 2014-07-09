@@ -32,7 +32,7 @@
 #include "QDjangoHttpServer.h"
 #include "QDjangoUrlResolver.h"
 
-#define QDJANGO_DEBUG_FCGI
+//#define QDJANGO_DEBUG_FCGI
 
 quint16 FCGI_Header_contentLength(FCGI_Header *header)
 {
@@ -42,6 +42,18 @@ quint16 FCGI_Header_contentLength(FCGI_Header *header)
 quint16 FCGI_Header_requestId(FCGI_Header *header)
 {
     return (header->requestIdB1 << 8) | header->requestIdB0;
+}
+
+void FCGI_Header_setContentLength(FCGI_Header *header, quint16 contentLength)
+{
+    header->contentLengthB1 = (contentLength >> 8) & 0xff;
+    header->contentLengthB0 = (contentLength & 0xff);
+}
+
+void FCGI_Header_setRequestId(FCGI_Header *header, quint16 requestId)
+{
+    header->requestIdB1 = (requestId >> 8) & 0xff;
+    header->requestIdB0 = (requestId & 0xff);
 }
 
 #ifdef QDJANGO_DEBUG_FCGI
@@ -104,14 +116,12 @@ void QDjangoFastCgiConnection::writeResponse(quint16 requestId, QDjangoHttpRespo
     FCGI_Header *header = (FCGI_Header*)m_outputBuffer;
     memset(header, 0, FCGI_HEADER_LEN);
     header->version = 1;
-    header->requestIdB1 = (requestId >> 8) & 0xff;
-    header->requestIdB0 = (requestId & 0xff);
+    FCGI_Header_setRequestId(header, requestId);
 
     for (qint64 bytesRemaining = data.size(); bytesRemaining > 0; ) {
         const quint16 contentLength = qMin(bytesRemaining, qint64(32768));
         header->type = FCGI_STDOUT;
-        header->contentLengthB1 = (contentLength >> 8) & 0xff;
-        header->contentLengthB0 = (contentLength & 0xff);
+        FCGI_Header_setContentLength(header, contentLength);
         memcpy(m_outputBuffer + FCGI_HEADER_LEN, ptr, contentLength);
         m_device->write(m_outputBuffer, FCGI_HEADER_LEN + contentLength);
 #ifdef QDJANGO_DEBUG_FCGI
@@ -124,8 +134,7 @@ void QDjangoFastCgiConnection::writeResponse(quint16 requestId, QDjangoHttpRespo
 
     quint16 contentLength = 8;
     header->type = FCGI_END_REQUEST;
-    header->contentLengthB1 = (contentLength >> 8) & 0xff;
-    header->contentLengthB0 = (contentLength & 0xff);
+    FCGI_Header_setContentLength(header, contentLength);
     memset(m_outputBuffer + FCGI_HEADER_LEN, 0, contentLength);
     m_device->write(m_outputBuffer, FCGI_HEADER_LEN + contentLength);
 #ifdef QDJANGO_DEBUG_FCGI

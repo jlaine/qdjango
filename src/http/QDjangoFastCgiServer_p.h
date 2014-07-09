@@ -55,6 +55,8 @@ typedef struct {
 
 quint16 FCGI_Header_contentLength(FCGI_Header *header);
 quint16 FCGI_Header_requestId(FCGI_Header *header);
+void FCGI_Header_setContentLength(FCGI_Header *header, quint16 contentLength);
+void FCGI_Header_setRequestId(FCGI_Header *header, quint16 requestId);
 
 class QDjangoFastCgiConnection : public QObject
 {

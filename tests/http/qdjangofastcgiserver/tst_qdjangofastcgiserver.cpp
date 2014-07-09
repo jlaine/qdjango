@@ -104,11 +104,9 @@ QDjangoFastCgiReply* QDjangoFastCgiClient::get(const QUrl &url)
     // BEGIN REQUEST
     ba = QByteArray("\x01\x00\x00\x00\x00\x00\x00\x00", 8);
     header->version = 1;
-    header->requestIdB0 = requestId;
-    header->requestIdB1 = 0;
+    FCGI_Header_setRequestId(header, requestId);
     header->type = FCGI_BEGIN_REQUEST;
-    header->contentLengthB0 = ba.size();
-    header->contentLengthB1 = 0;
+    FCGI_Header_setContentLength(header, ba.size());
     m_device->write(headerBuffer + ba);
 
     QMap<QByteArray, QByteArray> params;
@@ -132,12 +130,12 @@ QDjangoFastCgiReply* QDjangoFastCgiClient::get(const QUrl &url)
 
     // FAST CGI PARAMS
     header->type = FCGI_PARAMS;
-    header->contentLengthB0 = ba.size();
+    FCGI_Header_setContentLength(header, ba.size());
     m_device->write(headerBuffer + ba);
 
     // STDIN
     header->type = FCGI_STDIN;
-    header->contentLengthB0 = 0;
+    FCGI_Header_setContentLength(header, 0);
     m_device->write(headerBuffer);
 
     return reply;
