@@ -107,6 +107,7 @@ private slots:
     void filterRelated();
     void filterRelatedReverse();
     void filterRelatedReverse_null();
+    void primaryKey();
     void selectRelated();
     void selectRelated_null();
     void toString();
@@ -240,6 +241,15 @@ void tst_QDjangoModel::filterRelatedReverse_null()
     QVERIFY(author != 0);
     QCOMPARE(author->name(), QLatin1String("First author"));
     delete author;
+}
+
+void tst_QDjangoModel::primaryKey()
+{
+    Author author;
+    QCOMPARE(author.pk(), QVariant());
+
+    author.setPk(1);
+    QCOMPARE(author.pk(), QVariant(1));
 }
 
 /** Test eager loading of foreign keys.

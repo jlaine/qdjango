@@ -29,6 +29,7 @@ private slots:
     void database();
     void debugEnabled();
     void debugQuery();
+    void tables();
 };
 
 void tst_QDjango::database()
@@ -54,6 +55,12 @@ void tst_QDjango::debugQuery()
     QTest::ignoreMessage(QtDebugMsg, "SQL query \"SELECT foo\"");
     QVERIFY(!query.exec("SELECT foo"));
     QDjango::setDebugEnabled(false);
+}
+
+void tst_QDjango::tables()
+{
+    QDjango::createTables();
+    QDjango::dropTables();
 }
 
 QTEST_MAIN(tst_QDjango)
