@@ -38,6 +38,8 @@ private slots:
     void testServeNotFound();
     void testServeRedirect();
     void testServeStatic();
+    void testServeStaticHead();
+    void testServeStaticIfModifiedSince();
 };
 
 void tst_QDjangoHttpController::testBasicAuth()
@@ -174,13 +176,33 @@ void tst_QDjangoHttpController::testServeStatic()
     QVERIFY(!response->header("last-modified").isEmpty());
     QCOMPARE(response->body().size(), 48);
     delete response;
+}
 
-    // HEAD
+void tst_QDjangoHttpController::testServeStaticHead()
+{
+    QDjangoHttpRequest request;
     request.d->method = "HEAD";
-    response = QDjangoHttpController::serveStatic(request, ":/test.html");
+
+    QDjangoHttpResponse *response = QDjangoHttpController::serveStatic(request, ":/test.html");
     QCOMPARE(response->statusCode(), 200);
     QCOMPARE(response->header("content-type"), QString("text/html"));
     QCOMPARE(response->header("content-length"), QString("48"));
+    QCOMPARE(response->header("expires"), QString());
+    QVERIFY(!response->header("last-modified").isEmpty());
+    QCOMPARE(response->body().size(), 0);
+    delete response;
+}
+
+void tst_QDjangoHttpController::testServeStaticIfModifiedSince()
+{
+    QDjangoHttpRequest request;
+    request.d->method = "GET";
+    request.d->meta.insert("HTTP_IF_MODIFIED_SINCE", "Tue, 14 Jul 2054 11:22:33 GMT");
+
+    QDjangoHttpResponse *response = QDjangoHttpController::serveStatic(request, ":/test.html");
+    QCOMPARE(response->statusCode(), 304);
+    QCOMPARE(response->header("content-type"), QString());
+    QCOMPARE(response->header("content-length"), QString("0"));
     QCOMPARE(response->header("expires"), QString());
     QVERIFY(!response->header("last-modified").isEmpty());
     QCOMPARE(response->body().size(), 0);
