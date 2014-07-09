@@ -173,7 +173,7 @@ void QDjangoFastCgiConnection::_q_readyRead()
         if (m_inputPos < FCGI_HEADER_LEN) {
             const qint64 length = m_device->read(m_inputBuffer + m_inputPos, FCGI_HEADER_LEN - m_inputPos);
             if (length < 0) {
-                qWarning("Failed to read header from socket");
+                qWarning("Failed to read FastCGI record header from socket");
                 m_device->close();
                 emit closed();
                 return;
@@ -189,7 +189,7 @@ void QDjangoFastCgiConnection::_q_readyRead()
         const quint16 bodyLength = contentLength + header->paddingLength;
         const qint64 length = m_device->read(m_inputBuffer + m_inputPos, bodyLength + FCGI_HEADER_LEN - m_inputPos);
         if (length < 0) {
-            qWarning("Failed to read body from socket");
+            qWarning("Failed to read FastCGI record body from socket");
             m_device->close();
             emit closed();
             return;
@@ -204,14 +204,14 @@ void QDjangoFastCgiConnection::_q_readyRead()
         hDebug(header, "received");
 #endif
         if (header->version != 1) {
-            qWarning("Received FastCGI frame with an invalid version %i", header->version);
+            qWarning("Received FastCGI record with an invalid version %i", header->version);
             m_device->close();
             emit closed();
             return;
         }
         const quint16 requestId = FCGI_Header_requestId(header);
         if (header->type != FCGI_BEGIN_REQUEST && (!m_pendingRequest || requestId != m_pendingRequestId)) {
-            qWarning("Received FastCGI frame for an invalid request %i", requestId);
+            qWarning("Received FastCGI record for an invalid request %i", requestId);
             m_device->close();
             emit closed();
             return;
@@ -226,8 +226,9 @@ void QDjangoFastCgiConnection::_q_readyRead()
             qDebug("role: %i", role);
             qDebug("flags: %i", d[2]);
 #endif
+            // we do not support multiplexing
             if (m_pendingRequest) {
-                qWarning("Received FCGI_BEGIN_REQUEST inside a request");
+                qWarning("Received new FastCGI request %i while already handling request %i", requestId, m_pendingRequestId);
                 m_device->close();
                 emit closed();
                 return;
@@ -289,6 +290,7 @@ void QDjangoFastCgiConnection::_q_readyRead()
             if (contentLength) {
                 m_pendingRequest->d->buffer.append((char*)d, contentLength);
             } else {
+                // an empty STDIN record signals the end of the request
                 QDjangoHttpRequest *request = m_pendingRequest;
                 const quint16 requestId = m_pendingRequestId;
 
@@ -300,7 +302,7 @@ void QDjangoFastCgiConnection::_q_readyRead()
             }
             break;
         default:
-            qWarning("Received FastCGI frame with an invalid type %i", header->type);
+            qWarning("Received FastCGI record with an invalid type %i", header->type);
             m_device->close();
             emit closed();
             return;
