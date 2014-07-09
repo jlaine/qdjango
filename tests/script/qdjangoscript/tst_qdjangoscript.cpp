@@ -32,6 +32,7 @@ private slots:
     void initTestCase();
     void testWhereConstructor();
     void testWhereOperators();
+    void testWhereToString();
     void testModel();
     void cleanupTestCase();
 
@@ -146,6 +147,12 @@ void tst_QDjangoScript::testWhereOperators()
     result = engine->evaluate("Q({'username': 'foobar'}).or(Q({'password': 'foopass'}))");
     where = engine->fromScriptValue<QDjangoWhere>(result);
     CHECKWHERE(where, QLatin1String("username = ? OR password = ?"), QVariantList() << "foobar" << "foopass");
+}
+
+void tst_QDjangoScript::testWhereToString()
+{
+    QScriptValue result = engine->evaluate("Q({'username': 'foobar'}).toString()");
+    QCOMPARE(result.toString(), QLatin1String("Q(username = ?)"));
 }
 
 void tst_QDjangoScript::testModel()
