@@ -9,7 +9,6 @@ make
 QDJANGO_DB_DRIVER=QSQLITE tests/run.py
 QDJANGO_DB_DRIVER=QMYSQL QDJANGO_DB_NAME=qdjango_test QDJANGO_DB_USER=travis tests/run.py
 QDJANGO_DB_DRIVER=QPSQL QDJANGO_DB_NAME=qdjango_test QDJANGO_DB_USER=postgres tests/run.py
-exit 0
 
 # generate coverage report
 TRACEFILE=coverage.info

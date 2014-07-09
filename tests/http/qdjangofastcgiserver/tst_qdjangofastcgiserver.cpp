@@ -46,6 +46,12 @@
     "\r\n" \
     "method=GET|path=/")
 
+#define QUERY_STRING_DATA QByteArray("Status: 200 OK\r\n" \
+    "Content-Length: 25\r\n" \
+    "Content-Type: text/plain\r\n" \
+    "\r\n" \
+    "method=GET|path=/|get=bar")
+
 class QDjangoFastCgiReply : public QObject
 {
     Q_OBJECT
@@ -203,6 +209,7 @@ void tst_QDjangoFastCgiServer::testLocal_data()
     QTest::addColumn<QString>("path");
     QTest::addColumn<QByteArray>("data");
     QTest::newRow("root") << "/" << ROOT_DATA;
+    QTest::newRow("query-string") << "/?message=bar" << QUERY_STRING_DATA;
     QTest::newRow("not-found") << "/not-found" << NOT_FOUND_DATA;
     QTest::newRow("internal-server-error") << "/internal-server-error" << ERROR_DATA;
 }
@@ -234,6 +241,7 @@ void tst_QDjangoFastCgiServer::testTcp_data()
     QTest::addColumn<QString>("path");
     QTest::addColumn<QByteArray>("data");
     QTest::newRow("root") << "/" << ROOT_DATA;
+    QTest::newRow("query-string") << "/?message=bar" << QUERY_STRING_DATA;
     QTest::newRow("not-found") << "/not-found" << NOT_FOUND_DATA;
     QTest::newRow("internal-server-error") << "/internal-server-error" << ERROR_DATA;
 }
