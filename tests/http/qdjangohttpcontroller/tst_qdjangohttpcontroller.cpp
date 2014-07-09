@@ -120,24 +120,53 @@ void tst_QDjangoHttpController::testServeStatic()
     QDjangoHttpRequest request;
     QDjangoHttpResponse *response;
 
+    request.d->method = "GET";
     response = QDjangoHttpController::serveStatic(request, ":/not-found");
     QCOMPARE(response->statusCode(), 404);
+    QCOMPARE(response->header("content-type"), QString("text/html; charset=utf-8"));
+    QCOMPARE(response->header("content-length"), QString("107"));
+    QVERIFY(response->header("last-modified").isEmpty());
+    delete response;
+
+    response = QDjangoHttpController::serveStatic(request, ":/test.bin");
+    QCOMPARE(response->statusCode(), 200);
+    QCOMPARE(response->header("content-type"), QString("application/octet-stream"));
+    QCOMPARE(response->header("content-length"), QString("6"));
+    QVERIFY(!response->header("last-modified").isEmpty());
     delete response;
 
     response = QDjangoHttpController::serveStatic(request, ":/test.css");
     QCOMPARE(response->statusCode(), 200);
     QCOMPARE(response->header("content-type"), QString("text/css"));
+    QCOMPARE(response->header("content-length"), QString("27"));
     QVERIFY(!response->header("last-modified").isEmpty());
+    QCOMPARE(response->body().size(), 27);
+    delete response;
 
     response = QDjangoHttpController::serveStatic(request, ":/test.js");
     QCOMPARE(response->statusCode(), 200);
     QCOMPARE(response->header("content-type"), QString("application/javascript"));
+    QCOMPARE(response->header("content-length"), QString("21"));
     QVERIFY(!response->header("last-modified").isEmpty());
+    QCOMPARE(response->body().size(), 21);
+    delete response;
 
     response = QDjangoHttpController::serveStatic(request, ":/test.html");
     QCOMPARE(response->statusCode(), 200);
     QCOMPARE(response->header("content-type"), QString("text/html"));
+    QCOMPARE(response->header("content-length"), QString("48"));
     QVERIFY(!response->header("last-modified").isEmpty());
+    QCOMPARE(response->body().size(), 48);
+    delete response;
+
+    // HEAD
+    request.d->method = "HEAD";
+    response = QDjangoHttpController::serveStatic(request, ":/test.html");
+    QCOMPARE(response->statusCode(), 200);
+    QCOMPARE(response->header("content-type"), QString("text/html"));
+    QCOMPARE(response->header("content-length"), QString("48"));
+    QVERIFY(!response->header("last-modified").isEmpty());
+    QCOMPARE(response->body().size(), 0);
     delete response;
 }
 

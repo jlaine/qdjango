@@ -1,6 +1,7 @@
 <!DOCTYPE RCC>
 <RCC version="1.0">
 <qresource>
+    <file>test.bin</file>
     <file>test.css</file>
     <file>test.js</file>
     <file>test.html</file>
