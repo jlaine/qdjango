@@ -194,6 +194,10 @@ class tst_QDjangoFastCgiServer : public QObject
 private slots:
     void cleanup();
     void init();
+    void testAbort();
+    void testBadBegin();
+    void testBadRequestId();
+    void testBadRequestType();
     void testLocal_data();
     void testLocal();
     void testTcp_data();
@@ -217,6 +221,140 @@ void tst_QDjangoFastCgiServer::init()
     server = new QDjangoFastCgiServer;
     server->urls()->set(QRegExp(QLatin1String(QLatin1String("^$"))), this, "_q_index");
     server->urls()->set(QRegExp(QLatin1String("^internal-server-error$")), this, "_q_error");
+}
+
+void tst_QDjangoFastCgiServer::testAbort()
+{
+    const QString name("/tmp/qdjangofastcgi.socket");
+    QCOMPARE(server->listen(name), true);
+
+    QLocalSocket socket;
+    socket.connectToServer(name);
+
+    QByteArray headerBuffer(FCGI_HEADER_LEN, '\0');
+    FCGI_Header *header = (FCGI_Header*)headerBuffer.data();
+    header->version = 1;
+    FCGI_Header_setRequestId(header, 1);
+
+    // check socket is connected
+    QCOMPARE(socket.state(), QLocalSocket::ConnectedState);
+
+    // BEGIN REQUEST
+    const QByteArray ba("\x01\x00\x00\x00\x00\x00\x00\x00", 8);
+    header->type = FCGI_BEGIN_REQUEST;
+    FCGI_Header_setContentLength(header, ba.size());
+    socket.write(headerBuffer + ba);
+
+    // ABORT REQUEST
+    header->type = FCGI_ABORT_REQUEST;
+    FCGI_Header_setContentLength(header, 0);
+    socket.write(headerBuffer);
+
+    // wait for connection to close
+    QEventLoop loop;
+    QObject::connect(&socket, SIGNAL(disconnected()), &loop, SLOT(quit()));
+    loop.exec();
+
+    QCOMPARE(socket.state(), QLocalSocket::UnconnectedState);
+}
+
+void tst_QDjangoFastCgiServer::testBadBegin()
+{
+    const QString name("/tmp/qdjangofastcgi.socket");
+    QCOMPARE(server->listen(name), true);
+
+    QLocalSocket socket;
+    socket.connectToServer(name);
+
+    QByteArray headerBuffer(FCGI_HEADER_LEN, '\0');
+    FCGI_Header *header = (FCGI_Header*)headerBuffer.data();
+    header->version = 1;
+    FCGI_Header_setRequestId(header, 1);
+
+    // check socket is connected
+    QCOMPARE(socket.state(), QLocalSocket::ConnectedState);
+
+    // BEGIN REQUEST
+    const QByteArray ba("\x01\x00\x00\x00\x00\x00\x00\x00", 8);
+    header->type = FCGI_BEGIN_REQUEST;
+    FCGI_Header_setContentLength(header, ba.size());
+    socket.write(headerBuffer + ba);
+
+    // BEGIN REQUEST again
+    header->type = FCGI_BEGIN_REQUEST;
+    FCGI_Header_setContentLength(header, ba.size());
+    socket.write(headerBuffer + ba);
+
+    // wait for connection to close
+    QEventLoop loop;
+    QObject::connect(&socket, SIGNAL(disconnected()), &loop, SLOT(quit()));
+    loop.exec();
+
+    QCOMPARE(socket.state(), QLocalSocket::UnconnectedState);
+}
+
+void tst_QDjangoFastCgiServer::testBadRequestId()
+{
+    const QString name("/tmp/qdjangofastcgi.socket");
+    QCOMPARE(server->listen(name), true);
+
+    QLocalSocket socket;
+    socket.connectToServer(name);
+
+    QByteArray headerBuffer(FCGI_HEADER_LEN, '\0');
+    FCGI_Header *header = (FCGI_Header*)headerBuffer.data();
+    header->version = 1;
+    FCGI_Header_setRequestId(header, 1);
+
+    // check socket is connected
+    QCOMPARE(socket.state(), QLocalSocket::ConnectedState);
+
+    // ABORT REQUEST
+    header->type = FCGI_ABORT_REQUEST;
+    FCGI_Header_setContentLength(header, 0);
+    socket.write(headerBuffer);
+
+    // wait for connection to close
+    QEventLoop loop;
+    QObject::connect(&socket, SIGNAL(disconnected()), &loop, SLOT(quit()));
+    loop.exec();
+
+    QCOMPARE(socket.state(), QLocalSocket::UnconnectedState);
+}
+
+void tst_QDjangoFastCgiServer::testBadRequestType()
+{
+    const QString name("/tmp/qdjangofastcgi.socket");
+    QCOMPARE(server->listen(name), true);
+
+    QLocalSocket socket;
+    socket.connectToServer(name);
+
+    QByteArray headerBuffer(FCGI_HEADER_LEN, '\0');
+    FCGI_Header *header = (FCGI_Header*)headerBuffer.data();
+    header->version = 1;
+    FCGI_Header_setRequestId(header, 1);
+
+    // check socket is connected
+    QCOMPARE(socket.state(), QLocalSocket::ConnectedState);
+
+    // BEGIN REQUEST
+    const QByteArray ba("\x01\x00\x00\x00\x00\x00\x00\x00", 8);
+    header->type = FCGI_BEGIN_REQUEST;
+    FCGI_Header_setContentLength(header, ba.size());
+    socket.write(headerBuffer + ba);
+
+    // bogus request type
+    header->type = 7;
+    FCGI_Header_setContentLength(header, 0);
+    socket.write(headerBuffer);
+
+    // wait for connection to close
+    QEventLoop loop;
+    QObject::connect(&socket, SIGNAL(disconnected()), &loop, SLOT(quit()));
+    loop.exec();
+
+    QCOMPARE(socket.state(), QLocalSocket::UnconnectedState);
 }
 
 void tst_QDjangoFastCgiServer::testLocal_data()
