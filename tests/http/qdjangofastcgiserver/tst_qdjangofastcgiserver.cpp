@@ -78,6 +78,8 @@ private slots:
     void _q_readyRead();
 
 private:
+    QDjangoFastCgiReply* request(const QByteArray &method, const QUrl &url);
+
     QIODevice *m_device;
     QMap<quint16, QDjangoFastCgiReply*> m_replies;
     quint16 m_requestId;
@@ -91,6 +93,11 @@ QDjangoFastCgiClient::QDjangoFastCgiClient(QIODevice *socket)
 };
 
 QDjangoFastCgiReply* QDjangoFastCgiClient::get(const QUrl &url)
+{
+    return request("GET", url);
+}
+
+QDjangoFastCgiReply* QDjangoFastCgiClient::request(const QByteArray &method, const QUrl &url)
 {
     const quint16 requestId = ++m_requestId;
 
@@ -117,7 +124,7 @@ QDjangoFastCgiReply* QDjangoFastCgiClient::get(const QUrl &url)
     params["QUERY_STRING"] = url.encodedQuery();
 #endif
     params["REQUEST_URI"] = url.toString().toUtf8();
-    params["REQUEST_METHOD"] = "GET";
+    params["REQUEST_METHOD"] = method;
 
     ba.clear();
     foreach (const QByteArray &key, params.keys()) {
@@ -140,6 +147,7 @@ QDjangoFastCgiReply* QDjangoFastCgiClient::get(const QUrl &url)
 
     return reply;
 }
+
 
 void QDjangoFastCgiClient::_q_readyRead()
 {
