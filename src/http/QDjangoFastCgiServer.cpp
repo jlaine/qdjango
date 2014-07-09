@@ -221,11 +221,12 @@ void QDjangoFastCgiConnection::_q_readyRead()
         quint8 *d = (quint8*)(m_inputBuffer + FCGI_HEADER_LEN);
         switch (header->type) {
         case FCGI_BEGIN_REQUEST: {
+            const quint8 flags = d[2];
 #ifdef QDJANGO_DEBUG_FCGI
             const quint16 role = (d[0] << 8) | d[1];
             qDebug("[BEGIN REQUEST]");
             qDebug("role: %i", role);
-            qDebug("flags: %i", d[2]);
+            qDebug("flags: %i", flags);
 #endif
             // we do not support multiplexing
             if (m_pendingRequest) {
@@ -234,7 +235,7 @@ void QDjangoFastCgiConnection::_q_readyRead()
                 emit closed();
                 return;
             }
-            m_keepConnection = (d[2] & FCGI_KEEP_CONN);
+            m_keepConnection = (flags & FCGI_KEEP_CONN);
             m_pendingRequest = new QDjangoHttpRequest;
             m_pendingRequestId = requestId;
             break;
