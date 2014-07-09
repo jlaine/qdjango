@@ -247,16 +247,26 @@ void tst_QDjangoFastCgiServer::testLocal()
     
     QLocalSocket socket;
     socket.connectToServer(name);
-    QCOMPARE(socket.state(), QLocalSocket::ConnectedState);
-
-    QDjangoFastCgiClient client(&socket);
-    QDjangoFastCgiReply *reply = client.get(path);
 
     QEventLoop loop;
+    QDjangoFastCgiClient client(&socket);
+
+    // check socket is connected
+    QCOMPARE(socket.state(), QLocalSocket::ConnectedState);
+
+    // wait for reply
+    QDjangoFastCgiReply *reply = client.get(path);
     QObject::connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
     loop.exec();
 
+    QCOMPARE(socket.state(), QLocalSocket::ConnectedState);
     QCOMPARE(reply->data, data);
+
+    // wait for connection to close
+    QObject::connect(&socket, SIGNAL(disconnected()), &loop, SLOT(quit()));
+    loop.exec();
+
+    QCOMPARE(socket.state(), QLocalSocket::UnconnectedState);
 }
 
 void tst_QDjangoFastCgiServer::testPost()
@@ -269,18 +279,26 @@ void tst_QDjangoFastCgiServer::testPost()
     socket.connectToServer(name);
     QCOMPARE(socket.state(), QLocalSocket::ConnectedState);
 
-    QDjangoFastCgiClient client(&socket);
-    QDjangoFastCgiReply *reply = client.post(QUrl("/"), QByteArray("message=bar"));
-
     QEventLoop loop;
+    QDjangoFastCgiClient client(&socket);
+
+    // wait for reply
+    QDjangoFastCgiReply *reply = client.post(QUrl("/"), QByteArray("message=bar"));
     QObject::connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
     loop.exec();
 
+    QCOMPARE(socket.state(), QLocalSocket::ConnectedState);
     QCOMPARE(reply->data, QByteArray("Status: 200 OK\r\n" \
         "Content-Length: 27\r\n" \
         "Content-Type: text/plain\r\n" \
         "\r\n" \
         "method=POST|path=/|post=bar"));
+
+    // wait for connection to close
+    QObject::connect(&socket, SIGNAL(disconnected()), &loop, SLOT(quit()));
+    loop.exec();
+
+    QCOMPARE(socket.state(), QLocalSocket::UnconnectedState);
 }
 
 void tst_QDjangoFastCgiServer::testTcp_data()
@@ -303,19 +321,28 @@ void tst_QDjangoFastCgiServer::testTcp()
     QTcpSocket socket;
     socket.connectToHost("127.0.0.1", 8123);
 
+    QEventLoop loop;
     QDjangoFastCgiClient client(&socket);
 
-    QEventLoop loop;
+    // wait for socket to connect
     QObject::connect(&socket, SIGNAL(connected()), &loop, SLOT(quit()));
     loop.exec();
 
     QCOMPARE(socket.state(), QAbstractSocket::ConnectedState);
 
+    // wait for reply
     QDjangoFastCgiReply *reply = client.get(path);
     QObject::connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
     loop.exec();
 
+    QCOMPARE(socket.state(), QAbstractSocket::ConnectedState);
     QCOMPARE(reply->data, data);
+
+    // wait for connection to close
+    QObject::connect(&socket, SIGNAL(disconnected()), &loop, SLOT(quit()));
+    loop.exec();
+
+    QCOMPARE(socket.state(), QAbstractSocket::UnconnectedState);
 }
 
 QDjangoHttpResponse *tst_QDjangoFastCgiServer::_q_index(const QDjangoHttpRequest &request)
