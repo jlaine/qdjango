@@ -147,9 +147,15 @@ QDjangoFastCgiReply* QDjangoFastCgiClient::request(const QByteArray &method, con
     m_device->write(headerBuffer + ba);
 
     // STDIN
+    if (data.size() > 0) {
+        header->type = FCGI_STDIN;
+        FCGI_Header_setContentLength(header, data.size());
+        m_device->write(headerBuffer + data);
+    }
+
     header->type = FCGI_STDIN;
-    FCGI_Header_setContentLength(header, data.size());
-    m_device->write(headerBuffer + data);
+    FCGI_Header_setContentLength(header, 0);
+    m_device->write(headerBuffer);
 
     return reply;
 }
@@ -264,17 +270,17 @@ void tst_QDjangoFastCgiServer::testPost()
     QCOMPARE(socket.state(), QLocalSocket::ConnectedState);
 
     QDjangoFastCgiClient client(&socket);
-    QDjangoFastCgiReply *reply = client.post(QUrl("/"), QByteArray());
+    QDjangoFastCgiReply *reply = client.post(QUrl("/"), QByteArray("message=bar"));
 
     QEventLoop loop;
     QObject::connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
     loop.exec();
 
     QCOMPARE(reply->data, QByteArray("Status: 200 OK\r\n" \
-        "Content-Length: 18\r\n" \
+        "Content-Length: 27\r\n" \
         "Content-Type: text/plain\r\n" \
         "\r\n" \
-        "method=POST|path=/"));
+        "method=POST|path=/|post=bar"));
 }
 
 void tst_QDjangoFastCgiServer::testTcp_data()
