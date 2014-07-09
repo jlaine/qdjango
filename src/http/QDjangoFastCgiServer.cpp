@@ -205,7 +205,7 @@ void QDjangoFastCgiConnection::_q_readyRead()
 #endif
         const quint16 requestId = FCGI_Header_requestId(header);
         if (header->type != FCGI_BEGIN_REQUEST && (!m_pendingRequest || requestId != m_pendingRequestId)) {
-            qWarning("Received FastCGI frame for an invalid request");
+            qWarning("Received FastCGI frame for an invalid request %i", requestId);
             m_device->close();
             emit closed();
             return;
@@ -224,16 +224,19 @@ void QDjangoFastCgiConnection::_q_readyRead()
                 qWarning("Received FCGI_BEGIN_REQUEST inside a request");
                 m_device->close();
                 emit closed();
-                break;
+                return;
             }
             m_pendingRequest = new QDjangoHttpRequest;
             m_pendingRequestId = requestId;
             break;
         }
         case FCGI_ABORT_REQUEST:
+#ifdef QDJANGO_DEBUG_FCGI
+            qDebug("[ABORT]");
+#endif
             m_device->close();
             emit closed();
-            break;
+            return;
         case FCGI_PARAMS:
 #ifdef QDJANGO_DEBUG_FCGI
             qDebug("[PARAMS]");
@@ -291,8 +294,10 @@ void QDjangoFastCgiConnection::_q_readyRead()
             }
             break;
         default:
-            qWarning("Unhandled request type %i", header->type);
-            break;
+            qWarning("Received FastCGI frame with an invalid type %i", header->type);
+            m_device->close();
+            emit closed();
+            return;
         }
     }
 }
