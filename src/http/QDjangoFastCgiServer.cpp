@@ -20,6 +20,7 @@
 #include <QLocalSocket>
 #include <QTcpServer>
 #include <QTcpSocket>
+#include <QUrl>
 
 #include "QDjangoFastCgiServer.h"
 #include "QDjangoFastCgiServer_p.h"
@@ -245,6 +246,8 @@ void QDjangoFastCgiConnection::_q_readyRead()
 #endif
                 if (name == "PATH_INFO") {
                     m_pendingRequest->d->path = QString::fromUtf8(value);
+                } else if (name == "REQUEST_URI") {
+                    m_pendingRequest->d->path = QUrl(QString::fromUtf8(value)).path();
                 } else if (name == "REQUEST_METHOD") {
                     m_pendingRequest->d->method = QString::fromUtf8(value);
                 }
