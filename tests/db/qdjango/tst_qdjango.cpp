@@ -52,7 +52,6 @@ void tst_QDjango::debugQuery()
 {
     QDjangoQuery query(QDjango::database());
     QDjango::setDebugEnabled(true);
-    QTest::ignoreMessage(QtDebugMsg, "SQL query \"SELECT foo\"");
     QVERIFY(!query.exec("SELECT foo"));
     QDjango::setDebugEnabled(false);
 }
