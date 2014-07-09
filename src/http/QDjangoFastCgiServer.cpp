@@ -158,6 +158,9 @@ void QDjangoFastCgiConnection::_q_bytesWritten(qint64 bytes)
 {
     Q_UNUSED(bytes);
     if (!m_device->bytesToWrite()) {
+#ifdef QDJANGO_DEBUG_FCGI
+        qDebug("Closing connection");
+#endif
         m_device->close();
         emit closed();
     }
@@ -201,6 +204,13 @@ void QDjangoFastCgiConnection::_q_readyRead()
         hDebug(header, "received");
 #endif
         const quint16 requestId = FCGI_Header_requestId(header);
+        if (header->type != FCGI_BEGIN_REQUEST && (!m_pendingRequest || requestId != m_pendingRequestId)) {
+            qWarning("Received FastCGI frame for an invalid request");
+            m_device->close();
+            emit closed();
+            return;
+        }
+
         char *p = m_inputBuffer + FCGI_HEADER_LEN;
         switch (header->type) {
         case FCGI_BEGIN_REQUEST: {
@@ -228,13 +238,6 @@ void QDjangoFastCgiConnection::_q_readyRead()
 #ifdef QDJANGO_DEBUG_FCGI
             qDebug("[PARAMS]");
 #endif
-            if (!m_pendingRequest || requestId != m_pendingRequestId) {
-                qWarning("Received FCGI_PARAMS outside a request");
-                m_device->close();
-                emit closed();
-                break;
-            }
-
             while (p < m_inputBuffer + FCGI_HEADER_LEN + contentLength) {
                 quint32 nameLength;
                 quint32 valueLength;
@@ -274,13 +277,6 @@ void QDjangoFastCgiConnection::_q_readyRead()
 #ifdef QDJANGO_DEBUG_FCGI
             qDebug("[STDIN]");
 #endif
-            if (!m_pendingRequest || requestId != m_pendingRequestId) {
-                qWarning("Received FCGI_STDIN outside a request");
-                m_device->close();
-                emit closed();
-                break;
-            }
-
             if (contentLength) {
                 m_pendingRequest->d->buffer.append(p, contentLength);
             } else {
