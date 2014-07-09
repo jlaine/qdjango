@@ -27,9 +27,20 @@ class tst_QDjangoHttpRequest : public QObject
     Q_OBJECT
 
 private slots:
+    void testBody();
     void testGet();
     void testPost();
 };
+
+void tst_QDjangoHttpRequest::testBody()
+{
+    QDjangoHttpRequest request;
+
+    QCOMPARE(request.body(), QByteArray());
+
+    request.d->buffer = QByteArray("foo=bar");
+    QCOMPARE(request.body(), QByteArray("foo=bar"));
+}
 
 void tst_QDjangoHttpRequest::testGet()
 {
