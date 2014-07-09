@@ -169,7 +169,7 @@ void QDjangoFastCgiClient::_q_readyRead()
             const QByteArray data = QByteArray(inputBuffer + FCGI_HEADER_LEN, contentLength);
             m_replies[requestId]->data += data;
         } else if (header->type == FCGI_END_REQUEST) {
-            m_replies[requestId]->finished();
+            QMetaObject::invokeMethod(m_replies[requestId], "finished");
         }
     }
 }
