@@ -58,6 +58,20 @@
     "\r\n" \
     "method=GET|path=/|get=bar")
 
+static QByteArray encodeSize(quint32 size)
+{
+    QByteArray ba;
+    if (size < 128) {
+        ba.append(char(size & 0x7f));
+    } else {
+        ba.append(char((size >> 24) | 0x80));
+        ba.append(char((size >> 16) & 0xff));
+        ba.append(char((size >> 8) & 0xff));
+        ba.append(char(size & 0xff));
+    }
+    return ba;
+}
+
 class QDjangoFastCgiReply : public QObject
 {
     Q_OBJECT
@@ -124,12 +138,13 @@ QDjangoFastCgiReply* QDjangoFastCgiClient::request(const QString &method, const 
 #endif
     params["REQUEST_URI"] = url.toString().toUtf8();
     params["REQUEST_METHOD"] = method.toUtf8();
+    params["aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"] = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
 
     ba.clear();
     foreach (const QByteArray &key, params.keys()) {
         const QByteArray value = params.value(key);
-        ba.append(char(key.size()));
-        ba.append(char(value.size()));
+        ba.append(encodeSize(key.size()));
+        ba.append(encodeSize(value.size()));
         ba.append(key);
         ba.append(value);
     }
