@@ -21,22 +21,44 @@
 #include <QUrl>
 
 #include "QDjangoFastCgiServer.h"
+#include "QDjangoFastCgiServer_p.h"
 #include "QDjangoHttpController.h"
 #include "QDjangoHttpRequest.h"
 #include "QDjangoHttpResponse.h"
 #include "QDjangoFastCgiServer.h"
 #include "QDjangoUrlResolver.h"
 
-typedef struct {
-    unsigned char version;
-    unsigned char type;
-    unsigned char requestIdB1;
-    unsigned char requestIdB0;
-    unsigned char contentLengthB1;
-    unsigned char contentLengthB0;
-    unsigned char paddingLength;
-    unsigned char reserved;
-} FCGI_Header;
+#define ERROR_DATA QByteArray("Status: 500 Internal Server Error\r\n" \
+    "Content-Length: 107\r\n" \
+    "Content-Type: text/html; charset=utf-8\r\n" \
+    "\r\n" \
+    "<html><head><title>Error</title></head><body><p>An internal server error was encountered.</p></body></html>")
+
+#define NOT_FOUND_DATA QByteArray("Status: 404 Not Found\r\n" \
+    "Content-Length: 107\r\n" \
+    "Content-Type: text/html; charset=utf-8\r\n" \
+    "\r\n" \
+    "<html><head><title>Error</title></head><body><p>The document you requested was not found.</p></body></html>")
+
+#define ROOT_DATA QByteArray("Status: 200 OK\r\n" \
+    "Content-Length: 17\r\n" \
+    "Content-Type: text/plain\r\n" \
+    "\r\n" \
+    "method=GET|path=/")
+
+class QDjangoFastCgiReply : public QObject
+{
+    Q_OBJECT
+
+public:
+    QDjangoFastCgiReply(QObject *parent = 0)
+        : QObject(parent) {};
+
+    QByteArray data;
+
+signals:
+    void finished();
+};
 
 class QDjangoFastCgiClient : public QObject
 {
@@ -44,20 +66,31 @@ class QDjangoFastCgiClient : public QObject
 
 public:
     QDjangoFastCgiClient(QIODevice *socket);
-    void get(const QString &path);
+    QDjangoFastCgiReply* get(const QString &path);
+
+private slots:
+    void _q_readyRead();
 
 private:
     QIODevice *m_device;
+    QMap<quint16, QDjangoFastCgiReply*> m_replies;
+    quint16 m_requestId;
 };
 
 QDjangoFastCgiClient::QDjangoFastCgiClient(QIODevice *socket)
     : m_device(socket)
+    , m_requestId(0)
 {
+    connect(socket, SIGNAL(readyRead()), this, SLOT(_q_readyRead()));
 };
 
-void QDjangoFastCgiClient::get(const QString &path)
+QDjangoFastCgiReply* QDjangoFastCgiClient::get(const QString &path)
 {
-    QByteArray headerBuffer(8, '\0');
+    const quint16 requestId = ++m_requestId;
+
+    QDjangoFastCgiReply *reply = new QDjangoFastCgiReply(this);
+    m_replies[requestId] = reply;
+    QByteArray headerBuffer(FCGI_HEADER_LEN, '\0');
     FCGI_Header *header = (FCGI_Header*)headerBuffer.data();
 
     QByteArray ba;
@@ -65,9 +98,9 @@ void QDjangoFastCgiClient::get(const QString &path)
     // BEGIN REQUEST
     ba = QByteArray("\x01\x00\x00\x00\x00\x00\x00\x00", 8);
     header->version = 1;
-    header->requestIdB0 = 1;
+    header->requestIdB0 = requestId;
     header->requestIdB1 = 0;
-    header->type = 0x01;
+    header->type = FCGI_BEGIN_REQUEST;
     header->contentLengthB0 = ba.size();
     header->contentLengthB1 = 0;
     m_device->write(headerBuffer + ba);
@@ -86,14 +119,47 @@ void QDjangoFastCgiClient::get(const QString &path)
     }
 
     // FAST CGI PARAMS
-    header->type = 0x04;
+    header->type = FCGI_PARAMS;
     header->contentLengthB0 = ba.size();
     m_device->write(headerBuffer + ba);
 
     // STDIN
-    header->type = 0x05;
+    header->type = FCGI_STDIN;
     header->contentLengthB0 = 0;
     m_device->write(headerBuffer);
+
+    return reply;
+}
+
+void QDjangoFastCgiClient::_q_readyRead()
+{
+    char inputBuffer[FCGI_RECORD_SIZE];
+    FCGI_Header *header = (FCGI_Header*)inputBuffer;
+
+    while (m_device->bytesAvailable()) {
+        if (m_device->read(inputBuffer, FCGI_HEADER_LEN) != FCGI_HEADER_LEN) {
+            qWarning("header read fail");
+            return;
+        }
+
+        const quint16 requestId = (header->requestIdB1 << 8) | header->requestIdB0;
+        const quint16 contentLength = (header->contentLengthB1 << 8) | header->contentLengthB0;
+        const quint16 bodyLength = contentLength + header->paddingLength;
+        if (m_device->read(inputBuffer + FCGI_HEADER_LEN, bodyLength) != bodyLength) {
+            qWarning("body read fail");
+            return;
+        }
+        if (!m_replies.contains(requestId)) {
+            qWarning() << "unknown request" << requestId;
+            return;
+        }
+        if (header->type == FCGI_STDOUT) {
+            const QByteArray data = QByteArray(inputBuffer + FCGI_HEADER_LEN, contentLength);
+            m_replies[requestId]->data += data;
+        } else if (header->type == FCGI_END_REQUEST) {
+            m_replies[requestId]->finished();
+        }
+    }
 }
 
 /** Test QDjangoFastCgiServer class.
@@ -103,9 +169,11 @@ class tst_QDjangoFastCgiServer : public QObject
     Q_OBJECT
 
 private slots:
-    void cleanupTestCase();
-    void initTestCase();
+    void cleanup();
+    void init();
+    void testLocal_data();
     void testLocal();
+    void testTcp_data();
     void testTcp();
 
     QDjangoHttpResponse* _q_index(const QDjangoHttpRequest &request);
@@ -115,40 +183,64 @@ private:
     QDjangoFastCgiServer *server;
 };
 
-
-void tst_QDjangoFastCgiServer::cleanupTestCase()
+void tst_QDjangoFastCgiServer::cleanup()
 {
     server->close();
     delete server;
 }
 
-void tst_QDjangoFastCgiServer::initTestCase()
+void tst_QDjangoFastCgiServer::init()
 {
     server = new QDjangoFastCgiServer;
     server->urls()->set(QRegExp(QLatin1String(QLatin1String("^$"))), this, "_q_index");
     server->urls()->set(QRegExp(QLatin1String("^internal-server-error$")), this, "_q_error");
 }
 
+void tst_QDjangoFastCgiServer::testLocal_data()
+{
+    QTest::addColumn<QString>("path");
+    QTest::addColumn<QByteArray>("data");
+    QTest::newRow("root") << "/" << ROOT_DATA;
+    QTest::newRow("not-found") << "/not-found" << NOT_FOUND_DATA;
+    QTest::newRow("internal-server-error") << "/internal-server-error" << ERROR_DATA;
+}
+
 void tst_QDjangoFastCgiServer::testLocal()
 {
+    QFETCH(QString, path);
+    QFETCH(QByteArray, data);
+
     const QString name("/tmp/qdjangofastcgi.socket");
     QCOMPARE(server->listen(name), true);
     
     QLocalSocket socket;
     socket.connectToServer(name);
+    QCOMPARE(socket.state(), QLocalSocket::ConnectedState);
 
     QDjangoFastCgiClient client(&socket);
-
-    QCOMPARE(socket.state(), QLocalSocket::ConnectedState);
-    client.get("/");
+    QDjangoFastCgiReply *reply = client.get(path);
 
     QEventLoop loop;
-    QObject::connect(&socket, SIGNAL(readyRead()), &loop, SLOT(quit()));
+    QObject::connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
     loop.exec();
+
+    QCOMPARE(reply->data, data);
+}
+
+void tst_QDjangoFastCgiServer::testTcp_data()
+{
+    QTest::addColumn<QString>("path");
+    QTest::addColumn<QByteArray>("data");
+    QTest::newRow("root") << "/" << ROOT_DATA;
+    QTest::newRow("not-found") << "/not-found" << NOT_FOUND_DATA;
+    QTest::newRow("internal-server-error") << "/internal-server-error" << ERROR_DATA;
 }
 
 void tst_QDjangoFastCgiServer::testTcp()
 {
+    QFETCH(QString, path);
+    QFETCH(QByteArray, data);
+
     QCOMPARE(server->listen(QHostAddress::LocalHost, 8123), true);
 
     QTcpSocket socket;
@@ -161,10 +253,12 @@ void tst_QDjangoFastCgiServer::testTcp()
     loop.exec();
 
     QCOMPARE(socket.state(), QAbstractSocket::ConnectedState);
-    client.get("/");
-    
-    QObject::connect(&socket, SIGNAL(readyRead()), &loop, SLOT(quit()));
+
+    QDjangoFastCgiReply *reply = client.get(path);
+    QObject::connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
     loop.exec();
+
+    QCOMPARE(reply->data, data);
 }
 
 QDjangoHttpResponse *tst_QDjangoFastCgiServer::_q_index(const QDjangoHttpRequest &request)
@@ -172,7 +266,6 @@ QDjangoHttpResponse *tst_QDjangoFastCgiServer::_q_index(const QDjangoHttpRequest
     QDjangoHttpResponse *response = new QDjangoHttpResponse;
     response->setHeader(QLatin1String("Content-Type"), QLatin1String("text/plain"));
 
-    qDebug() << "INDEX";
     QString output = QLatin1String("method=") + request.method();
     output += QLatin1String("|path=") + request.path();
 
