@@ -18,8 +18,24 @@
 #include <QSqlDriver>
 
 #include "QDjango.h"
+#include "QDjangoModel.h"
 
 #include "util.h"
+
+class Author : public QDjangoModel
+{
+    Q_OBJECT
+    Q_PROPERTY(QString name READ name WRITE setName)
+
+public:
+    Author(QObject *parent = 0) : QDjangoModel(parent) {}
+
+    QString name() const { return m_name; }
+    void setName(const QString &name) { m_name = name; }
+
+private:
+    QString m_name;
+};
 
 class tst_QDjango : public QObject
 {
@@ -27,9 +43,9 @@ class tst_QDjango : public QObject
 
 private slots:
     void database();
+    void databaseTables();
     void debugEnabled();
     void debugQuery();
-    void tables();
 };
 
 void tst_QDjango::database()
@@ -37,6 +53,17 @@ void tst_QDjango::database()
     QCOMPARE(QDjango::database().isOpen(), false);
     QVERIFY(initialiseDatabase());
     QCOMPARE(QDjango::database().isOpen(), true);
+}
+
+void tst_QDjango::databaseTables()
+{
+    QDjango::registerModel<Author>();
+    QSqlDatabase db = QDjango::database();
+    QVERIFY(db.tables().indexOf("author") == -1);
+    QVERIFY(QDjango::createTables());
+    QVERIFY(db.tables().indexOf("author") != -1);
+    QVERIFY(QDjango::dropTables());
+    QVERIFY(db.tables().indexOf("author") == -1);
 }
 
 void tst_QDjango::debugEnabled()
@@ -54,12 +81,6 @@ void tst_QDjango::debugQuery()
     QDjango::setDebugEnabled(true);
     QVERIFY(!query.exec("SELECT foo"));
     QDjango::setDebugEnabled(false);
-}
-
-void tst_QDjango::tables()
-{
-    QDjango::createTables();
-    QDjango::dropTables();
 }
 
 QTEST_MAIN(tst_QDjango)
