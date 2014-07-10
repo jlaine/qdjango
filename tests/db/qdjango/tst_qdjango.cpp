@@ -16,6 +16,8 @@
  */
 
 #include <QSqlDriver>
+#include <QThread>
+#include <QTimer>
 
 #include "QDjango.h"
 #include "QDjangoModel.h"
@@ -37,6 +39,24 @@ private:
     QString m_name;
 };
 
+class Worker : public QObject
+{
+    Q_OBJECT
+
+public slots:
+    void doIt();
+
+signals:
+    void done();
+};
+
+void Worker::doIt()
+{
+    qDebug("DO IT!");
+    QDjango::database();
+    emit done();
+}
+
 class tst_QDjango : public QObject
 {
     Q_OBJECT
@@ -44,6 +64,7 @@ class tst_QDjango : public QObject
 private slots:
     void database();
     void databaseTables();
+    void databaseThreaded();
     void debugEnabled();
     void debugQuery();
 };
@@ -64,6 +85,22 @@ void tst_QDjango::databaseTables()
     QVERIFY(db.tables().indexOf("author") != -1);
     QVERIFY(QDjango::dropTables());
     QVERIFY(db.tables().indexOf("author") == -1);
+}
+
+void tst_QDjango::databaseThreaded()
+{
+    Worker worker;
+    QThread workerThread;
+
+    worker.moveToThread(&workerThread);
+    connect(&worker, SIGNAL(done()), &workerThread, SLOT(quit()));
+    QTimer::singleShot(100, &worker, SLOT(doIt()));
+
+    QEventLoop loop;
+    QObject::connect(&workerThread, SIGNAL(finished()), &loop, SLOT(quit()));
+
+    workerThread.start();
+    loop.exec();
 }
 
 void tst_QDjango::debugEnabled()
