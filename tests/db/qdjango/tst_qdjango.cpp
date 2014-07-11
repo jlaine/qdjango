@@ -100,20 +100,26 @@ void tst_QDjango::cleanup()
 void tst_QDjango::databaseThreaded()
 {
     QDjangoQuerySet<Author> qs;
+    QCOMPARE(qs.count(), 0);
+
+    QEventLoop loop;
     Worker worker;
     QThread workerThread;
 
+    // fire up worker
     worker.moveToThread(&workerThread);
-    connect(&worker, SIGNAL(done()), &workerThread, SLOT(quit()));
-    QTimer::singleShot(0, &worker, SLOT(doIt()));
-
-    QEventLoop loop;
-    QObject::connect(&workerThread, SIGNAL(finished()), &loop, SLOT(quit()));
+    connect(&worker, SIGNAL(done()), &loop, SLOT(quit()));
 
     workerThread.start();
+    QTimer::singleShot(0, &worker, SLOT(doIt()));
     loop.exec();
 
+    // check database
     QCOMPARE(qs.count(), 1);
+
+    // stop thread
+    workerThread.quit();
+    workerThread.wait();
 }
 
 void tst_QDjango::debugEnabled()
