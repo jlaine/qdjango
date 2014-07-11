@@ -21,6 +21,7 @@
 
 #include "QDjango.h"
 #include "QDjangoModel.h"
+#include "QDjangoQuerySet.h"
 
 #include "util.h"
 
@@ -52,8 +53,10 @@ signals:
 
 void Worker::doIt()
 {
-    qDebug("DO IT!");
-    QDjango::database();
+    Author author;
+    author.setName("someone");
+    QVERIFY(author.save());
+
     emit done();
 }
 
@@ -89,18 +92,24 @@ void tst_QDjango::databaseTables()
 
 void tst_QDjango::databaseThreaded()
 {
+    QVERIFY(QDjango::createTables());
+
+    QDjangoQuerySet<Author> qs;
     Worker worker;
     QThread workerThread;
 
     worker.moveToThread(&workerThread);
     connect(&worker, SIGNAL(done()), &workerThread, SLOT(quit()));
-    QTimer::singleShot(100, &worker, SLOT(doIt()));
+    QTimer::singleShot(0, &worker, SLOT(doIt()));
 
     QEventLoop loop;
     QObject::connect(&workerThread, SIGNAL(finished()), &loop, SLOT(quit()));
 
     workerThread.start();
     loop.exec();
+
+    QCOMPARE(qs.count(), 1);
+    QVERIFY(QDjango::dropTables());
 }
 
 void tst_QDjango::debugEnabled()
