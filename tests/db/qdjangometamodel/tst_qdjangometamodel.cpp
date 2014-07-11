@@ -412,4 +412,13 @@ void tst_QDjangoMetaModel::testConstraints()
     QCOMPARE(userModel.dropTable(), true);
 }
 
+void tst_QDjangoMetaModel::testIsValid()
+{
+    QDjangoMetaModel metaModel;
+    QVERIFY(!metaModel.isValid());
+
+    metaModel = QDjango::registerModel<User>();
+    QVERIFY(metaModel.isValid());
+}
+
 QTEST_MAIN(tst_QDjangoMetaModel)

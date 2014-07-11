@@ -38,6 +38,7 @@ private slots:
     void testTime();
     void testOptions();
     void testConstraints();
+    void testIsValid();
 };
 
 class tst_Bool : public QDjangoModel
@@ -164,6 +165,7 @@ class tst_Options : public QDjangoModel
     Q_PROPERTY(int aField READ aField WRITE setAField)
     Q_PROPERTY(int bField READ bField WRITE setBField)
     Q_PROPERTY(int blankField READ blankField WRITE setBlankField)
+    Q_PROPERTY(int ignoredField READ ignoredField WRITE setIgnoredField)
     Q_PROPERTY(int indexField READ indexField WRITE setIndexField)
     Q_PROPERTY(int nullField READ nullField WRITE setNullField)
     Q_PROPERTY(int uniqueField READ uniqueField WRITE setUniqueField)
@@ -171,6 +173,7 @@ class tst_Options : public QDjangoModel
     Q_CLASSINFO("__meta__", "db_table=some_table unique_together=aField,bField")
     Q_CLASSINFO("bField", "db_column=b_field")
     Q_CLASSINFO("blankField", "blank=true")
+    Q_CLASSINFO("ignoredField", "ignore_field=true")
     Q_CLASSINFO("indexField", "db_index=true")
     Q_CLASSINFO("nullField", "null=true")
     Q_CLASSINFO("uniqueField", "unique=true")
@@ -185,6 +188,9 @@ public:
     int blankField() const { return m_blankField; }
     void setBlankField(int value) { m_blankField = value; }
 
+    int ignoredField() const { return m_ignoredField; }
+    void setIgnoredField(int value) { m_ignoredField = value; }
+
     int indexField() const { return m_indexField; }
     void setIndexField(int value) { m_indexField = value; }
 
@@ -198,6 +204,7 @@ private:
     int m_aField;
     int m_bField;
     int m_blankField;
+    int m_ignoredField;
     int m_indexField;
     int m_nullField;
     int m_uniqueField;
