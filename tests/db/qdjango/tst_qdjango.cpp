@@ -65,35 +65,40 @@ class tst_QDjango : public QObject
     Q_OBJECT
 
 private slots:
-    void database();
-    void databaseTables();
+    void initTestCase();
+    void init();
     void databaseThreaded();
     void debugEnabled();
     void debugQuery();
+    void cleanup();
 };
 
-void tst_QDjango::database()
+void tst_QDjango::initTestCase()
 {
     QCOMPARE(QDjango::database().isOpen(), false);
     QVERIFY(initialiseDatabase());
     QCOMPARE(QDjango::database().isOpen(), true);
 }
 
-void tst_QDjango::databaseTables()
+void tst_QDjango::init()
 {
     QDjango::registerModel<Author>();
+
     QSqlDatabase db = QDjango::database();
     QVERIFY(db.tables().indexOf("author") == -1);
     QVERIFY(QDjango::createTables());
     QVERIFY(db.tables().indexOf("author") != -1);
+}
+
+void tst_QDjango::cleanup()
+{
+    QSqlDatabase db = QDjango::database();
     QVERIFY(QDjango::dropTables());
     QVERIFY(db.tables().indexOf("author") == -1);
 }
 
 void tst_QDjango::databaseThreaded()
 {
-    QVERIFY(QDjango::createTables());
-
     QDjangoQuerySet<Author> qs;
     Worker worker;
     QThread workerThread;
@@ -109,7 +114,6 @@ void tst_QDjango::databaseThreaded()
     loop.exec();
 
     QCOMPARE(qs.count(), 1);
-    QVERIFY(QDjango::dropTables());
 }
 
 void tst_QDjango::debugEnabled()
