@@ -1,4 +1,5 @@
 #!/bin/sh
+set -e
 
 if [ "$QT_SELECT" = "qt4" ]; then
     sudo apt-get update
