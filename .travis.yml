@@ -3,9 +3,9 @@ env:
   - QT_SELECT=qt4
   - QT_SELECT=qt5
 install:
-  - tests/install-build-depends
+  - tests/travis/install-build-depends
 before_script:
   - mysql -e 'create database qdjango_test'
   - psql -c 'create database qdjango_test' -U postgres
 script:
-  - tests/build-and-test
+  - tests/travis/build-and-test
