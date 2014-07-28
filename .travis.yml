@@ -1,7 +1,9 @@
 language: cpp
 env:
-  - QT_SELECT=qt4
-  - QT_SELECT=qt5
+  - QT_SELECT=qt4 CONFIG=shared
+  - QT_SELECT=qt4 CONFIG=static
+  - QT_SELECT=qt5 CONFIG=shared
+  - QT_SELECT=qt5 CONFIG=static
 install:
   - tests/travis/install-build-depends
 before_script:

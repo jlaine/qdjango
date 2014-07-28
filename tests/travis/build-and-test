@@ -1,8 +1,16 @@
 #!/bin/sh
 set -e
 
+QMAKE_ARGS="QDJANGO_PROFILE=true"
+
+case "$CONFIG" in
+*static)
+    QMAKE_ARGS="$QMAKE_ARGS QDJANGO_LIBRARY_TYPE=staticlib"
+    ;;
+esac
+
 # compile
-qmake QDJANGO_PROFILE=true
+qmake $QMAKE_ARGS
 make
 
 # run tests
