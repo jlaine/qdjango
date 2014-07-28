@@ -21,11 +21,14 @@
 #if defined(QDJANGO_SHARED)
 #  if defined(QDJANGO_BUILD)
 #    define QDJANGO_EXPORT Q_DECL_EXPORT
+#    define QDJANGO_AUTOTEST_EXPORT Q_DECL_EXPORT
 #  else
 #    define QDJANGO_EXPORT Q_DECL_IMPORT
+#    define QDJANGO_AUTOTEST_EXPORT Q_DECL_IMPORT
 #  endif
 #else
 #  define QDJANGO_EXPORT
+#  define QDJANGO_AUTOTEST_EXPORT
 #endif
 
 #endif

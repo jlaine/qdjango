@@ -124,9 +124,9 @@ QDjangoFastCgiReply* QDjangoFastCgiClient::request(const QString &method, const 
     // BEGIN REQUEST
     ba = QByteArray("\x01\x00\x00\x00\x00\x00\x00\x00", 8);
     header->version = 1;
-    FCGI_Header_setRequestId(header, requestId);
+    QDjangoFastCgiHeader::setRequestId(header, requestId);
     header->type = FCGI_BEGIN_REQUEST;
-    FCGI_Header_setContentLength(header, ba.size());
+    QDjangoFastCgiHeader::setContentLength(header, ba.size());
     m_device->write(headerBuffer + ba);
 
     QMap<QByteArray, QByteArray> params;
@@ -151,18 +151,18 @@ QDjangoFastCgiReply* QDjangoFastCgiClient::request(const QString &method, const 
 
     // FAST CGI PARAMS
     header->type = FCGI_PARAMS;
-    FCGI_Header_setContentLength(header, ba.size());
+    QDjangoFastCgiHeader::setContentLength(header, ba.size());
     m_device->write(headerBuffer + ba);
 
     // STDIN
     if (data.size() > 0) {
         header->type = FCGI_STDIN;
-        FCGI_Header_setContentLength(header, data.size());
+        QDjangoFastCgiHeader::setContentLength(header, data.size());
         m_device->write(headerBuffer + data);
     }
 
     header->type = FCGI_STDIN;
-    FCGI_Header_setContentLength(header, 0);
+    QDjangoFastCgiHeader::setContentLength(header, 0);
     m_device->write(headerBuffer);
 
     return reply;
@@ -180,8 +180,8 @@ void QDjangoFastCgiClient::_q_readyRead()
             return;
         }
 
-        const quint16 contentLength = FCGI_Header_contentLength(header);
-        const quint16 requestId = FCGI_Header_requestId(header);
+        const quint16 contentLength = QDjangoFastCgiHeader::contentLength(header);
+        const quint16 requestId = QDjangoFastCgiHeader::requestId(header);
         const quint16 bodyLength = contentLength + header->paddingLength;
         if (m_device->read(inputBuffer + FCGI_HEADER_LEN, bodyLength) != bodyLength) {
             qWarning("body read fail");
@@ -250,7 +250,7 @@ void tst_QDjangoFastCgiServer::testAbort()
     QByteArray headerBuffer(FCGI_HEADER_LEN, '\0');
     FCGI_Header *header = (FCGI_Header*)headerBuffer.data();
     header->version = 1;
-    FCGI_Header_setRequestId(header, 1);
+    QDjangoFastCgiHeader::setRequestId(header, 1);
 
     // check socket is connected
     QCOMPARE(socket.state(), QLocalSocket::ConnectedState);
@@ -258,12 +258,12 @@ void tst_QDjangoFastCgiServer::testAbort()
     // BEGIN REQUEST
     const QByteArray ba("\x01\x00\x00\x00\x00\x00\x00\x00", 8);
     header->type = FCGI_BEGIN_REQUEST;
-    FCGI_Header_setContentLength(header, ba.size());
+    QDjangoFastCgiHeader::setContentLength(header, ba.size());
     socket.write(headerBuffer + ba);
 
     // ABORT REQUEST
     header->type = FCGI_ABORT_REQUEST;
-    FCGI_Header_setContentLength(header, 0);
+    QDjangoFastCgiHeader::setContentLength(header, 0);
     socket.write(headerBuffer);
 
     // wait for connection to close
@@ -285,7 +285,7 @@ void tst_QDjangoFastCgiServer::testBadBegin()
     QByteArray headerBuffer(FCGI_HEADER_LEN, '\0');
     FCGI_Header *header = (FCGI_Header*)headerBuffer.data();
     header->version = 1;
-    FCGI_Header_setRequestId(header, 1);
+    QDjangoFastCgiHeader::setRequestId(header, 1);
 
     // check socket is connected
     QCOMPARE(socket.state(), QLocalSocket::ConnectedState);
@@ -294,12 +294,12 @@ void tst_QDjangoFastCgiServer::testBadBegin()
     // BEGIN REQUEST
     const QByteArray ba("\x01\x00\x00\x00\x00\x00\x00\x00", 8);
     header->type = FCGI_BEGIN_REQUEST;
-    FCGI_Header_setContentLength(header, ba.size());
+    QDjangoFastCgiHeader::setContentLength(header, ba.size());
     socket.write(headerBuffer + ba);
 
     // BEGIN REQUEST again
-    FCGI_Header_setRequestId(header, 2);
-    FCGI_Header_setContentLength(header, ba.size());
+    QDjangoFastCgiHeader::setRequestId(header, 2);
+    QDjangoFastCgiHeader::setContentLength(header, ba.size());
     socket.write(headerBuffer + ba);
 
     // wait for connection to close
@@ -321,7 +321,7 @@ void tst_QDjangoFastCgiServer::testBadRequestId()
     QByteArray headerBuffer(FCGI_HEADER_LEN, '\0');
     FCGI_Header *header = (FCGI_Header*)headerBuffer.data();
     header->version = 1;
-    FCGI_Header_setRequestId(header, 1);
+    QDjangoFastCgiHeader::setRequestId(header, 1);
 
     // check socket is connected
     QCOMPARE(socket.state(), QLocalSocket::ConnectedState);
@@ -329,7 +329,7 @@ void tst_QDjangoFastCgiServer::testBadRequestId()
 
     // ABORT REQUEST
     header->type = FCGI_ABORT_REQUEST;
-    FCGI_Header_setContentLength(header, 0);
+    QDjangoFastCgiHeader::setContentLength(header, 0);
     socket.write(headerBuffer);
 
     // wait for connection to close
@@ -351,7 +351,7 @@ void tst_QDjangoFastCgiServer::testBadRequestType()
     QByteArray headerBuffer(FCGI_HEADER_LEN, '\0');
     FCGI_Header *header = (FCGI_Header*)headerBuffer.data();
     header->version = 1;
-    FCGI_Header_setRequestId(header, 1);
+    QDjangoFastCgiHeader::setRequestId(header, 1);
 
     // check socket is connected
     QCOMPARE(socket.state(), QLocalSocket::ConnectedState);
@@ -360,12 +360,12 @@ void tst_QDjangoFastCgiServer::testBadRequestType()
     // BEGIN REQUEST
     const QByteArray ba("\x01\x00\x00\x00\x00\x00\x00\x00", 8);
     header->type = FCGI_BEGIN_REQUEST;
-    FCGI_Header_setContentLength(header, ba.size());
+    QDjangoFastCgiHeader::setContentLength(header, ba.size());
     socket.write(headerBuffer + ba);
 
     // bogus request type
     header->type = 7;
-    FCGI_Header_setContentLength(header, 0);
+    QDjangoFastCgiHeader::setContentLength(header, 0);
     socket.write(headerBuffer);
 
     // wait for connection to close
@@ -387,7 +387,7 @@ void tst_QDjangoFastCgiServer::testBadVersion()
     QByteArray headerBuffer(FCGI_HEADER_LEN, '\0');
     FCGI_Header *header = (FCGI_Header*)headerBuffer.data();
     header->version = 2;
-    FCGI_Header_setRequestId(header, 1);
+    QDjangoFastCgiHeader::setRequestId(header, 1);
 
     // check socket is connected
     QCOMPARE(socket.state(), QLocalSocket::ConnectedState);
@@ -396,7 +396,7 @@ void tst_QDjangoFastCgiServer::testBadVersion()
     // BEGIN REQUEST
     const QByteArray ba("\x01\x00\x00\x00\x00\x00\x00\x00", 8);
     header->type = FCGI_BEGIN_REQUEST;
-    FCGI_Header_setContentLength(header, ba.size());
+    QDjangoFastCgiHeader::setContentLength(header, ba.size());
     socket.write(headerBuffer + ba);
 
     // wait for connection to close

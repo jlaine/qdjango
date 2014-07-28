@@ -25,6 +25,7 @@
 // This file is not part of the QDjango API.
 //
 
+#include "QDjangoHttp_p.h"
 #include <QObject>
 
 #define FCGI_HEADER_LEN  8
@@ -55,12 +56,16 @@ typedef struct {
     unsigned char reserved;
 } FCGI_Header;
 
-quint16 FCGI_Header_contentLength(FCGI_Header *header);
-quint16 FCGI_Header_requestId(FCGI_Header *header);
-void FCGI_Header_setContentLength(FCGI_Header *header, quint16 contentLength);
-void FCGI_Header_setRequestId(FCGI_Header *header, quint16 requestId);
+class QDJANGO_AUTOTEST_EXPORT QDjangoFastCgiHeader
+{
+public:
+    static quint16 contentLength(FCGI_Header *header);
+    static quint16 requestId(FCGI_Header *header);
+    static void setContentLength(FCGI_Header *header, quint16 contentLength);
+    static void setRequestId(FCGI_Header *header, quint16 requestId);
+};
 
-class QDjangoFastCgiConnection : public QObject
+class QDJANGO_AUTOTEST_EXPORT QDjangoFastCgiConnection : public QObject
 {
     Q_OBJECT
 
