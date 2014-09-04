@@ -100,7 +100,11 @@ void tst_QDjango::cleanup()
 void tst_QDjango::databaseThreaded()
 {
     if (QDjango::database().databaseName() == QLatin1String(":memory:"))
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+        QSKIP("Threaded test cannot work with in-memory SQLite database.");
+#else
         QSKIP("Threaded test cannot work with in-memory SQLite database.", SkipAll);
+#endif
 
     QDjangoQuerySet<Author> qs;
     QCOMPARE(qs.count(), 0);
