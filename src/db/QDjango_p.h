@@ -48,6 +48,15 @@ class QDjangoDatabase : public QObject
 public:
     QDjangoDatabase(QObject *parent = 0);
 
+    enum Dialect {
+        UnknownDialect,
+        SQLITE,
+        MYSQL,
+        PSQL
+    };
+
+    static Dialect databaseDialect(const QSqlDatabase &db);
+
     QSqlDatabase reference;
     QMutex mutex;
     QMap<QThread*, QSqlDatabase> copies;

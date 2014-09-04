@@ -61,7 +61,8 @@ static void closeDatabase()
 
 static void initDatabase(QSqlDatabase db)
 {
-    if (db.driverName() == QLatin1String("QSQLITE")) {
+    QDjangoDatabase::Dialect dialect = QDjangoDatabase::databaseDialect(db);
+    if (dialect == QDjangoDatabase::SQLITE) {
         // enable foreign key constraint handling
         QDjangoQuery query(db);
         query.prepare("PRAGMA foreign_keys=on");
@@ -160,13 +161,11 @@ QSqlDatabase QDjango::database()
 */
 void QDjango::setDatabase(QSqlDatabase database)
 {
-    if (database.driverName() != QLatin1String("QSQLITE") &&
-        database.driverName() != QLatin1String("QSQLITE2") &&
-        database.driverName() != QLatin1String("QMYSQL") &&
-        database.driverName() != QLatin1String("QPSQL"))
-    {
+    QDjangoDatabase::Dialect dialect = QDjangoDatabase::databaseDialect(database);
+    if (dialect == QDjangoDatabase::UnknownDialect) {
         qWarning() << "Unsupported database driver" << database.driverName();
     }
+
     if (!globalDatabase)
     {
         globalDatabase = new QDjangoDatabase();
@@ -250,14 +249,25 @@ QDjangoMetaModel QDjango::registerModel(const QMetaObject *meta)
 */
 QString QDjango::noLimitSql()
 {
-    const QString driverName = QDjango::database().driverName();
-    if (driverName == QLatin1String("QSQLITE") ||
-        driverName == QLatin1String("QSQLITE2"))
+    QDjangoDatabase::Dialect dialect = QDjangoDatabase::databaseDialect(QDjango::database());
+    if (dialect == QDjangoDatabase::SQLITE)
         return QLatin1String(" LIMIT -1");
-    else if (driverName == QLatin1String("QMYSQL"))
+    else if (dialect == QDjangoDatabase::MYSQL)
         // 2^64 - 1, as recommended by the MySQL documentation
         return QLatin1String(" LIMIT 18446744073709551615");
-    else
-        return QString();
+
+    return QString();
 }
 
+QDjangoDatabase::Dialect QDjangoDatabase::databaseDialect(const QSqlDatabase &db)
+{
+    if (db.driverName() == QLatin1String("QMYSQL") ||
+        db.driverName() == QLatin1String("QMYSQL3"))
+        return QDjangoDatabase::MYSQL;
+    else if (db.driverName() == QLatin1String("QSQLITE") ||
+             db.driverName() == QLatin1String("QSQLITE2"))
+        return QDjangoDatabase::SQLITE;
+    else if (db.driverName() == QLatin1String("QPSQL"))
+        return QDjangoDatabase::PSQL;
+    return QDjangoDatabase::UnknownDialect;
+}

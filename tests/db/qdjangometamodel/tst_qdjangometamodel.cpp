@@ -116,10 +116,10 @@ void tst_QDjangoMetaModel::initTestCase()
 void tst_QDjangoMetaModel::testBool()
 {
     QStringList sql;
-    if (QDjango::database().driverName() == QLatin1String("QPSQL"))
+    QDjangoDatabase::Dialect dialect = QDjangoDatabase::databaseDialect(QDjango::database());
+    if (dialect == QDjangoDatabase::PSQL)
         sql << QLatin1String("CREATE TABLE \"tst_bool\" (\"id\" serial PRIMARY KEY, \"value\" boolean NOT NULL)");
-    else if (QDjango::database().driverName() == QLatin1String("QMYSQL") ||
-             QDjango::database().driverName() == QLatin1String("QMYSQL3"))
+    else if (dialect == QDjangoDatabase::MYSQL)
         sql << QLatin1String("CREATE TABLE `tst_bool` (`id` integer NOT NULL PRIMARY KEY AUTO_INCREMENT, `value` bool NOT NULL)");
     else
         sql << QLatin1String("CREATE TABLE \"tst_bool\" (\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, \"value\" bool NOT NULL)");
@@ -133,10 +133,10 @@ void tst_QDjangoMetaModel::testBool()
 void tst_QDjangoMetaModel::testByteArray()
 {
     QStringList sql;
-    if (QDjango::database().driverName() == QLatin1String("QPSQL"))
+    QDjangoDatabase::Dialect dialect = QDjangoDatabase::databaseDialect(QDjango::database());
+    if (dialect == QDjangoDatabase::PSQL)
         sql << QLatin1String("CREATE TABLE \"tst_bytearray\" (\"id\" serial PRIMARY KEY, \"value\" bytea NOT NULL)");
-    else if (QDjango::database().driverName() == QLatin1String("QMYSQL") ||
-             QDjango::database().driverName() == QLatin1String("QMYSQL3"))
+    else if (dialect == QDjangoDatabase::MYSQL)
         sql << QLatin1String("CREATE TABLE `tst_bytearray` (`id` integer NOT NULL PRIMARY KEY AUTO_INCREMENT, `value` blob NOT NULL)");
     else
         sql << QLatin1String("CREATE TABLE \"tst_bytearray\" (\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, \"value\" blob NOT NULL)");
@@ -150,10 +150,10 @@ void tst_QDjangoMetaModel::testByteArray()
 void tst_QDjangoMetaModel::testDate()
 {
     QStringList sql;
-    if (QDjango::database().driverName() == QLatin1String("QPSQL"))
+    QDjangoDatabase::Dialect dialect = QDjangoDatabase::databaseDialect(QDjango::database());
+    if (dialect == QDjangoDatabase::PSQL)
         sql << QLatin1String("CREATE TABLE \"tst_date\" (\"id\" serial PRIMARY KEY, \"value\" date NOT NULL)");
-    else if (QDjango::database().driverName() == QLatin1String("QMYSQL") ||
-             QDjango::database().driverName() == QLatin1String("QMYSQL3"))
+    else if (dialect == QDjangoDatabase::MYSQL)
         sql << QLatin1String("CREATE TABLE `tst_date` (`id` integer NOT NULL PRIMARY KEY AUTO_INCREMENT, `value` date NOT NULL)");
     else
         sql << QLatin1String("CREATE TABLE \"tst_date\" (\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, \"value\" date NOT NULL)");
@@ -166,10 +166,10 @@ void tst_QDjangoMetaModel::testDate()
 void tst_QDjangoMetaModel::testDateTime()
 {
     QStringList sql;
-    if (QDjango::database().driverName() == QLatin1String("QPSQL"))
+    QDjangoDatabase::Dialect dialect = QDjangoDatabase::databaseDialect(QDjango::database());
+    if (dialect == QDjangoDatabase::PSQL)
         sql << QLatin1String("CREATE TABLE \"tst_datetime\" (\"id\" serial PRIMARY KEY, \"value\" timestamp NOT NULL)");
-    else if (QDjango::database().driverName() == QLatin1String("QMYSQL") ||
-             QDjango::database().driverName() == QLatin1String("QMYSQL3"))
+    else if (dialect == QDjangoDatabase::MYSQL)
         sql << QLatin1String("CREATE TABLE `tst_datetime` (`id` integer NOT NULL PRIMARY KEY AUTO_INCREMENT, `value` datetime NOT NULL)");
     else
         sql << QLatin1String("CREATE TABLE \"tst_datetime\" (\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, \"value\" datetime NOT NULL)");
@@ -182,10 +182,10 @@ void tst_QDjangoMetaModel::testDateTime()
 void tst_QDjangoMetaModel::testDouble()
 {
     QStringList sql;
-    if (QDjango::database().driverName() == QLatin1String("QPSQL"))
+    QDjangoDatabase::Dialect dialect = QDjangoDatabase::databaseDialect(QDjango::database());
+    if (dialect == QDjangoDatabase::PSQL)
         sql << QLatin1String("CREATE TABLE \"tst_double\" (\"id\" serial PRIMARY KEY, \"value\" real NOT NULL)");
-    else if (QDjango::database().driverName() == QLatin1String("QMYSQL") ||
-             QDjango::database().driverName() == QLatin1String("QMYSQL3"))
+    else if (dialect == QDjangoDatabase::MYSQL)
         sql << QLatin1String("CREATE TABLE `tst_double` (`id` integer NOT NULL PRIMARY KEY AUTO_INCREMENT, `value` real NOT NULL)");
     else
         sql << QLatin1String("CREATE TABLE \"tst_double\" (\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, \"value\" real NOT NULL)");
@@ -198,10 +198,10 @@ void tst_QDjangoMetaModel::testDouble()
 void tst_QDjangoMetaModel::testInteger()
 {
     QStringList sql;
-    if (QDjango::database().driverName() == QLatin1String("QPSQL"))
+    QDjangoDatabase::Dialect dialect = QDjangoDatabase::databaseDialect(QDjango::database());
+    if (dialect == QDjangoDatabase::PSQL)
         sql << QLatin1String("CREATE TABLE \"tst_integer\" (\"id\" serial PRIMARY KEY, \"value\" integer NOT NULL)");
-    else if (QDjango::database().driverName() == QLatin1String("QMYSQL") ||
-             QDjango::database().driverName() == QLatin1String("QMYSQL3"))
+    else if (dialect == QDjangoDatabase::MYSQL)
         sql << QLatin1String("CREATE TABLE `tst_integer` (`id` integer NOT NULL PRIMARY KEY AUTO_INCREMENT, `value` integer NOT NULL)");
     else
         sql << QLatin1String("CREATE TABLE \"tst_integer\" (\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, \"value\" integer NOT NULL)");
@@ -216,10 +216,10 @@ void tst_QDjangoMetaModel::testInteger()
 void tst_QDjangoMetaModel::testLongLong()
 {
     QStringList sql;
-    if (QDjango::database().driverName() == QLatin1String("QPSQL"))
+    QDjangoDatabase::Dialect dialect = QDjangoDatabase::databaseDialect(QDjango::database());
+    if (dialect == QDjangoDatabase::PSQL)
         sql << QLatin1String("CREATE TABLE \"tst_longlong\" (\"id\" serial PRIMARY KEY, \"value\" bigint NOT NULL)");
-    else if (QDjango::database().driverName() == QLatin1String("QMYSQL") ||
-             QDjango::database().driverName() == QLatin1String("QMYSQL3"))
+    else if (dialect == QDjangoDatabase::MYSQL)
         sql << QLatin1String("CREATE TABLE `tst_longlong` (`id` integer NOT NULL PRIMARY KEY AUTO_INCREMENT, `value` bigint NOT NULL)");
     else
         sql << QLatin1String("CREATE TABLE \"tst_longlong\" (\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, \"value\" bigint NOT NULL)");
@@ -234,10 +234,10 @@ void tst_QDjangoMetaModel::testLongLong()
 void tst_QDjangoMetaModel::testString()
 {
     QStringList sql;
-    if (QDjango::database().driverName() == QLatin1String("QPSQL"))
+    QDjangoDatabase::Dialect dialect = QDjangoDatabase::databaseDialect(QDjango::database());
+    if (dialect == QDjangoDatabase::PSQL)
         sql << QLatin1String("CREATE TABLE \"tst_string\" (\"id\" serial PRIMARY KEY, \"value\" varchar(255) NOT NULL)");
-    else if (QDjango::database().driverName() == QLatin1String("QMYSQL") ||
-             QDjango::database().driverName() == QLatin1String("QMYSQL3"))
+    else if (dialect == QDjangoDatabase::MYSQL)
         sql << QLatin1String("CREATE TABLE `tst_string` (`id` integer NOT NULL PRIMARY KEY AUTO_INCREMENT, `value` varchar(255) NOT NULL)");
     else
         sql << QLatin1String("CREATE TABLE \"tst_string\" (\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, \"value\" varchar(255) NOT NULL)");
@@ -250,10 +250,10 @@ void tst_QDjangoMetaModel::testString()
 void tst_QDjangoMetaModel::testTime()
 {
     QStringList sql;
-    if (QDjango::database().driverName() == QLatin1String("QPSQL"))
+    QDjangoDatabase::Dialect dialect = QDjangoDatabase::databaseDialect(QDjango::database());
+    if (dialect == QDjangoDatabase::PSQL)
         sql << QLatin1String("CREATE TABLE \"tst_time\" (\"id\" serial PRIMARY KEY, \"value\" time NOT NULL)");
-    else if (QDjango::database().driverName() == QLatin1String("QMYSQL") ||
-             QDjango::database().driverName() == QLatin1String("QMYSQL3"))
+    else if (dialect == QDjangoDatabase::MYSQL)
         sql << QLatin1String("CREATE TABLE `tst_time` (`id` integer NOT NULL PRIMARY KEY AUTO_INCREMENT, `value` time NOT NULL)");
     else
         sql << QLatin1String("CREATE TABLE \"tst_time\" (\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, \"value\" time NOT NULL)");
@@ -266,7 +266,8 @@ void tst_QDjangoMetaModel::testTime()
 void tst_QDjangoMetaModel::testOptions()
 {
     QStringList sql;
-    if (QDjango::database().driverName() == QLatin1String("QPSQL")) {
+    QDjangoDatabase::Dialect dialect = QDjangoDatabase::databaseDialect(QDjango::database());
+    if (dialect == QDjangoDatabase::PSQL) {
         sql << QLatin1String(
             "CREATE TABLE \"some_table\" ("
                 "\"id\" serial PRIMARY KEY, "
@@ -279,8 +280,7 @@ void tst_QDjangoMetaModel::testOptions()
                 "UNIQUE (\"aField\", \"b_field\")"
             ")");
         sql << QLatin1String("CREATE INDEX \"some_table_ac243651\" ON \"some_table\" (\"indexField\")");
-    } else if (QDjango::database().driverName() == QLatin1String("QMYSQL") ||
-               QDjango::database().driverName() == QLatin1String("QMYSQL3")) {
+    } else if (dialect == QDjangoDatabase::MYSQL) {
         sql << QLatin1String(
             "CREATE TABLE `some_table` ("
                 "`id` integer NOT NULL PRIMARY KEY AUTO_INCREMENT, "
@@ -356,7 +356,8 @@ void tst_QDjangoMetaModel::testOptions()
 void tst_QDjangoMetaModel::testConstraints()
 {
     QStringList sql;
-    if (QDjango::database().driverName() == QLatin1String("QPSQL")) {
+    QDjangoDatabase::Dialect dialect = QDjangoDatabase::databaseDialect(QDjango::database());
+    if (dialect == QDjangoDatabase::PSQL) {
         sql << QLatin1String("CREATE TABLE \"tst_fkconstraint\" ("
             "\"id\" serial PRIMARY KEY, "
             "\"noConstraint_id\" integer NOT NULL REFERENCES \"user\" (\"id\") DEFERRABLE INITIALLY DEFERRED, "
@@ -368,8 +369,7 @@ void tst_QDjangoMetaModel::testConstraints()
         sql << QLatin1String("CREATE INDEX \"tst_fkconstraint_4634d592\" ON \"tst_fkconstraint\" (\"cascadeConstraint_id\")");
         sql << QLatin1String("CREATE INDEX \"tst_fkconstraint_728cefe1\" ON \"tst_fkconstraint\" (\"restrictConstraint_id\")");
         sql << QLatin1String("CREATE INDEX \"tst_fkconstraint_44c71620\" ON \"tst_fkconstraint\" (\"nullConstraint_id\")");
-    } else if (QDjango::database().driverName() == QLatin1String("QMYSQL") ||
-               QDjango::database().driverName() == QLatin1String("QMYSQL3")) {
+    } else if (dialect == QDjangoDatabase::MYSQL) {
         sql << QLatin1String("CREATE TABLE `tst_fkconstraint` ("
             "`id` integer NOT NULL PRIMARY KEY AUTO_INCREMENT, "
             "`noConstraint_id` integer NOT NULL, "

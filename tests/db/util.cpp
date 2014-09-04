@@ -35,18 +35,18 @@ bool initialiseDatabase()
         databaseDriver = QString::fromLocal8Bit(p);
     QSqlDatabase db = QSqlDatabase::addDatabase(databaseDriver);
 
-    if ((p = getenv("QDJANGO_DB_NAME")) != 0) 
+    if ((p = getenv("QDJANGO_DB_NAME")) != 0)
         db.setDatabaseName(QString::fromLocal8Bit(p));
     else if (databaseDriver == "QSQLITE")
         db.setDatabaseName(":memory:");
 
-    if ((p = getenv("QDJANGO_DB_USER")) != 0) 
+    if ((p = getenv("QDJANGO_DB_USER")) != 0)
         db.setUserName(QString::fromLocal8Bit(p));
-    
-    if ((p = getenv("QDJANGO_DB_PASSWORD")) != 0) 
+
+    if ((p = getenv("QDJANGO_DB_PASSWORD")) != 0)
         db.setPassword(QString::fromLocal8Bit(p));
-    
-    if ((p = getenv("QDJANGO_DB_HOST")) != 0) 
+
+    if ((p = getenv("QDJANGO_DB_HOST")) != 0)
         db.setHostName(QString::fromLocal8Bit(p));
 
     if (db.open()) {
@@ -59,11 +59,13 @@ bool initialiseDatabase()
 
 QString normalizeSql(const QSqlDatabase &db, const QString &sql)
 {
-    const QString driverName = db.driverName();
+    QDjangoDatabase::Dialect dialect =
+        QDjangoDatabase::databaseDialect(db);
+
     QString modSql(sql);
-    if (driverName == "QMYSQL")
+    if (dialect == QDjangoDatabase::MYSQL)
         modSql.replace("`", "\"");
-    else if (driverName == "QSQLITE" || driverName == "QSQLITE2")
+    else if (dialect == QDjangoDatabase::SQLITE)
         modSql.replace("? ESCAPE '\\'", "?");
     return modSql;
 }

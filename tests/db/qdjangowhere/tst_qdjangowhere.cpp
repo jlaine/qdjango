@@ -91,8 +91,8 @@ void tst_QDjangoWhere::equalsWhere()
   */
 void tst_QDjangoWhere::iEqualsWhere()
 {
-    QString driverName = QDjango::database().driverName();
-     if (driverName == QLatin1String("QPSQL")) {
+    QDjangoDatabase::Dialect dialect = QDjangoDatabase::databaseDialect(QDjango::database());
+     if (dialect == QDjangoDatabase::PSQL) {
         QDjangoWhere testQuery = QDjangoWhere("name", QDjangoWhere::IEquals, "abc");
         CHECKWHERE(testQuery, QLatin1String("UPPER(name::text) LIKE UPPER(?)"), QVariantList() << "abc");
 
@@ -127,8 +127,8 @@ void tst_QDjangoWhere::notEqualsWhere()
   */
 void tst_QDjangoWhere::iNotEqualsWhere()
 {
-    QString driverName = QDjango::database().driverName();
-    if (driverName == QLatin1String("QPSQL")) {
+    QDjangoDatabase::Dialect dialect = QDjangoDatabase::databaseDialect(QDjango::database());
+    if (dialect == QDjangoDatabase::PSQL) {
         QDjangoWhere testQuery = QDjangoWhere("name", QDjangoWhere::INotEquals, "abc");
         CHECKWHERE(testQuery, QLatin1String("UPPER(name::text) NOT LIKE UPPER(?)"), QVariantList() << "abc");
 
@@ -224,8 +224,8 @@ void tst_QDjangoWhere::isNull()
  */
 void tst_QDjangoWhere::startsWith()
 {
-    QString driverName = QDjango::database().driverName();
-    if (driverName == QLatin1String("QMYSQL")) {
+    QDjangoDatabase::Dialect dialect = QDjangoDatabase::databaseDialect(QDjango::database());
+    if (dialect == QDjangoDatabase::MYSQL) {
         QDjangoWhere testQuery = QDjangoWhere("name", QDjangoWhere::StartsWith, "abc");
         CHECKWHERE(testQuery, QLatin1String("name LIKE BINARY ?"), QVariantList() << "abc%");
 
@@ -246,8 +246,8 @@ void tst_QDjangoWhere::startsWith()
 
 void tst_QDjangoWhere::iStartsWith()
 {
-    QString driverName = QDjango::database().driverName();
-    if (driverName == QLatin1String("QPSQL")) {
+    QDjangoDatabase::Dialect dialect = QDjangoDatabase::databaseDialect(QDjango::database());
+    if (dialect == QDjangoDatabase::PSQL) {
         QDjangoWhere testQuery = QDjangoWhere("name", QDjangoWhere::IStartsWith, "abc");
         CHECKWHERE(testQuery, QLatin1String("UPPER(name::text) LIKE UPPER(?)"), QVariantList() << "abc%");
 
@@ -266,8 +266,8 @@ void tst_QDjangoWhere::iStartsWith()
  */
 void tst_QDjangoWhere::endsWith()
 {
-    QString driverName = QDjango::database().driverName();
-    if (driverName == QLatin1String("QMYSQL")) {
+    QDjangoDatabase::Dialect dialect = QDjangoDatabase::databaseDialect(QDjango::database());
+    if (dialect == QDjangoDatabase::MYSQL) {
         QDjangoWhere testQuery = QDjangoWhere("name", QDjangoWhere::EndsWith, "abc");
         CHECKWHERE(testQuery, QLatin1String("name LIKE BINARY ?"), QVariantList() << "%abc");
 
@@ -287,8 +287,8 @@ void tst_QDjangoWhere::endsWith()
 
 void tst_QDjangoWhere::iEndsWith()
 {
-    QString driverName = QDjango::database().driverName();
-    if (driverName == QLatin1String("QPSQL")) {
+    QDjangoDatabase::Dialect dialect = QDjangoDatabase::databaseDialect(QDjango::database());
+    if (dialect == QDjangoDatabase::PSQL) {
         QDjangoWhere testQuery = QDjangoWhere("name", QDjangoWhere::IEndsWith, "abc");
         CHECKWHERE(testQuery, QLatin1String("UPPER(name::text) LIKE UPPER(?)"), QVariantList() << "%abc");
 
@@ -309,8 +309,8 @@ void tst_QDjangoWhere::iEndsWith()
  */
 void tst_QDjangoWhere::contains()
 {
-    QString driverName = QDjango::database().driverName();
-    if (driverName == QLatin1String("QMYSQL")) {
+    QDjangoDatabase::Dialect dialect = QDjangoDatabase::databaseDialect(QDjango::database());
+    if (dialect == QDjangoDatabase::MYSQL) {
         QDjangoWhere testQuery = QDjangoWhere("name", QDjangoWhere::Contains, "abc");
         CHECKWHERE(testQuery, QLatin1String("name LIKE BINARY ?"), QVariantList() << "%abc%");
 
@@ -330,8 +330,8 @@ void tst_QDjangoWhere::contains()
 
 void tst_QDjangoWhere::iContains()
 {
-    QString driverName = QDjango::database().driverName();
-    if (driverName == QLatin1String("QPSQL")) {
+    QDjangoDatabase::Dialect dialect = QDjangoDatabase::databaseDialect(QDjango::database());
+    if (dialect == QDjangoDatabase::PSQL) {
         QDjangoWhere testQuery = QDjangoWhere("name", QDjangoWhere::IContains, "abc");
         CHECKWHERE(testQuery, QLatin1String("UPPER(name::text) LIKE UPPER(?)"), QVariantList() << "%abc%");
 
