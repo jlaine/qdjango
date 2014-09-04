@@ -1,12 +1,7 @@
-include(../../../qdjango.pri)
-
-QT -= gui
-QT += network testlib
+DEPTH = ../../..
+include($${DEPTH}/qdjango.pri)
+include($${DEPTH}/tests/tests.pri)
+include(../http.pri)
 
 TARGET = tst_qdjangofastcgiserver
-
 SOURCES += tst_qdjangofastcgiserver.cpp
-
-INCLUDEPATH += $$QDJANGO_INCLUDEPATH
-
-LIBS += -L../../../src/http $$QDJANGO_HTTP_LIBS
