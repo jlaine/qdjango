@@ -1,3 +1,4 @@
+DEPTH = ../../..
 include(../db.pri)
 
 TARGET = tst_qdjangometamodel

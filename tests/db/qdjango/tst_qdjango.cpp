@@ -99,6 +99,12 @@ void tst_QDjango::cleanup()
 
 void tst_QDjango::databaseThreaded()
 {
+    if (QDjango::database().databaseName() == QLatin1String(":memory:")) {
+        QEXPECT_FAIL("", "Threaded mode not supported with sqlite memory database", Continue);
+        QVERIFY(false);
+        return;
+    }
+
     QDjangoQuerySet<Author> qs;
     QCOMPARE(qs.count(), 0);
 
