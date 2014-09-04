@@ -1,10 +1,9 @@
-include(../../qdjango.pri)
+include(../tests.pri)
 
-QT -= gui
-QT += sql testlib
+QT += sql
 
 HEADERS += $$PWD/util.h
 SOURCES += $$PWD/util.cpp
-INCLUDEPATH += $$PWD $$QDJANGO_INCLUDEPATH
 
+INCLUDEPATH += $$PWD
 LIBS += -L../../../src/db $$QDJANGO_DB_LIBS

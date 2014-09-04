@@ -1,7 +1,5 @@
-include(../../qdjango.pri)
+include(../tests.pri)
 
-QT -= gui
-QT += network testlib
+QT += network
 
-INCLUDEPATH += $$QDJANGO_INCLUDEPATH
 LIBS += -L../../../src/http $$QDJANGO_HTTP_LIBS
