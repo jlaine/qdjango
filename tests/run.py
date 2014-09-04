@@ -48,10 +48,7 @@ for component in components:
     for test in os.listdir(component_path):
         test_path = os.path.join(component_path, test)
         if os.path.isdir(test_path):
-            if platform.system() == 'Darwin':
-                prog = os.path.join(test_path, 'tst_' + test + '.app', 'Contents', 'MacOS', 'tst_' + test)
-            else:
-                prog = os.path.join(test_path, 'tst_' + test)
+            prog = os.path.join(test_path, 'tst_' + test)
             if not os.path.exists(prog):
                 continue
 
