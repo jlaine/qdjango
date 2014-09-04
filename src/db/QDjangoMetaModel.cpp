@@ -398,7 +398,7 @@ QDjangoMetaModel::~QDjangoMetaModel()
 QString QDjangoMetaModel::className() const
 {
     return d->className;
-};
+}
 
 /*!
     Determine whether this is a valid model, or just default constructed
