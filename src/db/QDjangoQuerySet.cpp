@@ -273,7 +273,9 @@ bool QDjangoQuerySetPrivate::sqlInsert(const QVariantMap &fields, QVariant *inse
     // fetch autoincrement pk
     if (insertId) {
         QSqlDatabase db = QDjango::database();
-        if (db.driverName() == QLatin1String("QPSQL")) {
+        QDjangoDatabase::Dialect dialect = QDjangoDatabase::databaseDialect(db);
+
+        if (dialect == QDjangoDatabase::PSQL) {
             const QDjangoMetaModel metaModel = QDjango::metaModel(m_modelName);
             QDjangoQuery query(db);
             const QDjangoMetaField primaryKey = metaModel.localField("pk");

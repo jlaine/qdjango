@@ -377,7 +377,7 @@ QDjangoMetaModel::QDjangoMetaModel(const QMetaObject *meta)
         d->localFields.prepend(field);
         d->primaryKey = field.d->name;
     }
- 
+
 }
 
 /*!
@@ -438,7 +438,7 @@ QStringList QDjangoMetaModel::createTableSql() const
 {
     QSqlDatabase db = QDjango::database();
     QSqlDriver *driver = db.driver();
-    const QString driverName = db.driverName();
+    QDjangoDatabase::Dialect dialect = QDjangoDatabase::databaseDialect(db);
 
     QStringList queries;
     QStringList propSql;
@@ -449,13 +449,13 @@ QStringList QDjangoMetaModel::createTableSql() const
         QString fieldSql = driver->escapeIdentifier(field.column(), QSqlDriver::FieldName);
         switch (field.d->type) {
         case QVariant::Bool:
-            if (driverName == QLatin1String("QPSQL"))
+            if (dialect == QDjangoDatabase::PSQL)
                 fieldSql += QLatin1String(" boolean");
             else
                 fieldSql += QLatin1String(" bool");
             break;
         case QVariant::ByteArray:
-            if (driverName == QLatin1String("QPSQL"))
+            if (dialect == QDjangoDatabase::PSQL)
                 fieldSql += QLatin1String(" bytea");
             else {
                 fieldSql += QLatin1String(" blob");
@@ -467,7 +467,7 @@ QStringList QDjangoMetaModel::createTableSql() const
             fieldSql += QLatin1String(" date");
             break;
         case QVariant::DateTime:
-            if (driverName == QLatin1String("QPSQL"))
+            if (dialect == QDjangoDatabase::PSQL)
                 fieldSql += QLatin1String(" timestamp");
             else
                 fieldSql += QLatin1String(" datetime");
@@ -506,15 +506,14 @@ QStringList QDjangoMetaModel::createTableSql() const
 
         // auto-increment is backend specific
         if (field.d->autoIncrement) {
-            if (driverName == QLatin1String("QSQLITE") ||
-                driverName == QLatin1String("QSQLITE2"))
+            if (dialect == QDjangoDatabase::SQLITE)
                 // NOTE: django does not add this option for sqlite, but there
                 // is a ticket asking for it to do so:
                 // https://code.djangoproject.com/ticket/10164
                 fieldSql += QLatin1String(" AUTOINCREMENT");
-            else if (driverName == QLatin1String("QMYSQL"))
+            else if (dialect == QDjangoDatabase::MYSQL)
                 fieldSql += QLatin1String(" AUTO_INCREMENT");
-            else if (driverName == QLatin1String("QPSQL"))
+            else if (dialect == QDjangoDatabase::PSQL)
                 fieldSql = driver->escapeIdentifier(field.column(), QSqlDriver::FieldName) + QLatin1String(" serial PRIMARY KEY");
         }
 
@@ -523,7 +522,7 @@ QStringList QDjangoMetaModel::createTableSql() const
         {
             const QDjangoMetaModel foreignMeta = QDjango::metaModel(field.d->foreignModel);
             const QDjangoMetaField foreignField = foreignMeta.localField("pk");
-            if (driverName == QLatin1String("QMYSQL") || driverName == QLatin1String("QMYSQL3")) {
+            if (dialect == QDjangoDatabase::MYSQL) {
                 QString constraintName = QString::fromLatin1("FK_%1_%2").arg(
                     field.column(), stringlist_digest(QStringList() << field.column() << d->table));
                 QString constraint =
@@ -575,7 +574,7 @@ QStringList QDjangoMetaModel::createTableSql() const
                 }
             }
 
-            if (driverName == QLatin1String("QPSQL"))
+            if (dialect == QDjangoDatabase::PSQL)
                 fieldSql += " DEFERRABLE INITIALLY DEFERRED";
         }
         propSql << fieldSql;

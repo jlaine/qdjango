@@ -198,7 +198,7 @@ QDjangoWhere QDjangoWhere::operator!() const
     } else {
         result.d->negate = !d->negate;
     }
-    
+
     return result;
 }
 
@@ -300,6 +300,8 @@ bool QDjangoWhere::isNone() const
  */
 QString QDjangoWhere::sql(const QSqlDatabase &db) const
 {
+    QDjangoDatabase::Dialect dialect = QDjangoDatabase::databaseDialect(db);
+
     switch (d->operation) {
         case Equals:
             return d->key + QLatin1String(" = ?");
@@ -330,11 +332,11 @@ QString QDjangoWhere::sql(const QSqlDatabase &db) const
         case Contains:
         {
             QString op;
-            if (db.driverName() == QLatin1String("QMYSQL"))
+            if (dialect == QDjangoDatabase::MYSQL)
                 op = QLatin1String(d->negate ? "NOT LIKE BINARY" : "LIKE BINARY");
             else
                 op = QLatin1String(d->negate ? "NOT LIKE" : "LIKE");
-            if (db.driverName() == QLatin1String("QSQLITE") || db.driverName() == QLatin1String("QSQLITE2"))
+            if (dialect == QDjangoDatabase::SQLITE)
                 return d->key + QLatin1String(" ") + op + QLatin1String(" ? ESCAPE '\\'");
             else
                 return d->key + QLatin1String(" ") + op + QLatin1String(" ?");
@@ -345,9 +347,9 @@ QString QDjangoWhere::sql(const QSqlDatabase &db) const
         case IEquals:
         {
             const QString op = QLatin1String(d->negate ? "NOT LIKE" : "LIKE");
-            if (db.driverName() == QLatin1String("QSQLITE") || db.driverName() == QLatin1String("QSQLITE2"))
+            if (dialect == QDjangoDatabase::SQLITE)
                 return d->key + QLatin1String(" ") + op + QLatin1String(" ? ESCAPE '\\'");
-            else if (db.driverName() == QLatin1String("QPSQL"))
+            else if (dialect == QDjangoDatabase::PSQL)
                 return QLatin1String("UPPER(") + d->key + QLatin1String("::text) ") + op + QLatin1String(" UPPER(?)");
             else
                 return d->key + QLatin1String(" ") + op + QLatin1String(" ?");
@@ -355,9 +357,9 @@ QString QDjangoWhere::sql(const QSqlDatabase &db) const
         case INotEquals:
         {
             const QString op = QLatin1String(d->negate ? "LIKE" : "NOT LIKE");
-            if (db.driverName() == QLatin1String("QSQLITE") || db.driverName() == QLatin1String("QSQLITE2"))
+            if (dialect == QDjangoDatabase::SQLITE)
                 return d->key + QLatin1String(" ") + op + QLatin1String(" ? ESCAPE '\\'");
-            else if (db.driverName() == QLatin1String("QPSQL"))
+            else if (dialect == QDjangoDatabase::PSQL)
                 return QLatin1String("UPPER(") + d->key + QLatin1String("::text) ") + op + QLatin1String(" UPPER(?)");
             else
                 return d->key + QLatin1String(" ") + op + QLatin1String(" ?");
