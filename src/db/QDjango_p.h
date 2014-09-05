@@ -60,12 +60,14 @@ public:
         DB2
     };
 
+    static DatabaseType databaseType();
     static DatabaseType databaseType(const QSqlDatabase &db);
 
     QSqlDatabase reference;
     QMutex mutex;
     QMap<QThread*, QSqlDatabase> copies;
     qint64 connectionId;
+    DatabaseType type;
 
 private slots:
     void threadFinished();

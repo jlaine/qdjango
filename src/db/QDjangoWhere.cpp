@@ -300,7 +300,7 @@ bool QDjangoWhere::isNone() const
  */
 QString QDjangoWhere::sql(const QSqlDatabase &db) const
 {
-    QDjangoDatabase::DatabaseType databaseType = QDjangoDatabase::databaseType(db);
+    QDjangoDatabase::DatabaseType databaseType = QDjangoDatabase::databaseType();
 
     switch (d->operation) {
         case Equals:

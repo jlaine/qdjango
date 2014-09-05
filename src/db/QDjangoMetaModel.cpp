@@ -438,7 +438,7 @@ QStringList QDjangoMetaModel::createTableSql() const
 {
     QSqlDatabase db = QDjango::database();
     QSqlDriver *driver = db.driver();
-    QDjangoDatabase::DatabaseType databaseType = QDjangoDatabase::databaseType(db);
+    QDjangoDatabase::DatabaseType databaseType = QDjangoDatabase::databaseType();
 
     QStringList queries;
     QStringList propSql;
