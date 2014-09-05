@@ -90,8 +90,8 @@ void tst_QDjangoScript::testWhereConstructor()
     where = engine->fromScriptValue<QDjangoWhere>(result);
     CHECKWHERE(where, QLatin1String("username >= ?"), QVariantList() << "foobar");
 
-    QDjangoDatabase::Dialect dialect = QDjangoDatabase::databaseDialect(QDjango::database());
-    if (dialect == QDjangoDatabase::MYSQL) {
+    QDjangoDatabase::DatabaseType databaseType = QDjangoDatabase::databaseType(QDjango::database());
+    if (databaseType == QDjangoDatabase::MySqlServer) {
         // starts with
         result = engine->evaluate("Q({'username__startswith': 'foobar'})");
         where = engine->fromScriptValue<QDjangoWhere>(result);
