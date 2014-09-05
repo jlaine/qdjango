@@ -35,7 +35,7 @@ static bool globalDebugEnabled = false;
 /// \cond
 
 QDjangoDatabase::QDjangoDatabase(QObject *parent)
-    : QObject(parent), connectionId(0)
+    : QObject(parent), connectionId(0), type(UnknownDB)
 {
 }
 
@@ -61,7 +61,7 @@ static void closeDatabase()
 
 static void initDatabase(QSqlDatabase db)
 {
-    QDjangoDatabase::DatabaseType databaseType = QDjangoDatabase::databaseType(db);
+    QDjangoDatabase::DatabaseType databaseType = QDjangoDatabase::databaseType();
     if (databaseType == QDjangoDatabase::SQLite) {
         // enable foreign key constraint handling
         QDjangoQuery query(db);
@@ -171,6 +171,8 @@ void QDjango::setDatabase(QSqlDatabase database)
         globalDatabase = new QDjangoDatabase();
         qAddPostRoutine(closeDatabase);
     }
+
+    globalDatabase->type = databaseType;
     initDatabase(database);
     globalDatabase->reference = database;
 }
@@ -249,7 +251,7 @@ QDjangoMetaModel QDjango::registerModel(const QMetaObject *meta)
 */
 QString QDjango::noLimitSql()
 {
-    QDjangoDatabase::DatabaseType databaseType = QDjangoDatabase::databaseType(QDjango::database());
+    QDjangoDatabase::DatabaseType databaseType = QDjangoDatabase::databaseType();
     if (databaseType == QDjangoDatabase::SQLite)
         return QLatin1String(" LIMIT -1");
     else if (databaseType == QDjangoDatabase::MySqlServer)
@@ -257,6 +259,13 @@ QString QDjango::noLimitSql()
         return QLatin1String(" LIMIT 18446744073709551615");
 
     return QString();
+}
+
+QDjangoDatabase::DatabaseType QDjangoDatabase::databaseType()
+{
+    if (globalDatabase)
+        return globalDatabase->type;
+    return QDjangoDatabase::UnknownDB;
 }
 
 QDjangoDatabase::DatabaseType QDjangoDatabase::databaseType(const QSqlDatabase &db)
