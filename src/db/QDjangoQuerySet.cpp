@@ -273,7 +273,7 @@ bool QDjangoQuerySetPrivate::sqlInsert(const QVariantMap &fields, QVariant *inse
     // fetch autoincrement pk
     if (insertId) {
         QSqlDatabase db = QDjango::database();
-        QDjangoDatabase::DatabaseType databaseType = QDjangoDatabase::databaseType();
+        QDjangoDatabase::DatabaseType databaseType = QDjangoDatabase::databaseType(db);
 
         if (databaseType == QDjangoDatabase::PostgreSQL) {
             const QDjangoMetaModel metaModel = QDjango::metaModel(m_modelName);

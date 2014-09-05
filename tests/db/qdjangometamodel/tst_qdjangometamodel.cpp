@@ -116,7 +116,7 @@ void tst_QDjangoMetaModel::initTestCase()
 void tst_QDjangoMetaModel::testBool()
 {
     QStringList sql;
-    QDjangoDatabase::DatabaseType databaseType = QDjangoDatabase::databaseType();
+    QDjangoDatabase::DatabaseType databaseType = QDjangoDatabase::databaseType(QDjango::database());
     if (databaseType == QDjangoDatabase::PostgreSQL)
         sql << QLatin1String("CREATE TABLE \"tst_bool\" (\"id\" serial PRIMARY KEY, \"value\" boolean NOT NULL)");
     else if (databaseType == QDjangoDatabase::MySqlServer)
@@ -133,7 +133,7 @@ void tst_QDjangoMetaModel::testBool()
 void tst_QDjangoMetaModel::testByteArray()
 {
     QStringList sql;
-    QDjangoDatabase::DatabaseType databaseType = QDjangoDatabase::databaseType();
+    QDjangoDatabase::DatabaseType databaseType = QDjangoDatabase::databaseType(QDjango::database());
     if (databaseType == QDjangoDatabase::PostgreSQL)
         sql << QLatin1String("CREATE TABLE \"tst_bytearray\" (\"id\" serial PRIMARY KEY, \"value\" bytea NOT NULL)");
     else if (databaseType == QDjangoDatabase::MySqlServer)
@@ -150,7 +150,7 @@ void tst_QDjangoMetaModel::testByteArray()
 void tst_QDjangoMetaModel::testDate()
 {
     QStringList sql;
-    QDjangoDatabase::DatabaseType databaseType = QDjangoDatabase::databaseType();
+    QDjangoDatabase::DatabaseType databaseType = QDjangoDatabase::databaseType(QDjango::database());
     if (databaseType == QDjangoDatabase::PostgreSQL)
         sql << QLatin1String("CREATE TABLE \"tst_date\" (\"id\" serial PRIMARY KEY, \"value\" date NOT NULL)");
     else if (databaseType == QDjangoDatabase::MySqlServer)
@@ -166,7 +166,7 @@ void tst_QDjangoMetaModel::testDate()
 void tst_QDjangoMetaModel::testDateTime()
 {
     QStringList sql;
-    QDjangoDatabase::DatabaseType databaseType = QDjangoDatabase::databaseType();
+    QDjangoDatabase::DatabaseType databaseType = QDjangoDatabase::databaseType(QDjango::database());
     if (databaseType == QDjangoDatabase::PostgreSQL)
         sql << QLatin1String("CREATE TABLE \"tst_datetime\" (\"id\" serial PRIMARY KEY, \"value\" timestamp NOT NULL)");
     else if (databaseType == QDjangoDatabase::MySqlServer)
@@ -182,7 +182,7 @@ void tst_QDjangoMetaModel::testDateTime()
 void tst_QDjangoMetaModel::testDouble()
 {
     QStringList sql;
-    QDjangoDatabase::DatabaseType databaseType = QDjangoDatabase::databaseType();
+    QDjangoDatabase::DatabaseType databaseType = QDjangoDatabase::databaseType(QDjango::database());
     if (databaseType == QDjangoDatabase::PostgreSQL)
         sql << QLatin1String("CREATE TABLE \"tst_double\" (\"id\" serial PRIMARY KEY, \"value\" real NOT NULL)");
     else if (databaseType == QDjangoDatabase::MySqlServer)
@@ -198,7 +198,7 @@ void tst_QDjangoMetaModel::testDouble()
 void tst_QDjangoMetaModel::testInteger()
 {
     QStringList sql;
-    QDjangoDatabase::DatabaseType databaseType = QDjangoDatabase::databaseType();
+    QDjangoDatabase::DatabaseType databaseType = QDjangoDatabase::databaseType(QDjango::database());
     if (databaseType == QDjangoDatabase::PostgreSQL)
         sql << QLatin1String("CREATE TABLE \"tst_integer\" (\"id\" serial PRIMARY KEY, \"value\" integer NOT NULL)");
     else if (databaseType == QDjangoDatabase::MySqlServer)
@@ -216,7 +216,7 @@ void tst_QDjangoMetaModel::testInteger()
 void tst_QDjangoMetaModel::testLongLong()
 {
     QStringList sql;
-    QDjangoDatabase::DatabaseType databaseType = QDjangoDatabase::databaseType();
+    QDjangoDatabase::DatabaseType databaseType = QDjangoDatabase::databaseType(QDjango::database());
     if (databaseType == QDjangoDatabase::PostgreSQL)
         sql << QLatin1String("CREATE TABLE \"tst_longlong\" (\"id\" serial PRIMARY KEY, \"value\" bigint NOT NULL)");
     else if (databaseType == QDjangoDatabase::MySqlServer)
@@ -234,7 +234,7 @@ void tst_QDjangoMetaModel::testLongLong()
 void tst_QDjangoMetaModel::testString()
 {
     QStringList sql;
-    QDjangoDatabase::DatabaseType databaseType = QDjangoDatabase::databaseType();
+    QDjangoDatabase::DatabaseType databaseType = QDjangoDatabase::databaseType(QDjango::database());
     if (databaseType == QDjangoDatabase::PostgreSQL)
         sql << QLatin1String("CREATE TABLE \"tst_string\" (\"id\" serial PRIMARY KEY, \"value\" varchar(255) NOT NULL)");
     else if (databaseType == QDjangoDatabase::MySqlServer)
@@ -250,7 +250,7 @@ void tst_QDjangoMetaModel::testString()
 void tst_QDjangoMetaModel::testTime()
 {
     QStringList sql;
-    QDjangoDatabase::DatabaseType databaseType = QDjangoDatabase::databaseType();
+    QDjangoDatabase::DatabaseType databaseType = QDjangoDatabase::databaseType(QDjango::database());
     if (databaseType == QDjangoDatabase::PostgreSQL)
         sql << QLatin1String("CREATE TABLE \"tst_time\" (\"id\" serial PRIMARY KEY, \"value\" time NOT NULL)");
     else if (databaseType == QDjangoDatabase::MySqlServer)
@@ -266,7 +266,7 @@ void tst_QDjangoMetaModel::testTime()
 void tst_QDjangoMetaModel::testOptions()
 {
     QStringList sql;
-    QDjangoDatabase::DatabaseType databaseType = QDjangoDatabase::databaseType();
+    QDjangoDatabase::DatabaseType databaseType = QDjangoDatabase::databaseType(QDjango::database());
     if (databaseType == QDjangoDatabase::PostgreSQL) {
         sql << QLatin1String(
             "CREATE TABLE \"some_table\" ("
@@ -356,7 +356,7 @@ void tst_QDjangoMetaModel::testOptions()
 void tst_QDjangoMetaModel::testConstraints()
 {
     QStringList sql;
-    QDjangoDatabase::DatabaseType databaseType = QDjangoDatabase::databaseType();
+    QDjangoDatabase::DatabaseType databaseType = QDjangoDatabase::databaseType(QDjango::database());
     if (databaseType == QDjangoDatabase::PostgreSQL) {
         sql << QLatin1String("CREATE TABLE \"tst_fkconstraint\" ("
             "\"id\" serial PRIMARY KEY, "

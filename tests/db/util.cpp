@@ -59,8 +59,7 @@ bool initialiseDatabase()
 
 QString normalizeSql(const QSqlDatabase &db, const QString &sql)
 {
-    Q_UNUSED(db);
-    QDjangoDatabase::DatabaseType databaseType = QDjangoDatabase::databaseType();
+    QDjangoDatabase::DatabaseType databaseType = QDjangoDatabase::databaseType(db);
     QString modSql(sql);
     if (databaseType == QDjangoDatabase::MySqlServer)
         modSql.replace("`", "\"");

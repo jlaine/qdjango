@@ -28,6 +28,7 @@
 
 static const char *connectionPrefix = "_qdjango_";
 
+QHash<QSqlDriver*, QDjangoDatabase::DatabaseType> QDjangoDatabase::globalTypeCache;
 QMap<QByteArray, QDjangoMetaModel> globalMetaModels = QMap<QByteArray, QDjangoMetaModel>();
 static QDjangoDatabase *globalDatabase = 0;
 static bool globalDebugEnabled = false;
@@ -35,7 +36,7 @@ static bool globalDebugEnabled = false;
 /// \cond
 
 QDjangoDatabase::QDjangoDatabase(QObject *parent)
-    : QObject(parent), connectionId(0), type(UnknownDB)
+    : QObject(parent), connectionId(0)
 {
 }
 
@@ -61,7 +62,7 @@ static void closeDatabase()
 
 static void initDatabase(QSqlDatabase db)
 {
-    QDjangoDatabase::DatabaseType databaseType = QDjangoDatabase::databaseType();
+    QDjangoDatabase::DatabaseType databaseType = QDjangoDatabase::databaseType(db);
     if (databaseType == QDjangoDatabase::SQLite) {
         // enable foreign key constraint handling
         QDjangoQuery query(db);
@@ -172,7 +173,6 @@ void QDjango::setDatabase(QSqlDatabase database)
         qAddPostRoutine(closeDatabase);
     }
 
-    globalDatabase->type = databaseType;
     initDatabase(database);
     globalDatabase->reference = database;
 }
@@ -251,7 +251,7 @@ QDjangoMetaModel QDjango::registerModel(const QMetaObject *meta)
 */
 QString QDjango::noLimitSql()
 {
-    QDjangoDatabase::DatabaseType databaseType = QDjangoDatabase::databaseType();
+    QDjangoDatabase::DatabaseType databaseType = QDjangoDatabase::databaseType(QDjango::database());
     if (databaseType == QDjangoDatabase::SQLite)
         return QLatin1String(" LIMIT -1");
     else if (databaseType == QDjangoDatabase::MySqlServer)
@@ -261,22 +261,21 @@ QString QDjango::noLimitSql()
     return QString();
 }
 
-QDjangoDatabase::DatabaseType QDjangoDatabase::databaseType()
-{
-    if (globalDatabase)
-        return globalDatabase->type;
-    return QDjangoDatabase::UnknownDB;
-}
-
 QDjangoDatabase::DatabaseType QDjangoDatabase::databaseType(const QSqlDatabase &db)
 {
+    if (globalTypeCache.contains(db.driver()))
+        return globalTypeCache.value(db.driver());
+
+    QDjangoDatabase::DatabaseType type = QDjangoDatabase::UnknownDB;
     if (db.driverName() == QLatin1String("QMYSQL") ||
         db.driverName() == QLatin1String("QMYSQL3"))
-        return QDjangoDatabase::MySqlServer;
+        type = QDjangoDatabase::MySqlServer;
     else if (db.driverName() == QLatin1String("QSQLITE") ||
              db.driverName() == QLatin1String("QSQLITE2"))
-        return QDjangoDatabase::SQLite;
+        type = QDjangoDatabase::SQLite;
     else if (db.driverName() == QLatin1String("QPSQL"))
-        return QDjangoDatabase::PostgreSQL;
-    return QDjangoDatabase::UnknownDB;
+        type = QDjangoDatabase::PostgreSQL;
+
+    globalTypeCache.insert(db.driver(), type);
+    return type;
 }
