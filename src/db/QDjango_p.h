@@ -61,6 +61,7 @@ public:
     };
 
     static DatabaseType databaseType(const QSqlDatabase &db);
+    static QHash<QSqlDriver*, DatabaseType> globalTypeCache;
 
     QSqlDatabase reference;
     QMutex mutex;

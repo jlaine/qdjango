@@ -28,6 +28,7 @@
 
 static const char *connectionPrefix = "_qdjango_";
 
+QHash<QSqlDriver*, QDjangoDatabase::DatabaseType> QDjangoDatabase::globalTypeCache;
 QMap<QByteArray, QDjangoMetaModel> globalMetaModels = QMap<QByteArray, QDjangoMetaModel>();
 static QDjangoDatabase *globalDatabase = 0;
 static bool globalDebugEnabled = false;
@@ -261,13 +262,19 @@ QString QDjango::noLimitSql()
 
 QDjangoDatabase::DatabaseType QDjangoDatabase::databaseType(const QSqlDatabase &db)
 {
+    if (globalTypeCache.contains(db.driver()))
+        return globalTypeCache.value(db.driver());
+
+    QDjangoDatabase::DatabaseType type = QDjangoDatabase::UnknownDB;
     if (db.driverName() == QLatin1String("QMYSQL") ||
         db.driverName() == QLatin1String("QMYSQL3"))
-        return QDjangoDatabase::MySqlServer;
+        type = QDjangoDatabase::MySqlServer;
     else if (db.driverName() == QLatin1String("QSQLITE") ||
              db.driverName() == QLatin1String("QSQLITE2"))
-        return QDjangoDatabase::SQLite;
+        type = QDjangoDatabase::SQLite;
     else if (db.driverName() == QLatin1String("QPSQL"))
-        return QDjangoDatabase::PostgreSQL;
-    return QDjangoDatabase::UnknownDB;
+        type = QDjangoDatabase::PostgreSQL;
+
+    globalTypeCache.insert(db.driver(), type);
+    return type;
 }
