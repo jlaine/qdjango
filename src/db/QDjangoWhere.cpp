@@ -300,7 +300,7 @@ bool QDjangoWhere::isNone() const
  */
 QString QDjangoWhere::sql(const QSqlDatabase &db) const
 {
-    QDjangoDatabase::Dialect dialect = QDjangoDatabase::databaseDialect(db);
+    QDjangoDatabase::DatabaseType databaseType = QDjangoDatabase::databaseType();
 
     switch (d->operation) {
         case Equals:
@@ -332,11 +332,11 @@ QString QDjangoWhere::sql(const QSqlDatabase &db) const
         case Contains:
         {
             QString op;
-            if (dialect == QDjangoDatabase::MYSQL)
+            if (databaseType == QDjangoDatabase::MySqlServer)
                 op = QLatin1String(d->negate ? "NOT LIKE BINARY" : "LIKE BINARY");
             else
                 op = QLatin1String(d->negate ? "NOT LIKE" : "LIKE");
-            if (dialect == QDjangoDatabase::SQLITE)
+            if (databaseType == QDjangoDatabase::SQLite)
                 return d->key + QLatin1String(" ") + op + QLatin1String(" ? ESCAPE '\\'");
             else
                 return d->key + QLatin1String(" ") + op + QLatin1String(" ?");
@@ -347,9 +347,9 @@ QString QDjangoWhere::sql(const QSqlDatabase &db) const
         case IEquals:
         {
             const QString op = QLatin1String(d->negate ? "NOT LIKE" : "LIKE");
-            if (dialect == QDjangoDatabase::SQLITE)
+            if (databaseType == QDjangoDatabase::SQLite)
                 return d->key + QLatin1String(" ") + op + QLatin1String(" ? ESCAPE '\\'");
-            else if (dialect == QDjangoDatabase::PSQL)
+            else if (databaseType == QDjangoDatabase::PostgreSQL)
                 return QLatin1String("UPPER(") + d->key + QLatin1String("::text) ") + op + QLatin1String(" UPPER(?)");
             else
                 return d->key + QLatin1String(" ") + op + QLatin1String(" ?");
@@ -357,9 +357,9 @@ QString QDjangoWhere::sql(const QSqlDatabase &db) const
         case INotEquals:
         {
             const QString op = QLatin1String(d->negate ? "LIKE" : "NOT LIKE");
-            if (dialect == QDjangoDatabase::SQLITE)
+            if (databaseType == QDjangoDatabase::SQLite)
                 return d->key + QLatin1String(" ") + op + QLatin1String(" ? ESCAPE '\\'");
-            else if (dialect == QDjangoDatabase::PSQL)
+            else if (databaseType == QDjangoDatabase::PostgreSQL)
                 return QLatin1String("UPPER(") + d->key + QLatin1String("::text) ") + op + QLatin1String(" UPPER(?)");
             else
                 return d->key + QLatin1String(" ") + op + QLatin1String(" ?");

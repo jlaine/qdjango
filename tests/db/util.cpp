@@ -59,13 +59,12 @@ bool initialiseDatabase()
 
 QString normalizeSql(const QSqlDatabase &db, const QString &sql)
 {
-    QDjangoDatabase::Dialect dialect =
-        QDjangoDatabase::databaseDialect(db);
-
+    Q_UNUSED(db);
+    QDjangoDatabase::DatabaseType databaseType = QDjangoDatabase::databaseType();
     QString modSql(sql);
-    if (dialect == QDjangoDatabase::MYSQL)
+    if (databaseType == QDjangoDatabase::MySqlServer)
         modSql.replace("`", "\"");
-    else if (dialect == QDjangoDatabase::SQLITE)
+    else if (databaseType == QDjangoDatabase::SQLite)
         modSql.replace("? ESCAPE '\\'", "?");
     return modSql;
 }

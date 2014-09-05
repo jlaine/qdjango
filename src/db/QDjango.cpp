@@ -35,7 +35,7 @@ static bool globalDebugEnabled = false;
 /// \cond
 
 QDjangoDatabase::QDjangoDatabase(QObject *parent)
-    : QObject(parent), connectionId(0)
+    : QObject(parent), connectionId(0), type(UnknownDB)
 {
 }
 
@@ -61,8 +61,8 @@ static void closeDatabase()
 
 static void initDatabase(QSqlDatabase db)
 {
-    QDjangoDatabase::Dialect dialect = QDjangoDatabase::databaseDialect(db);
-    if (dialect == QDjangoDatabase::SQLITE) {
+    QDjangoDatabase::DatabaseType databaseType = QDjangoDatabase::databaseType();
+    if (databaseType == QDjangoDatabase::SQLite) {
         // enable foreign key constraint handling
         QDjangoQuery query(db);
         query.prepare("PRAGMA foreign_keys=on");
@@ -161,8 +161,8 @@ QSqlDatabase QDjango::database()
 */
 void QDjango::setDatabase(QSqlDatabase database)
 {
-    QDjangoDatabase::Dialect dialect = QDjangoDatabase::databaseDialect(database);
-    if (dialect == QDjangoDatabase::UnknownDialect) {
+    QDjangoDatabase::DatabaseType databaseType = QDjangoDatabase::databaseType(database);
+    if (databaseType == QDjangoDatabase::UnknownDB) {
         qWarning() << "Unsupported database driver" << database.driverName();
     }
 
@@ -171,6 +171,8 @@ void QDjango::setDatabase(QSqlDatabase database)
         globalDatabase = new QDjangoDatabase();
         qAddPostRoutine(closeDatabase);
     }
+
+    globalDatabase->type = databaseType;
     initDatabase(database);
     globalDatabase->reference = database;
 }
@@ -249,25 +251,32 @@ QDjangoMetaModel QDjango::registerModel(const QMetaObject *meta)
 */
 QString QDjango::noLimitSql()
 {
-    QDjangoDatabase::Dialect dialect = QDjangoDatabase::databaseDialect(QDjango::database());
-    if (dialect == QDjangoDatabase::SQLITE)
+    QDjangoDatabase::DatabaseType databaseType = QDjangoDatabase::databaseType();
+    if (databaseType == QDjangoDatabase::SQLite)
         return QLatin1String(" LIMIT -1");
-    else if (dialect == QDjangoDatabase::MYSQL)
+    else if (databaseType == QDjangoDatabase::MySqlServer)
         // 2^64 - 1, as recommended by the MySQL documentation
         return QLatin1String(" LIMIT 18446744073709551615");
 
     return QString();
 }
 
-QDjangoDatabase::Dialect QDjangoDatabase::databaseDialect(const QSqlDatabase &db)
+QDjangoDatabase::DatabaseType QDjangoDatabase::databaseType()
+{
+    if (globalDatabase)
+        return globalDatabase->type;
+    return QDjangoDatabase::UnknownDB;
+}
+
+QDjangoDatabase::DatabaseType QDjangoDatabase::databaseType(const QSqlDatabase &db)
 {
     if (db.driverName() == QLatin1String("QMYSQL") ||
         db.driverName() == QLatin1String("QMYSQL3"))
-        return QDjangoDatabase::MYSQL;
+        return QDjangoDatabase::MySqlServer;
     else if (db.driverName() == QLatin1String("QSQLITE") ||
              db.driverName() == QLatin1String("QSQLITE2"))
-        return QDjangoDatabase::SQLITE;
+        return QDjangoDatabase::SQLite;
     else if (db.driverName() == QLatin1String("QPSQL"))
-        return QDjangoDatabase::PSQL;
-    return QDjangoDatabase::UnknownDialect;
+        return QDjangoDatabase::PostgreSQL;
+    return QDjangoDatabase::UnknownDB;
 }
