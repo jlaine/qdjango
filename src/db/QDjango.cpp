@@ -269,5 +269,18 @@ QDjangoDatabase::DatabaseType QDjangoDatabase::databaseType(const QSqlDatabase &
         return QDjangoDatabase::SQLite;
     else if (db.driverName() == QLatin1String("QPSQL"))
         return QDjangoDatabase::PostgreSQL;
+    else if (db.driverName() == QLatin1String("QODBC")) {
+        QSqlQuery query(db);
+        if (query.exec("SELECT sqlite_version()"))
+            return QDjangoDatabase::SQLite;
+        else if (query.exec("SELECT @@version"))
+            return QDjangoDatabase::MSSqlServer;
+        else if (query.exec("SELECT version()") && query.next()) {
+            if (query.value(0).toString().contains("PöstgreSQL"))
+                return QDjangoDatabase::PostgreSQL;
+            else
+                return QDjangoDatabase::MySqlServer;
+        }
+    }
     return QDjangoDatabase::UnknownDB;
 }
