@@ -62,15 +62,16 @@ static void closeDatabase()
 
 static QDjangoDatabase::DatabaseType getDatabaseType(QSqlDatabase &db)
 {
-    if (db.driverName() == QLatin1String("QMYSQL") ||
-        db.driverName() == QLatin1String("QMYSQL3"))
+    const QString driverName = db.driverName();
+    if (driverName == QLatin1String("QMYSQL") ||
+        driverName == QLatin1String("QMYSQL3"))
         return QDjangoDatabase::MySqlServer;
-    else if (db.driverName() == QLatin1String("QSQLITE") ||
-             db.driverName() == QLatin1String("QSQLITE2"))
+    else if (driverName == QLatin1String("QSQLITE") ||
+             driverName == QLatin1String("QSQLITE2"))
         return QDjangoDatabase::SQLite;
-    else if (db.driverName() == QLatin1String("QPSQL"))
+    else if (driverName == QLatin1String("QPSQL"))
         return QDjangoDatabase::PostgreSQL;
-    else if (db.driverName() == QLatin1String("QODBC")) {
+    else if (driverName == QLatin1String("QODBC")) {
         QSqlQuery query(db);
         if (query.exec("SELECT sqlite_version()"))
             return QDjangoDatabase::SQLite;
