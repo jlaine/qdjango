@@ -30,6 +30,7 @@ static const char *connectionPrefix = "_qdjango_";
 
 QMap<QByteArray, QDjangoMetaModel> globalMetaModels = QMap<QByteArray, QDjangoMetaModel>();
 static QDjangoDatabase *globalDatabase = 0;
+static QDjangoDatabase::DatabaseType globalDatabaseType = QDjangoDatabase::UnknownDB;
 static bool globalDebugEnabled = false;
 
 /// \cond
@@ -57,6 +58,32 @@ void QDjangoDatabase::threadFinished()
 static void closeDatabase()
 {
     delete globalDatabase;
+}
+
+static QDjangoDatabase::DatabaseType getDatabaseType(QSqlDatabase &db)
+{
+    if (db.driverName() == QLatin1String("QMYSQL") ||
+        db.driverName() == QLatin1String("QMYSQL3"))
+        return QDjangoDatabase::MySqlServer;
+    else if (db.driverName() == QLatin1String("QSQLITE") ||
+             db.driverName() == QLatin1String("QSQLITE2"))
+        return QDjangoDatabase::SQLite;
+    else if (db.driverName() == QLatin1String("QPSQL"))
+        return QDjangoDatabase::PostgreSQL;
+    else if (db.driverName() == QLatin1String("QODBC")) {
+        QSqlQuery query(db);
+        if (query.exec("SELECT sqlite_version()"))
+            return QDjangoDatabase::SQLite;
+        else if (query.exec("SELECT @@version"))
+            return QDjangoDatabase::MSSqlServer;
+        else if (query.exec("SELECT version()") && query.next()) {
+            if (query.value(0).toString().contains("PöstgreSQL"))
+                return QDjangoDatabase::PostgreSQL;
+            else
+                return QDjangoDatabase::MySqlServer;
+        }
+    }
+    return QDjangoDatabase::UnknownDB;
 }
 
 static void initDatabase(QSqlDatabase db)
@@ -161,8 +188,8 @@ QSqlDatabase QDjango::database()
 */
 void QDjango::setDatabase(QSqlDatabase database)
 {
-    QDjangoDatabase::DatabaseType databaseType = QDjangoDatabase::databaseType(database);
-    if (databaseType == QDjangoDatabase::UnknownDB) {
+    globalDatabaseType = getDatabaseType(database);
+    if (globalDatabaseType == QDjangoDatabase::UnknownDB) {
         qWarning() << "Unsupported database driver" << database.driverName();
     }
 
@@ -261,26 +288,6 @@ QString QDjango::noLimitSql()
 
 QDjangoDatabase::DatabaseType QDjangoDatabase::databaseType(const QSqlDatabase &db)
 {
-    if (db.driverName() == QLatin1String("QMYSQL") ||
-        db.driverName() == QLatin1String("QMYSQL3"))
-        return QDjangoDatabase::MySqlServer;
-    else if (db.driverName() == QLatin1String("QSQLITE") ||
-             db.driverName() == QLatin1String("QSQLITE2"))
-        return QDjangoDatabase::SQLite;
-    else if (db.driverName() == QLatin1String("QPSQL"))
-        return QDjangoDatabase::PostgreSQL;
-    else if (db.driverName() == QLatin1String("QODBC")) {
-        QSqlQuery query(db);
-        if (query.exec("SELECT sqlite_version()"))
-            return QDjangoDatabase::SQLite;
-        else if (query.exec("SELECT @@version"))
-            return QDjangoDatabase::MSSqlServer;
-        else if (query.exec("SELECT version()") && query.next()) {
-            if (query.value(0).toString().contains("PöstgreSQL"))
-                return QDjangoDatabase::PostgreSQL;
-            else
-                return QDjangoDatabase::MySqlServer;
-        }
-    }
-    return QDjangoDatabase::UnknownDB;
+    Q_UNUSED(db);
+    return globalDatabaseType;
 }
