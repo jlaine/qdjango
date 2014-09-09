@@ -451,13 +451,21 @@ QStringList QDjangoMetaModel::createTableSql() const
         case QVariant::Bool:
             if (databaseType == QDjangoDatabase::PostgreSQL)
                 fieldSql += QLatin1String(" boolean");
+            else if (databaseType == QDjangoDatabase::MSSqlServer)
+                fieldSql += QLatin1String(" bit");
             else
                 fieldSql += QLatin1String(" bool");
             break;
         case QVariant::ByteArray:
-            if (databaseType == QDjangoDatabase::PostgreSQL)
+            if (databaseType == QDjangoDatabase::PostgreSQL) {
                 fieldSql += QLatin1String(" bytea");
-            else {
+            } else if (databaseType == QDjangoDatabase::MSSqlServer) {
+                fieldSql += QLatin1String(" varbinary");
+                if (field.d->maxLength > 0)
+                    fieldSql += QLatin1Char('(') + QString::number(field.d->maxLength) + QLatin1Char(')');
+                else
+                    fieldSql += QLatin1String("(max)");
+            } else {
                 fieldSql += QLatin1String(" blob");
                 if (field.d->maxLength > 0)
                     fieldSql += QLatin1Char('(') + QString::number(field.d->maxLength) + QLatin1Char(')');
@@ -476,16 +484,26 @@ QStringList QDjangoMetaModel::createTableSql() const
             fieldSql += QLatin1String(" real");
             break;
         case QVariant::Int:
-            fieldSql += QLatin1String(" integer");
+            if (databaseType == QDjangoDatabase::MSSqlServer)
+                fieldSql += QLatin1String(" int");
+            else
+                fieldSql += QLatin1String(" integer");
             break;
         case QVariant::LongLong:
             fieldSql += QLatin1String(" bigint");
             break;
         case QVariant::String:
-            if (field.d->maxLength > 0)
-                fieldSql += QLatin1String(" varchar(") + QString::number(field.d->maxLength) + QLatin1Char(')');
-            else
-                fieldSql += QLatin1String(" text");
+            if (field.d->maxLength > 0) {
+                if (databaseType == QDjangoDatabase::MSSqlServer)
+                    fieldSql += QLatin1String(" nvarchar(") + QString::number(field.d->maxLength) + QLatin1Char(')');
+                else
+                    fieldSql += QLatin1String(" varchar(") + QString::number(field.d->maxLength) + QLatin1Char(')');
+            } else {
+                if (databaseType == QDjangoDatabase::MSSqlServer)
+                    fieldSql += QLatin1String(" nvarchar(max)");
+                else
+                    fieldSql += QLatin1String(" text");
+            }
             break;
         case QVariant::Time:
             fieldSql += QLatin1String(" time");
@@ -515,6 +533,8 @@ QStringList QDjangoMetaModel::createTableSql() const
                 fieldSql += QLatin1String(" AUTO_INCREMENT");
             else if (databaseType == QDjangoDatabase::PostgreSQL)
                 fieldSql = driver->escapeIdentifier(field.column(), QSqlDriver::FieldName) + QLatin1String(" serial PRIMARY KEY");
+            else if (databaseType == QDjangoDatabase::MSSqlServer)
+                fieldSql += QLatin1String(" IDENTITY(1,1)");
         }
 
         // foreign key
@@ -555,6 +575,12 @@ QStringList QDjangoMetaModel::createTableSql() const
                 fieldSql += QString::fromLatin1(" REFERENCES %1 (%2)").arg(
                     driver->escapeIdentifier(foreignMeta.d->table, QSqlDriver::TableName),
                     driver->escapeIdentifier(foreignField.column(), QSqlDriver::FieldName));
+
+                if (databaseType == QDjangoDatabase::MSSqlServer &&
+                    field.d->deleteConstraint == Restrict) {
+                    qWarning("MSSQL does not support RESTRICT constraints");
+                    break;
+                }
 
                 if (field.d->deleteConstraint != NoAction) {
                     fieldSql += " ON DELETE";

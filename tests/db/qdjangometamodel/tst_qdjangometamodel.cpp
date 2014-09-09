@@ -64,8 +64,7 @@ tst_FkConstraint::tst_FkConstraint(QObject *parent)
 {
     setForeignKey("noConstraint", new User(this));
     setForeignKey("cascadeConstraint", new User(this));
-    setForeignKey("restrictConstraint", new User(this));
-    setForeignKey("nullConstraint", new User(this));
+    setForeignKey("nullConstraint", new Group(this));
 }
 
 User *tst_FkConstraint::noConstraint() const
@@ -88,24 +87,30 @@ void tst_FkConstraint::setCascadeConstraint(User *user)
     setForeignKey("cascadeConstraint", user);
 }
 
-User *tst_FkConstraint::restrictConstraint() const
+Group *tst_FkConstraint::nullConstraint() const
+{
+    return qobject_cast<Group*>(foreignKey("nullConstraint"));
+}
+
+void tst_FkConstraint::setNullConstraint(Group *group)
+{
+    setForeignKey("nullConstraint", group);
+}
+
+tst_FkConstraintWithRestrict::tst_FkConstraintWithRestrict(QObject *parent)
+    : tst_FkConstraint(parent)
+{
+    setForeignKey("restrictConstraint", new User(this));
+}
+
+User *tst_FkConstraintWithRestrict::restrictConstraint() const
 {
     return qobject_cast<User*>(foreignKey("restrictConstraint"));
 }
 
-void tst_FkConstraint::setRestrictConstraint(User *user)
+void tst_FkConstraintWithRestrict::setRestrictConstraint(User *user)
 {
     setForeignKey("restrictConstraint", user);
-}
-
-User *tst_FkConstraint::nullConstraint() const
-{
-    return qobject_cast<User*>(foreignKey("nullConstraint"));
-}
-
-void tst_FkConstraint::setNullConstraint(User *user)
-{
-    setForeignKey("nullConstraint", user);
 }
 
 void tst_QDjangoMetaModel::initTestCase()
@@ -121,6 +126,8 @@ void tst_QDjangoMetaModel::testBool()
         sql << QLatin1String("CREATE TABLE \"tst_bool\" (\"id\" serial PRIMARY KEY, \"value\" boolean NOT NULL)");
     else if (databaseType == QDjangoDatabase::MySqlServer)
         sql << QLatin1String("CREATE TABLE `tst_bool` (`id` integer NOT NULL PRIMARY KEY AUTO_INCREMENT, `value` bool NOT NULL)");
+    else if (databaseType == QDjangoDatabase::MSSqlServer)
+        sql << QLatin1String("CREATE TABLE \"tst_bool\" (\"id\" int NOT NULL PRIMARY KEY IDENTITY(1,1), \"value\" bit NOT NULL)");
     else
         sql << QLatin1String("CREATE TABLE \"tst_bool\" (\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, \"value\" bool NOT NULL)");
 
@@ -138,6 +145,8 @@ void tst_QDjangoMetaModel::testByteArray()
         sql << QLatin1String("CREATE TABLE \"tst_bytearray\" (\"id\" serial PRIMARY KEY, \"value\" bytea NOT NULL)");
     else if (databaseType == QDjangoDatabase::MySqlServer)
         sql << QLatin1String("CREATE TABLE `tst_bytearray` (`id` integer NOT NULL PRIMARY KEY AUTO_INCREMENT, `value` blob NOT NULL)");
+    else if (databaseType == QDjangoDatabase::MSSqlServer)
+        sql << QLatin1String("CREATE TABLE \"tst_bytearray\" (\"id\" int NOT NULL PRIMARY KEY IDENTITY(1,1), \"value\" varbinary(max) NOT NULL)");
     else
         sql << QLatin1String("CREATE TABLE \"tst_bytearray\" (\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, \"value\" blob NOT NULL)");
 
@@ -155,6 +164,8 @@ void tst_QDjangoMetaModel::testDate()
         sql << QLatin1String("CREATE TABLE \"tst_date\" (\"id\" serial PRIMARY KEY, \"value\" date NOT NULL)");
     else if (databaseType == QDjangoDatabase::MySqlServer)
         sql << QLatin1String("CREATE TABLE `tst_date` (`id` integer NOT NULL PRIMARY KEY AUTO_INCREMENT, `value` date NOT NULL)");
+    else if (databaseType == QDjangoDatabase::MSSqlServer)
+        sql << QLatin1String("CREATE TABLE \"tst_date\" (\"id\" int NOT NULL PRIMARY KEY IDENTITY(1,1), \"value\" date NOT NULL)");
     else
         sql << QLatin1String("CREATE TABLE \"tst_date\" (\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, \"value\" date NOT NULL)");
 
@@ -171,6 +182,8 @@ void tst_QDjangoMetaModel::testDateTime()
         sql << QLatin1String("CREATE TABLE \"tst_datetime\" (\"id\" serial PRIMARY KEY, \"value\" timestamp NOT NULL)");
     else if (databaseType == QDjangoDatabase::MySqlServer)
         sql << QLatin1String("CREATE TABLE `tst_datetime` (`id` integer NOT NULL PRIMARY KEY AUTO_INCREMENT, `value` datetime NOT NULL)");
+    else if (databaseType == QDjangoDatabase::MSSqlServer)
+        sql << QLatin1String("CREATE TABLE \"tst_datetime\" (\"id\" int NOT NULL PRIMARY KEY IDENTITY(1,1), \"value\" datetime NOT NULL)");
     else
         sql << QLatin1String("CREATE TABLE \"tst_datetime\" (\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, \"value\" datetime NOT NULL)");
 
@@ -187,11 +200,35 @@ void tst_QDjangoMetaModel::testDouble()
         sql << QLatin1String("CREATE TABLE \"tst_double\" (\"id\" serial PRIMARY KEY, \"value\" real NOT NULL)");
     else if (databaseType == QDjangoDatabase::MySqlServer)
         sql << QLatin1String("CREATE TABLE `tst_double` (`id` integer NOT NULL PRIMARY KEY AUTO_INCREMENT, `value` real NOT NULL)");
+    else if (databaseType == QDjangoDatabase::MSSqlServer)
+        sql << QLatin1String("CREATE TABLE \"tst_double\" (\"id\" int NOT NULL PRIMARY KEY IDENTITY(1,1), \"value\" real NOT NULL)");
     else
         sql << QLatin1String("CREATE TABLE \"tst_double\" (\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, \"value\" real NOT NULL)");
 
     init<tst_Double>(sql);
-    setAndGet<tst_Double>(double(3.14159));;
+
+    if (databaseType == QDjangoDatabase::MSSqlServer) {
+        double value = 3.14159;
+        // save object
+        tst_Double v1;
+        v1.setValue(value);
+        QCOMPARE(v1.save(), true);
+        QVERIFY(!v1.pk().isNull());
+
+        // save again
+        QCOMPARE(v1.save(), true);
+
+        // get object
+        tst_Double v2;
+        QVERIFY(QDjangoQuerySet<tst_Double>().get(Q(QLatin1String("pk"), Q::Equals, v1.pk()), &v2) != 0);
+
+        double p1 = v2.value();
+        double p2 = value;
+        QVERIFY(qAbs(p1 - p2) * 10000000. <= qMin(qAbs(p1), qAbs(p2)));
+    } else {
+        setAndGet<tst_Double>(double(3.14159));
+    }
+
     cleanup<tst_Double>();
 }
 
@@ -203,6 +240,8 @@ void tst_QDjangoMetaModel::testInteger()
         sql << QLatin1String("CREATE TABLE \"tst_integer\" (\"id\" serial PRIMARY KEY, \"value\" integer NOT NULL)");
     else if (databaseType == QDjangoDatabase::MySqlServer)
         sql << QLatin1String("CREATE TABLE `tst_integer` (`id` integer NOT NULL PRIMARY KEY AUTO_INCREMENT, `value` integer NOT NULL)");
+    else if (databaseType == QDjangoDatabase::MSSqlServer)
+        sql << QLatin1String("CREATE TABLE \"tst_integer\" (\"id\" int NOT NULL PRIMARY KEY IDENTITY(1,1), \"value\" int NOT NULL)");
     else
         sql << QLatin1String("CREATE TABLE \"tst_integer\" (\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, \"value\" integer NOT NULL)");
 
@@ -221,6 +260,8 @@ void tst_QDjangoMetaModel::testLongLong()
         sql << QLatin1String("CREATE TABLE \"tst_longlong\" (\"id\" serial PRIMARY KEY, \"value\" bigint NOT NULL)");
     else if (databaseType == QDjangoDatabase::MySqlServer)
         sql << QLatin1String("CREATE TABLE `tst_longlong` (`id` integer NOT NULL PRIMARY KEY AUTO_INCREMENT, `value` bigint NOT NULL)");
+    else if (databaseType == QDjangoDatabase::MSSqlServer)
+        sql << QLatin1String("CREATE TABLE \"tst_longlong\" (\"id\" int NOT NULL PRIMARY KEY IDENTITY(1,1), \"value\" bigint NOT NULL)");
     else
         sql << QLatin1String("CREATE TABLE \"tst_longlong\" (\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, \"value\" bigint NOT NULL)");
 
@@ -239,6 +280,8 @@ void tst_QDjangoMetaModel::testString()
         sql << QLatin1String("CREATE TABLE \"tst_string\" (\"id\" serial PRIMARY KEY, \"value\" varchar(255) NOT NULL)");
     else if (databaseType == QDjangoDatabase::MySqlServer)
         sql << QLatin1String("CREATE TABLE `tst_string` (`id` integer NOT NULL PRIMARY KEY AUTO_INCREMENT, `value` varchar(255) NOT NULL)");
+    else if (databaseType == QDjangoDatabase::MSSqlServer)
+        sql << QLatin1String("CREATE TABLE \"tst_string\" (\"id\" int NOT NULL PRIMARY KEY IDENTITY(1,1), \"value\" nvarchar(255) NOT NULL)");
     else
         sql << QLatin1String("CREATE TABLE \"tst_string\" (\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, \"value\" varchar(255) NOT NULL)");
 
@@ -251,10 +294,20 @@ void tst_QDjangoMetaModel::testTime()
 {
     QStringList sql;
     QDjangoDatabase::DatabaseType databaseType = QDjangoDatabase::databaseType(QDjango::database());
+
+    if (databaseType == QDjangoDatabase::MSSqlServer)
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+        QSKIP("Currently broken in QODBC driver");
+#else
+        QSKIP("Currently broken in QODBC driver", SkipAll);
+#endif
+
     if (databaseType == QDjangoDatabase::PostgreSQL)
         sql << QLatin1String("CREATE TABLE \"tst_time\" (\"id\" serial PRIMARY KEY, \"value\" time NOT NULL)");
     else if (databaseType == QDjangoDatabase::MySqlServer)
         sql << QLatin1String("CREATE TABLE `tst_time` (`id` integer NOT NULL PRIMARY KEY AUTO_INCREMENT, `value` time NOT NULL)");
+    else if (databaseType == QDjangoDatabase::MSSqlServer)
+        sql << QLatin1String("CREATE TABLE \"tst_time\" (\"id\" int NOT NULL PRIMARY KEY IDENTITY(1,1), \"value\" time NOT NULL)");
     else
         sql << QLatin1String("CREATE TABLE \"tst_time\" (\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, \"value\" time NOT NULL)");
 
@@ -293,6 +346,19 @@ void tst_QDjangoMetaModel::testOptions()
                 "UNIQUE (`aField`, `b_field`)"
                 ")");
         sql << QLatin1String("CREATE INDEX `some_table_ac243651` ON `some_table` (`indexField`)");
+    } else if (databaseType == QDjangoDatabase::MSSqlServer) {
+        sql << QLatin1String(
+            "CREATE TABLE \"some_table\" ("
+                "\"id\" int NOT NULL PRIMARY KEY IDENTITY(1,1), "
+                "\"aField\" int NOT NULL, "
+                "\"b_field\" int NOT NULL, "
+                "\"blankField\" int NOT NULL, "
+                "\"indexField\" int NOT NULL, "
+                "\"nullField\" int, "
+                "\"uniqueField\" int NOT NULL UNIQUE, "
+                "UNIQUE (\"aField\", \"b_field\")"
+            ")");
+        sql << QLatin1String("CREATE INDEX \"some_table_ac243651\" ON \"some_table\" (\"indexField\")");
     } else {
         sql << QLatin1String(
             "CREATE TABLE \"some_table\" ("
@@ -362,54 +428,69 @@ void tst_QDjangoMetaModel::testConstraints()
             "\"id\" serial PRIMARY KEY, "
             "\"noConstraint_id\" integer NOT NULL REFERENCES \"user\" (\"id\") DEFERRABLE INITIALLY DEFERRED, "
             "\"cascadeConstraint_id\" integer NOT NULL REFERENCES \"user\" (\"id\") ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED, "
-            "\"restrictConstraint_id\" integer NOT NULL REFERENCES \"user\" (\"id\") ON DELETE RESTRICT DEFERRABLE INITIALLY DEFERRED, "
-            "\"nullConstraint_id\" integer REFERENCES \"user\" (\"id\") ON DELETE SET NULL DEFERRABLE INITIALLY DEFERRED"
+            "\"nullConstraint_id\" integer REFERENCES \"group\" (\"id\") ON DELETE SET NULL DEFERRABLE INITIALLY DEFERRED, "
+            "\"restrictConstraint_id\" integer NOT NULL REFERENCES \"user\" (\"id\") ON DELETE RESTRICT DEFERRABLE INITIALLY DEFERRED"
             ")");
         sql << QLatin1String("CREATE INDEX \"tst_fkconstraint_f388fc3c\" ON \"tst_fkconstraint\" (\"noConstraint_id\")");
         sql << QLatin1String("CREATE INDEX \"tst_fkconstraint_4634d592\" ON \"tst_fkconstraint\" (\"cascadeConstraint_id\")");
-        sql << QLatin1String("CREATE INDEX \"tst_fkconstraint_728cefe1\" ON \"tst_fkconstraint\" (\"restrictConstraint_id\")");
         sql << QLatin1String("CREATE INDEX \"tst_fkconstraint_44c71620\" ON \"tst_fkconstraint\" (\"nullConstraint_id\")");
+        sql << QLatin1String("CREATE INDEX \"tst_fkconstraint_728cefe1\" ON \"tst_fkconstraint\" (\"restrictConstraint_id\")");
     } else if (databaseType == QDjangoDatabase::MySqlServer) {
         sql << QLatin1String("CREATE TABLE `tst_fkconstraint` ("
             "`id` integer NOT NULL PRIMARY KEY AUTO_INCREMENT, "
             "`noConstraint_id` integer NOT NULL, "
             "`cascadeConstraint_id` integer NOT NULL, "
-            "`restrictConstraint_id` integer NOT NULL, "
             "`nullConstraint_id` integer, "
+            "`restrictConstraint_id` integer NOT NULL, "
             "CONSTRAINT `FK_noConstraint_id_8049d4ec` FOREIGN KEY (`noConstraint_id`) REFERENCES `user` (`id`), "
             "CONSTRAINT `FK_cascadeConstraint_id_d2686b82` FOREIGN KEY (`cascadeConstraint_id`) REFERENCES `user` (`id`) ON DELETE CASCADE, "
-            "CONSTRAINT `FK_restrictConstraint_id_99b64be3` FOREIGN KEY (`restrictConstraint_id`) REFERENCES `user` (`id`) ON DELETE RESTRICT, "
-            "CONSTRAINT `FK_nullConstraint_id_b4eac280` FOREIGN KEY (`nullConstraint_id`) REFERENCES `user` (`id`) ON DELETE SET NULL"
+            "CONSTRAINT `FK_nullConstraint_id_b4eac280` FOREIGN KEY (`nullConstraint_id`) REFERENCES `group` (`id`) ON DELETE SET NULL, "
+            "CONSTRAINT `FK_restrictConstraint_id_99b64be3` FOREIGN KEY (`restrictConstraint_id`) REFERENCES `user` (`id`) ON DELETE RESTRICT"
             ")");
         sql << QLatin1String("CREATE INDEX `tst_fkconstraint_f388fc3c` ON `tst_fkconstraint` (`noConstraint_id`)");
         sql << QLatin1String("CREATE INDEX `tst_fkconstraint_4634d592` ON `tst_fkconstraint` (`cascadeConstraint_id`)");
-        sql << QLatin1String("CREATE INDEX `tst_fkconstraint_728cefe1` ON `tst_fkconstraint` (`restrictConstraint_id`)");
         sql << QLatin1String("CREATE INDEX `tst_fkconstraint_44c71620` ON `tst_fkconstraint` (`nullConstraint_id`)");
-    } else {
+        sql << QLatin1String("CREATE INDEX `tst_fkconstraint_728cefe1` ON `tst_fkconstraint` (`restrictConstraint_id`)");
+    } else if (databaseType == QDjangoDatabase::MSSqlServer) {
+        sql << QLatin1String("CREATE TABLE \"tst_fkconstraint\" ("
+             "\"id\" int NOT NULL PRIMARY KEY IDENTITY(1,1), "
+             "\"noConstraint_id\" int NOT NULL REFERENCES \"user\" (\"id\"), "
+             "\"cascadeConstraint_id\" int NOT NULL REFERENCES \"user\" (\"id\") ON DELETE CASCADE, "
+             "\"nullConstraint_id\" int REFERENCES \"group\" (\"id\") ON DELETE SET NULL"
+             ")");
+         sql << QLatin1String("CREATE INDEX \"tst_fkconstraint_f388fc3c\" ON \"tst_fkconstraint\" (\"noConstraint_id\")");
+         sql << QLatin1String("CREATE INDEX \"tst_fkconstraint_4634d592\" ON \"tst_fkconstraint\" (\"cascadeConstraint_id\")");
+         sql << QLatin1String("CREATE INDEX \"tst_fkconstraint_44c71620\" ON \"tst_fkconstraint\" (\"nullConstraint_id\")");
+     } else {
        sql << QLatin1String("CREATE TABLE \"tst_fkconstraint\" ("
             "\"id\" integer NOT NULL PRIMARY KEY AUTOINCREMENT, "
             "\"noConstraint_id\" integer NOT NULL REFERENCES \"user\" (\"id\"), "
             "\"cascadeConstraint_id\" integer NOT NULL REFERENCES \"user\" (\"id\") ON DELETE CASCADE, "
-            "\"restrictConstraint_id\" integer NOT NULL REFERENCES \"user\" (\"id\") ON DELETE RESTRICT, "
-            "\"nullConstraint_id\" integer REFERENCES \"user\" (\"id\") ON DELETE SET NULL"
+            "\"nullConstraint_id\" integer REFERENCES \"group\" (\"id\") ON DELETE SET NULL, "
+            "\"restrictConstraint_id\" integer NOT NULL REFERENCES \"user\" (\"id\") ON DELETE RESTRICT"
             ")");
         sql << QLatin1String("CREATE INDEX \"tst_fkconstraint_f388fc3c\" ON \"tst_fkconstraint\" (\"noConstraint_id\")");
         sql << QLatin1String("CREATE INDEX \"tst_fkconstraint_4634d592\" ON \"tst_fkconstraint\" (\"cascadeConstraint_id\")");
-        sql << QLatin1String("CREATE INDEX \"tst_fkconstraint_728cefe1\" ON \"tst_fkconstraint\" (\"restrictConstraint_id\")");
         sql << QLatin1String("CREATE INDEX \"tst_fkconstraint_44c71620\" ON \"tst_fkconstraint\" (\"nullConstraint_id\")");
+        sql << QLatin1String("CREATE INDEX \"tst_fkconstraint_728cefe1\" ON \"tst_fkconstraint\" (\"restrictConstraint_id\")");
     }
 
     // create tables
     QDjangoMetaModel userModel = QDjango::registerModel<User>();
     QCOMPARE(userModel.createTable(), true);
 
-    QDjangoMetaModel metaModel = QDjango::registerModel<tst_FkConstraint>();
+    QDjangoMetaModel groupModel = QDjango::registerModel<Group>();
+    QCOMPARE(groupModel.createTable(), true);
+
+    QDjangoMetaModel metaModel = (databaseType == QDjangoDatabase::MSSqlServer) ?
+        QDjango::registerModel<tst_FkConstraint>() : QDjango::registerModel<tst_FkConstraintWithRestrict>();
     QCOMPARE(metaModel.createTableSql(), sql);
     QCOMPARE(metaModel.createTable(), true);
 
     // drop tables
     QCOMPARE(metaModel.dropTable(), true);
     QCOMPARE(userModel.dropTable(), true);
+    QCOMPARE(groupModel.dropTable(), true);
 }
 
 void tst_QDjangoMetaModel::testIsValid()
