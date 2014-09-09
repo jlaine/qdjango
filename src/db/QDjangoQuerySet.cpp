@@ -21,6 +21,7 @@
 #include <QSqlRecord>
 
 #include "QDjango.h"
+#include "QDjango_p.h"
 #include "QDjangoQuerySet.h"
 #include "QDjangoWhere_p.h"
 
@@ -163,19 +164,42 @@ QString QDjangoCompiler::orderLimitSql(const QStringList orderBy, int lowMark, i
         }
         bits.append(databaseColumn(field) + QLatin1Char(' ') + order);
     }
+
     if (!bits.isEmpty())
         limit += QLatin1String(" ORDER BY ") + bits.join(QLatin1String(", "));
 
     // limits
-    if (highMark > 0)
-        limit += QLatin1String(" LIMIT ") + QString::number(highMark - lowMark);
-    if (lowMark > 0)
-    {
-        // no-limit is backend specific
-        if (highMark <= 0)
-            limit += QDjango::noLimitSql();
-        limit += QLatin1String(" OFFSET ") + QString::number(lowMark);
+    QDjangoDatabase::DatabaseType databaseType =
+        QDjangoDatabase::databaseType(QDjango::database());
+
+    if (databaseType == QDjangoDatabase::MSSqlServer) {
+        if (limit.isEmpty() && (highMark > 0 || lowMark > 0))
+            limit += QLatin1String(" ORDER BY ") + baseModel.primaryKey();
+
+        if (lowMark > 0 || (lowMark == 0 && highMark > 0)) {
+            // no-limit is backend specific
+            if (highMark <= 0)
+                limit += QDjango::noLimitSql();
+
+            limit += QLatin1String(" OFFSET ") + QString::number(lowMark);
+            limit += QLatin1String(" ROWS");
+        }
+
+        if (highMark > 0)
+            limit += QString(" FETCH NEXT %1 ROWS ONLY").arg(highMark - lowMark);
+    } else {
+        if (highMark > 0)
+            limit += QLatin1String(" LIMIT ") + QString::number(highMark - lowMark);
+
+        if (lowMark > 0) {
+            // no-limit is backend specific
+            if (highMark <= 0)
+                limit += QDjango::noLimitSql();
+
+            limit += QLatin1String(" OFFSET ") + QString::number(lowMark);
+        }
     }
+
     return limit;
 }
 

@@ -215,9 +215,8 @@ class tst_FkConstraint : public QDjangoModel
     Q_OBJECT
     Q_PROPERTY(User *noConstraint READ noConstraint WRITE setNoConstraint)
     Q_PROPERTY(User *cascadeConstraint READ cascadeConstraint WRITE setCascadeConstraint)
-    Q_PROPERTY(User *restrictConstraint READ restrictConstraint WRITE setRestrictConstraint)
-    Q_PROPERTY(User *nullConstraint READ nullConstraint WRITE setNullConstraint)
-    
+    Q_PROPERTY(Group *nullConstraint READ nullConstraint WRITE setNullConstraint)
+
     Q_CLASSINFO("cascadeConstraint", "on_delete=cascade")
     Q_CLASSINFO("restrictConstraint", "on_delete=restrict")
     Q_CLASSINFO("nullConstraint", "null=true on_delete=set_null")
@@ -231,9 +230,20 @@ public:
     User *cascadeConstraint() const;
     void setCascadeConstraint(User *user);
 
+    Group *nullConstraint() const;
+    void setNullConstraint(Group *group);
+};
+
+class tst_FkConstraintWithRestrict : public tst_FkConstraint
+{
+    Q_OBJECT
+    Q_PROPERTY(User *restrictConstraint READ restrictConstraint WRITE setRestrictConstraint)
+
+    Q_CLASSINFO("__meta__", "db_table=tst_fkconstraint")
+    Q_CLASSINFO("restrictConstraint", "on_delete=restrict")
+public:
+    tst_FkConstraintWithRestrict(QObject *parent = 0);
+
     User *restrictConstraint() const;
     void setRestrictConstraint(User *user);
-
-    User *nullConstraint() const;
-    void setNullConstraint(User *user);
 };
