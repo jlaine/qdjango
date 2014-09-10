@@ -140,6 +140,8 @@ private slots:
     void initTestCase();
     void fieldNames_data();
     void fieldNames();
+    void orderLimitSql_data();
+    void orderLimitSql();
 };
 
 Item::Item(QObject *parent)
@@ -613,6 +615,34 @@ void tst_QDjangoCompiler::fieldNames()
     QCOMPARE(normalizeNames(db, compiler.fieldNames(recursive)), fieldNames);
     QCOMPARE(normalizeSql(db, compiler.orderLimitSql(orderBy, 0, 0)), orderSql);
     QCOMPARE(normalizeSql(db, compiler.fromSql()), fromSql);
+}
+
+void tst_QDjangoCompiler::orderLimitSql_data()
+{
+    QTest::addColumn<QStringList>("orderBy");
+    QTest::addColumn<int>("lowMark");
+    QTest::addColumn<int>("highMark");
+    QTest::addColumn<QString>("sql");
+
+    QDjangoDatabase::DatabaseType databaseType = QDjangoDatabase::databaseType(QDjango::database());
+
+    QTest::newRow("no order, from 0") << QStringList() << 0 << 0 << "";
+    QTest::newRow("no order, from 0 to 3") << QStringList() << 0 << 3 << " LIMIT 3";
+    QTest::newRow("no order, from 1") << QStringList() << 1 << 0 << " LIMIT -1 OFFSET 1";
+    QTest::newRow("no order, from 1 to 3") << QStringList() << 1 << 3 << " LIMIT 2 OFFSET 1";
+}
+
+void tst_QDjangoCompiler::orderLimitSql()
+{
+    QFETCH(QStringList, orderBy);
+    QFETCH(int, lowMark);
+    QFETCH(int, highMark);
+    QFETCH(QString, sql);
+
+    QSqlDatabase db = QDjango::database();
+
+    QDjangoCompiler compiler("Owner", db);
+    QCOMPARE(compiler.orderLimitSql(orderBy, lowMark, highMark), sql);
 }
 
 Q_DECLARE_METATYPE(QDjangoWhere)
