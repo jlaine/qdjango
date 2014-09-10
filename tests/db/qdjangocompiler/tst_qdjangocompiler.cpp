@@ -571,7 +571,7 @@ void tst_QDjangoCompiler::fieldNames_data()
 
         << "\"owner\""
            " INNER JOIN \"top\" T0 ON T0.\"owner_id\" = \"owner\".\"id\"";
-    
+
     QTest::newRow("filter multiple fields") << QByteArray("Owner") << false
         << (QStringList()
             << "\"owner\".\"id\""
@@ -628,18 +628,28 @@ void tst_QDjangoCompiler::orderLimitSql_data()
     QString sql;
 
     QTest::newRow("no order, from 0") << QStringList() << 0 << 0 << "";
-    
-    QTest::newRow("no order, from 0 to 3") << QStringList() << 0 << 3 << " LIMIT 3";
+
+    if (databaseType == QDjangoDatabase::MSSqlServer)
+        sql = " ORDER BY \"owner\".\"id\" OFFSET 0 ROWS FETCH NEXT 3 ROWS ONLY";
+    else
+        sql = " LIMIT 3";
+    QTest::newRow("no order, from 0 to 3") << QStringList() << 0 << 3 << sql;
 
     if (databaseType == QDjangoDatabase::MySqlServer)
         sql = " LIMIT 18446744073709551615 OFFSET 1";
     else if (databaseType == QDjangoDatabase::SQLite)
         sql = " LIMIT -1 OFFSET 1";
+    else if (databaseType == QDjangoDatabase::MSSqlServer)
+        sql = " ORDER BY \"owner\".\"id\" OFFSET 1 ROWS";
     else
         sql = " OFFSET 1";
     QTest::newRow("no order, from 1") << QStringList() << 1 << 0 << sql;
 
-    QTest::newRow("no order, from 1 to 3") << QStringList() << 1 << 3 << " LIMIT 2 OFFSET 1";
+    if (databaseType == QDjangoDatabase::MSSqlServer)
+        sql = " ORDER BY \"owner\".\"id\" OFFSET 1 ROWS FETCH NEXT 2 ROWS ONLY";
+    else
+        sql = " LIMIT 2 OFFSET 1";
+    QTest::newRow("no order, from 1 to 3") << QStringList() << 1 << 3 << sql;
 }
 
 void tst_QDjangoCompiler::orderLimitSql()
