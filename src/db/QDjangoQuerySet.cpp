@@ -77,6 +77,21 @@ QString QDjangoCompiler::databaseColumn(const QString &name)
             }
 
             if (rev.leftHandKey.isEmpty()) {
+                // could be a many-to-many relation
+                for (int i = 0; i < model.manyToManyFields().size(); ++i) {
+                    const QPair<QByteArray, QByteArray> fieldInfo =
+                            model.manyToManyFields().values().at(i);
+
+                    if (qstricmp(fk, fieldInfo.first) == 0) {
+                        QDjangoMetaModel relatedModel = QDjango::metaModel(fieldInfo.first);
+                        manyToManyModelRefs[bits.first()] = fieldInfo;
+                        const QDjangoMetaField field =
+                            relatedModel.localField(bits.last().toLatin1());
+                        return driver->escapeIdentifier(relatedModel.table(), QSqlDriver::TableName) +
+                               QLatin1Char('.') + driver->escapeIdentifier(field.column(), QSqlDriver::FieldName);
+                    }
+                }
+
                 qWarning() << "Invalid field lookup" << name;
                 return QString();
             }
@@ -144,6 +159,29 @@ QString QDjangoCompiler::fromSql()
             .arg(leftHandColumn)
             .arg(rightHandColumn);
     }
+
+    foreach (const QString &name, manyToManyModelRefs.keys()) {
+        QPair<QByteArray, QByteArray> manyToManyRelationSet = manyToManyModelRefs.value(name);
+        QDjangoMetaModel relatedModel = QDjango::metaModel(manyToManyRelationSet.first);
+        QDjangoMetaModel crossModel = QDjango::metaModel(manyToManyRelationSet.second);
+        if (!crossModel.isValid())
+            qWarning("QDjangoCompiler invalid cross model: %s", qPrintable(manyToManyRelationSet.second));
+
+        from += QString::fromLatin1(" %1 %2 ON (%3.%4 = %5.%6) %7 %8 ON (%9.%10 = %11.%12)")
+                .arg(modelRefs.isEmpty() ? "INNER JOIN" : "LEFT OUTER JOIN")
+                .arg(driver->escapeIdentifier(crossModel.table(), QSqlDriver::TableName))
+                .arg(driver->escapeIdentifier(baseModel.table(), QSqlDriver::TableName))
+                .arg(driver->escapeIdentifier(baseModel.primaryKey(), QSqlDriver::FieldName))
+                .arg(driver->escapeIdentifier(crossModel.table(), QSqlDriver::TableName))
+                .arg(driver->escapeIdentifier(baseModel.table() + "_id", QSqlDriver::TableName))
+                .arg(modelRefs.isEmpty() ? "INNER JOIN" : "LEFT OUTER JOIN")
+                .arg(driver->escapeIdentifier(relatedModel.table(), QSqlDriver::TableName))
+                .arg(driver->escapeIdentifier(crossModel.table(), QSqlDriver::TableName))
+                .arg(driver->escapeIdentifier(relatedModel.table() + "_id", QSqlDriver::TableName))
+                .arg(driver->escapeIdentifier(relatedModel.table(), QSqlDriver::TableName))
+                .arg(driver->escapeIdentifier(relatedModel.primaryKey(), QSqlDriver::FieldName));
+    }
+
     return from;
 }
 

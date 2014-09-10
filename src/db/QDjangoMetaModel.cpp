@@ -228,12 +228,14 @@ static bool stringToBool(const QString &value)
     return value.toLower() == QLatin1String("true") || value == QLatin1String("1");
 }
 
+static QRegExp classFinder("\\<([^>]*)\\>");
 class QDjangoMetaModelPrivate : public QSharedData
 {
 public:
     QString className;
     QList<QDjangoMetaField> localFields;
     QMap<QByteArray, QByteArray> foreignFields;
+    QMap<QByteArray, QPair<QByteArray, QByteArray> > manyToManyFields;
     QByteArray primaryKey;
     QString table;
     QList<QByteArray> uniqueTogether;
@@ -343,6 +345,23 @@ QDjangoMetaModel::QDjangoMetaModel(const QMetaObject *meta)
             field.d->null = nullOption;
             field.d->deleteConstraint = deleteConstraint;
             d->localFields << field;
+            continue;
+        }
+
+        // many to many field
+        if (typeName.startsWith("QList<") && typeName.endsWith(">")) {
+            // NOTE: review needed here
+            if (classFinder.indexIn(typeName) == -1) {
+                qWarning() << Q_FUNC_INFO << "invalid many-to-many type: " << typeName;
+                continue;
+            }
+
+            // TODO: allow user to override cross model name
+            QString relatedModel = classFinder.cap(1).remove("*");
+            QString crossModel =
+                QString("%1_%2").arg(meta->className()).arg(relatedModel);
+            d->manyToManyFields.insert(meta->property(i).name(),
+                                       qMakePair(relatedModel.toLatin1(), crossModel.toLatin1()));
             continue;
         }
 
@@ -745,6 +764,14 @@ void QDjangoMetaModel::load(QObject *model, const QVariantList &properties, int 
 QMap<QByteArray, QByteArray> QDjangoMetaModel::foreignFields() const
 {
     return d->foreignFields;
+}
+
+/*!
+    Returns the many to many foreign field mapping.
+*/
+QMap<QByteArray, QPair<QByteArray, QByteArray> > QDjangoMetaModel::manyToManyFields() const
+{
+    return d->manyToManyFields;
 }
 
 /*!

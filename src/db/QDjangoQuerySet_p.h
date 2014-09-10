@@ -73,6 +73,7 @@ private:
     QDjangoMetaModel baseModel;
     QMap<QString, QDjangoModelReference> modelRefs;
     QMap<QString, QDjangoReverseReference> reverseModelRefs;
+    QMap<QString, QPair<QByteArray, QByteArray> > manyToManyModelRefs;
     QMap<QString, QString> fieldColumnCache;
 };
 

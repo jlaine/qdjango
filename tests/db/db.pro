@@ -7,5 +7,6 @@ SUBDIRS = \
     qdjangoqueryset \
     qdjangowhere \
     auth \
-    shares
+    shares \
+    manytomany
 
