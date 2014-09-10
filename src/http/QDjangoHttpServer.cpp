@@ -318,6 +318,26 @@ bool QDjangoHttpServer::listen(const QHostAddress &address, quint16 port)
     return d->tcpServer->listen(address, port);
 }
 
+/** Returns the server's address if the server is listening for connections;
+ *  otherwise returns QHostAddress::Null.
+ */
+QHostAddress QDjangoHttpServer::serverAddress() const
+{
+    if (!d->tcpServer)
+        return QHostAddress::Null;
+    return d->tcpServer->serverAddress();
+}
+
+/** Returns the server's port if the server is listening for connections;
+ *  otherwise returns 0.
+ */
+quint16 QDjangoHttpServer::serverPort() const
+{
+    if (!d->tcpServer)
+        return 0;
+    return d->tcpServer->serverPort();
+}
+
 /** Returns the root URL resolver for the server, which dispatches
  *  requests to handlers.
  */

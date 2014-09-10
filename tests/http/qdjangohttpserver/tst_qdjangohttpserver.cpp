@@ -61,7 +61,11 @@ void tst_QDjangoHttpServer::initTestCase()
     httpServer = new QDjangoHttpServer;
     httpServer->urls()->set(QRegExp(QLatin1String(QLatin1String("^$"))), this, "_q_index");
     httpServer->urls()->set(QRegExp(QLatin1String("^internal-server-error$")), this, "_q_error");
+    QCOMPARE(httpServer->serverAddress(), QHostAddress(QHostAddress::Null));
+    QCOMPARE(httpServer->serverPort(), quint16(0));
     QCOMPARE(httpServer->listen(QHostAddress::LocalHost, 8123), true);
+    QCOMPARE(httpServer->serverAddress(), QHostAddress(QHostAddress::LocalHost));
+    QCOMPARE(httpServer->serverPort(), quint16(8123));
 }
 
 void tst_QDjangoHttpServer::testCloseConnection()

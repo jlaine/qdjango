@@ -49,6 +49,8 @@ public:
 
     void close();
     bool listen(const QHostAddress &address, quint16 port);
+    QHostAddress serverAddress() const;
+    quint16 serverPort() const;
     QDjangoUrlResolver *urls() const;
 
 signals:
