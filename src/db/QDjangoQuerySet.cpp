@@ -174,7 +174,7 @@ QString QDjangoCompiler::orderLimitSql(const QStringList orderBy, int lowMark, i
 
     if (databaseType == QDjangoDatabase::MSSqlServer) {
         if (limit.isEmpty() && (highMark > 0 || lowMark > 0))
-            limit += QLatin1String(" ORDER BY ") + baseModel.primaryKey();
+            limit += QLatin1String(" ORDER BY ") + databaseColumn(baseModel.primaryKey());
 
         if (lowMark > 0 || (lowMark == 0 && highMark > 0)) {
             limit += QLatin1String(" OFFSET ") + QString::number(lowMark);
