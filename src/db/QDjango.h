@@ -47,9 +47,6 @@ public:
     static QDjangoMetaModel registerModel();
 
 private:
-    // backend specific
-    static QString noLimitSql();
-
     static QDjangoMetaModel registerModel(const QMetaObject *meta);
     static QDjangoMetaModel metaModel(const char *name);
 

@@ -177,10 +177,6 @@ QString QDjangoCompiler::orderLimitSql(const QStringList orderBy, int lowMark, i
             limit += QLatin1String(" ORDER BY ") + baseModel.primaryKey();
 
         if (lowMark > 0 || (lowMark == 0 && highMark > 0)) {
-            // no-limit is backend specific
-            if (highMark <= 0)
-                limit += QDjango::noLimitSql();
-
             limit += QLatin1String(" OFFSET ") + QString::number(lowMark);
             limit += QLatin1String(" ROWS");
         }
@@ -193,8 +189,13 @@ QString QDjangoCompiler::orderLimitSql(const QStringList orderBy, int lowMark, i
 
         if (lowMark > 0) {
             // no-limit is backend specific
-            if (highMark <= 0)
-                limit += QDjango::noLimitSql();
+            if (highMark <= 0) {
+                if (databaseType == QDjangoDatabase::SQLite)
+                    limit += QLatin1String(" LIMIT -1");
+                else if (databaseType == QDjangoDatabase::MySqlServer)
+                    // 2^64 - 1, as recommended by the MySQL documentation
+                    limit += QLatin1String(" LIMIT 18446744073709551615");
+            }
 
             limit += QLatin1String(" OFFSET ") + QString::number(lowMark);
         }

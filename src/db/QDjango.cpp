@@ -272,21 +272,6 @@ QDjangoMetaModel QDjango::registerModel(const QMetaObject *meta)
     return globalMetaModels[name];
 }
 
-/*!
-    Returns the empty SQL limit clause.
-*/
-QString QDjango::noLimitSql()
-{
-    QDjangoDatabase::DatabaseType databaseType = QDjangoDatabase::databaseType(QDjango::database());
-    if (databaseType == QDjangoDatabase::SQLite)
-        return QLatin1String(" LIMIT -1");
-    else if (databaseType == QDjangoDatabase::MySqlServer)
-        // 2^64 - 1, as recommended by the MySQL documentation
-        return QLatin1String(" LIMIT 18446744073709551615");
-
-    return QString();
-}
-
 QDjangoDatabase::DatabaseType QDjangoDatabase::databaseType(const QSqlDatabase &db)
 {
     Q_UNUSED(db);
