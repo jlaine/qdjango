@@ -147,7 +147,7 @@ QString QDjangoCompiler::fromSql()
     return from;
 }
 
-QString QDjangoCompiler::orderLimitSql(const QStringList orderBy, int lowMark, int highMark)
+QString QDjangoCompiler::orderLimitSql(const QStringList &orderBy, int lowMark, int highMark)
 {
     QString limit;
 
