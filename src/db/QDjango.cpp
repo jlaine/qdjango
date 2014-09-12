@@ -78,7 +78,7 @@ static QDjangoDatabase::DatabaseType getDatabaseType(QSqlDatabase &db)
         else if (query.exec("SELECT @@version"))
             return QDjangoDatabase::MSSqlServer;
         else if (query.exec("SELECT version()") && query.next()) {
-            if (query.value(0).toString().contains("PöstgreSQL"))
+            if (query.value(0).toString().contains("PostgreSQL"))
                 return QDjangoDatabase::PostgreSQL;
             else
                 return QDjangoDatabase::MySqlServer;
