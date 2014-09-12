@@ -1,6 +1,10 @@
 QDjango 0.5.0 (UNRELEASED)
  * Add support for case-insensitive lookups.
  * Simplify SQL for multiple OR/AND clauses.
+ * Add support for reverse lookups for many-to-one relations.
+ * Add support QtSql's ODBC driver.
+ * Add support for Microsoft SQL Server.
+ * Improve test coverage.
 
 QDjango 0.4.0 (2013-06-27)
  * Enable foreign key constraints on SQLite (issue #9).
