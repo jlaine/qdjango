@@ -62,7 +62,7 @@ public:
     QDjangoCompiler(const char *modelName, const QSqlDatabase &db);
     QString fromSql();
     QStringList fieldNames(bool recurse, QDjangoMetaModel *metaModel = 0, const QString &modelPath = QString(), bool nullable = false);
-    QString orderLimitSql(const QStringList orderBy, int lowMark, int highMark);
+    QString orderLimitSql(const QStringList &orderBy, int lowMark, int highMark);
     void resolve(QDjangoWhere &where);
 
 private:
