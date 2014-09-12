@@ -627,14 +627,17 @@ void tst_QDjangoCompiler::orderLimitSql_data()
     QDjangoDatabase::DatabaseType databaseType = QDjangoDatabase::databaseType(QDjango::database());
     QString sql;
 
+    // no order, from 0
     QTest::newRow("no order, from 0") << QStringList() << 0 << 0 << "";
 
+    // no order, from 0 to 3
     if (databaseType == QDjangoDatabase::MSSqlServer)
         sql = " ORDER BY \"owner\".\"id\" OFFSET 0 ROWS FETCH NEXT 3 ROWS ONLY";
     else
         sql = " LIMIT 3";
     QTest::newRow("no order, from 0 to 3") << QStringList() << 0 << 3 << sql;
 
+    // no order, from 1
     if (databaseType == QDjangoDatabase::MySqlServer)
         sql = " LIMIT 18446744073709551615 OFFSET 1";
     else if (databaseType == QDjangoDatabase::SQLite)
@@ -645,6 +648,7 @@ void tst_QDjangoCompiler::orderLimitSql_data()
         sql = " OFFSET 1";
     QTest::newRow("no order, from 1") << QStringList() << 1 << 0 << sql;
 
+    // no order, from 1 to 3
     if (databaseType == QDjangoDatabase::MSSqlServer)
         sql = " ORDER BY \"owner\".\"id\" OFFSET 1 ROWS FETCH NEXT 2 ROWS ONLY";
     else
