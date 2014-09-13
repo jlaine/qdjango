@@ -14,10 +14,10 @@ qmake $QMAKE_ARGS
 make
 
 # run tests
-QDJANGO_DB_DRIVER=QSQLITE QDJANGO_DB_NAME=:memory: tests/run.py
-QDJANGO_DB_DRIVER=QSQLITE QDJANGO_DB_NAME=/tmp/qdjango_test.db tests/run.py
-QDJANGO_DB_DRIVER=QMYSQL QDJANGO_DB_NAME=qdjango_test QDJANGO_DB_USER=travis tests/run.py
-QDJANGO_DB_DRIVER=QPSQL QDJANGO_DB_NAME=qdjango_test QDJANGO_DB_USER=postgres tests/run.py
+QDJANGO_DB_DRIVER=QSQLITE QDJANGO_DB_NAME=:memory: make check
+QDJANGO_DB_DRIVER=QSQLITE QDJANGO_DB_NAME=/tmp/qdjango_test.db make check
+QDJANGO_DB_DRIVER=QMYSQL QDJANGO_DB_NAME=qdjango_test QDJANGO_DB_USER=travis make check
+QDJANGO_DB_DRIVER=QPSQL QDJANGO_DB_NAME=qdjango_test QDJANGO_DB_USER=postgres make check
 exit 0
 
 # generate coverage report
