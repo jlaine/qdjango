@@ -75,9 +75,12 @@ static QDjangoDatabase::DatabaseType getDatabaseType(QSqlDatabase &db)
         QSqlQuery query(db);
         if (query.exec("SELECT sqlite_version()"))
             return QDjangoDatabase::SQLite;
-        else if (query.exec("SELECT @@version"))
-            return QDjangoDatabase::MSSqlServer;
-        else if (query.exec("SELECT version()") && query.next()) {
+
+        if (query.exec("SELECT @@version") && query.next() &&
+            query.value(0).toString().contains("Microsoft SQL Server"))
+                return QDjangoDatabase::MSSqlServer;
+
+        if (query.exec("SELECT version()") && query.next()) {
             if (query.value(0).toString().contains("PostgreSQL"))
                 return QDjangoDatabase::PostgreSQL;
             else
