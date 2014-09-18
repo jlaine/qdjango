@@ -64,4 +64,7 @@ QDjangoMetaModel QDjango::registerModel()
     return registerModel(&T::staticMetaObject);
 }
 
+typedef bool (*QDjangoConnectionHook)(QSqlDatabase db);
+QDJANGO_EXPORT void qDjangoAddPreConnectionHook(QDjangoConnectionHook p);
+
 #endif
