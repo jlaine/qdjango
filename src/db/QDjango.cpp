@@ -23,6 +23,8 @@
 #include <QSqlQuery>
 #include <QStringList>
 #include <QThread>
+#include <QMutex>
+#include <QMutexLocker>
 
 #include "QDjango.h"
 
@@ -33,11 +35,55 @@ static QDjangoDatabase *globalDatabase = 0;
 static QDjangoDatabase::DatabaseType globalDatabaseType = QDjangoDatabase::UnknownDB;
 static bool globalDebugEnabled = false;
 
+typedef QList<QDjangoConnectionHook> QDjangoConnectionHookList;
+Q_GLOBAL_STATIC(QDjangoConnectionHookList, preConnectionHookList)
+static QMutex globalConnectionHooksMutex;
+
+/*!
+    Allows the user to customize a QSqlDatabase connection before use with QDjango
+*/
+void qDjangoAddPreConnectionHook(QDjangoConnectionHook p)
+{
+    QDjangoConnectionHookList *list = preConnectionHookList();
+    if (!list)
+        return;
+
+    QMutexLocker locker(&globalConnectionHooksMutex);
+    list->prepend(p);
+}
+
 /// \cond
+
+static void qdjango_apply_pre_connection_hooks(QSqlDatabase db)
+{
+    QDjangoConnectionHookList *preHooks = preConnectionHookList();
+    if (!preHooks)
+        return;
+
+    //while (!preHooks->isEmpty()) {
+    for (int i = 0; i < preHooks->size(); ++i) {
+        if (!(preHooks->at(i))(db) && globalDebugEnabled)
+            qDebug() << "failed pre-connection hook: " << db.lastError();
+    }
+}
+
+static bool qdjango_default_pre_connection_hook(QSqlDatabase db)
+{
+    QDjangoDatabase::DatabaseType databaseType = QDjangoDatabase::databaseType(db);
+    if (databaseType == QDjangoDatabase::SQLite) {
+        // enable foreign key constraint handling
+        QDjangoQuery query(db);
+        query.prepare("PRAGMA foreign_keys=on");
+        return query.exec();
+    }
+
+    return true;
+}
 
 QDjangoDatabase::QDjangoDatabase(QObject *parent)
     : QObject(parent), connectionId(0)
 {
+    qDjangoAddPreConnectionHook(qdjango_default_pre_connection_hook);
 }
 
 void QDjangoDatabase::threadFinished()
@@ -88,17 +134,6 @@ static QDjangoDatabase::DatabaseType getDatabaseType(QSqlDatabase &db)
         }
     }
     return QDjangoDatabase::UnknownDB;
-}
-
-static void initDatabase(QSqlDatabase db)
-{
-    QDjangoDatabase::DatabaseType databaseType = QDjangoDatabase::databaseType(db);
-    if (databaseType == QDjangoDatabase::SQLite) {
-        // enable foreign key constraint handling
-        QDjangoQuery query(db);
-        query.prepare("PRAGMA foreign_keys=on");
-        query.exec();
-    }
 }
 
 QDjangoQuery::QDjangoQuery(QSqlDatabase db)
@@ -177,8 +212,13 @@ QSqlDatabase QDjango::database()
     QObject::connect(thread, SIGNAL(finished()), globalDatabase, SLOT(threadFinished()));
     QSqlDatabase db = QSqlDatabase::cloneDatabase(globalDatabase->reference,
         QLatin1String(connectionPrefix) + QString::number(globalDatabase->connectionId++));
-    db.open();
-    initDatabase(db);
+
+    if (!db.open() && globalDebugEnabled) {
+        qDebug() << "Unable to open database: " << db.lastError();
+    }
+
+    if (db.isOpen())
+        qdjango_apply_pre_connection_hooks(db);
     globalDatabase->copies.insert(thread, db);
     return db;
 }
@@ -197,12 +237,13 @@ void QDjango::setDatabase(QSqlDatabase database)
         qWarning() << "Unsupported database driver" << database.driverName();
     }
 
-    if (!globalDatabase)
-    {
+    if (!globalDatabase) {
         globalDatabase = new QDjangoDatabase();
         qAddPostRoutine(closeDatabase);
     }
-    initDatabase(database);
+
+    if (database.isOpen())
+        qdjango_apply_pre_connection_hooks(database);
     globalDatabase->reference = database;
 }
 
