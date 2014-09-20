@@ -104,6 +104,10 @@ static void initDatabase(QSqlDatabase db)
 QDjangoQuery::QDjangoQuery(QSqlDatabase db)
     : QSqlQuery(db)
 {
+    if (QDjangoDatabase::databaseType(db) == QDjangoDatabase::MSSqlServer) {
+        // default to fast-forward cursor
+        setForwardOnly(true);
+    }
 }
 
 void QDjangoQuery::addBindValue(const QVariant &val, QSql::ParamType paramType)
