@@ -38,5 +38,9 @@ isEmpty(PREFIX) {
     }
 }
 isEmpty(LIBDIR) {
-    LIBDIR=lib
+    !macx:contains(QMAKE_HOST.arch, i[3456]86) {
+        LIBDIR=lib
+    } else {
+        LIBDIR=lib64
+    }
 }
