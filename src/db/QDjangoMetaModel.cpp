@@ -642,10 +642,17 @@ QStringList QDjangoMetaModel::createTableSql() const
 
 /*!
     Drops the database table for this QDjangoMetaModel.
+
+    If the table never existed, or was already dropped, this method
+    will still return true.
+
+    \return true if drop query succeeded, false otherwise.
 */
 bool QDjangoMetaModel::dropTable() const
 {
     QSqlDatabase db = QDjango::database();
+    if (!db.tables().contains(d->table))
+        return true;
 
     QDjangoQuery query(db);
     return query.exec(QLatin1String("DROP TABLE ") +
