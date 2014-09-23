@@ -120,15 +120,16 @@ private slots:
 void tst_QDjangoModel::initTestCase()
 {
     QVERIFY(initialiseDatabase());
+    QDjango::registerModel<Author>();
+    QDjango::registerModel<Book>();
+    QDjango::registerModel<BookWithNullAuthor>();
 }
 
 /** Load fixtures.
  */
 void tst_QDjangoModel::init()
 {
-    QCOMPARE(QDjango::registerModel<Author>().createTable(), true);
-    QCOMPARE(QDjango::registerModel<Book>().createTable(), true);
-    QCOMPARE(QDjango::registerModel<BookWithNullAuthor>().createTable(), true);
+    QVERIFY(QDjango::createTables());
 
     Author author1;
     author1.setName("First author");
@@ -305,9 +306,7 @@ void tst_QDjangoModel::toString()
  */
 void tst_QDjangoModel::cleanup()
 {
-    QCOMPARE(QDjango::registerModel<BookWithNullAuthor>().dropTable(), true);
-    QCOMPARE(QDjango::registerModel<Book>().dropTable(), true);
-    QCOMPARE(QDjango::registerModel<Author>().dropTable(), true);
+    QVERIFY(QDjango::dropTables());
 }
 
 /** Drop database tables after running tests.

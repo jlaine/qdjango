@@ -115,7 +115,8 @@ void File::setSize(qint64 size)
 void tst_Shares::initTestCase()
 {
     QVERIFY(initialiseDatabase());
-    QCOMPARE(QDjango::registerModel<File>().createTable(), true);
+    QDjango::registerModel<File>();
+    QVERIFY(QDjango::createTables());
 }
 
 void tst_Shares::testFile()
@@ -152,7 +153,7 @@ void tst_Shares::cleanup()
  */
 void tst_Shares::cleanupTestCase()
 {
-    QCOMPARE(QDjango::registerModel<File>().dropTable(), true);
+    QVERIFY(QDjango::dropTables());
 }
 
 QTEST_MAIN(tst_Shares)
