@@ -23,6 +23,7 @@
 #include <QSqlQuery>
 #include <QStringList>
 #include <QThread>
+#include <QStack>
 
 #include "QDjango.h"
 
@@ -226,16 +227,49 @@ void QDjango::setDebugEnabled(bool enabled)
     globalDebugEnabled = enabled;
 }
 
+static void qdjango_topsort(const QByteArray &modelName, QHash<QByteArray, bool> &visited,
+                            QStack<QDjangoMetaModel> &stack)
+{
+    visited[modelName] = true;
+    QDjangoMetaModel model = globalMetaModels[modelName];
+    foreach (const QByteArray &foreignModel, model.foreignFields().values()) {
+        if (!visited[foreignModel])
+            qdjango_topsort(foreignModel, visited, stack);
+    }
+
+    stack.push(model);
+}
+
+static QStack<QDjangoMetaModel> qdjango_sorted_metamodels()
+{
+    QStack<QDjangoMetaModel> stack;
+    stack.reserve(globalMetaModels.size());
+    QHash<QByteArray, bool> visited;
+    visited.reserve(globalMetaModels.size());
+    foreach (const QByteArray &model, globalMetaModels.keys())
+        visited[model] = false;
+
+    foreach (const QByteArray &model, globalMetaModels.keys()) {
+        if (!visited[model])
+            qdjango_topsort(model, visited, stack);
+    }
+
+    return stack;
+}
+
 /*!
     Creates the database tables for all registered models.
 */
 bool QDjango::createTables()
 {
-    bool ret = true;
-    foreach (const QByteArray &key, globalMetaModels.keys())
-        if (!globalMetaModels[key].createTable())
-            ret = false;
-    return ret;
+    bool result = true;
+    QStack<QDjangoMetaModel> stack = qdjango_sorted_metamodels();
+    foreach (const QDjangoMetaModel &model, stack) {
+        if (!model.createTable())
+            result = false;
+    }
+
+    return result;
 }
 
 /*!
@@ -243,11 +277,15 @@ bool QDjango::createTables()
 */
 bool QDjango::dropTables()
 {
-    bool ret = true;
-    foreach (const QByteArray &key, globalMetaModels.keys())
-        if (!globalMetaModels[key].dropTable())
-            ret = false;
-    return ret;
+    bool result = true;
+    QStack<QDjangoMetaModel> stack = qdjango_sorted_metamodels();
+    for (int i = stack.size() - 1; i >= 0; --i) {
+        QDjangoMetaModel model = stack.at(i);
+        if (!model.dropTable())
+            result = false;
+    }
+
+    return result;
 }
 
 /*!
