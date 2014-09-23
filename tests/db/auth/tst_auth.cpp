@@ -59,10 +59,11 @@ private:
 void tst_Auth::initTestCase()
 {
     QVERIFY(initialiseDatabase());
-    QCOMPARE(QDjango::registerModel<User>().createTable(), true);
-    QCOMPARE(QDjango::registerModel<Group>().createTable(), true);
-    QCOMPARE(QDjango::registerModel<Message>().createTable(), true);
-    QCOMPARE(QDjango::registerModel<UserGroups>().createTable(), true);
+    QDjango::registerModel<User>();
+    QDjango::registerModel<Group>();
+    QDjango::registerModel<Message>();
+    QDjango::registerModel<UserGroups>();
+    QVERIFY(QDjango::createTables());
 }
 
 /** Load fixtures consisting of 3 users.
@@ -654,10 +655,7 @@ void tst_Auth::cleanup()
  */
 void tst_Auth::cleanupTestCase()
 {
-    QCOMPARE(QDjango::registerModel<UserGroups>().dropTable(), true);
-    QCOMPARE(QDjango::registerModel<Message>().dropTable(), true);
-    QCOMPARE(QDjango::registerModel<Group>().dropTable(), true);
-    QCOMPARE(QDjango::registerModel<User>().dropTable(), true);
+    QVERIFY(QDjango::dropTables());
 }
 
 /** Set and get foreign key on a Message object.
@@ -761,7 +759,7 @@ void tst_Auth::testGroups()
     userGroup.setUser(&user);
     userGroup.setGroup(&group);
     QCOMPARE(userGroup.save(), true);
-    
+
     UserGroups *ug = userGroups.selectRelated().get(
         QDjangoWhere("id", QDjangoWhere::Equals, 1));
     QVERIFY(ug != 0);
