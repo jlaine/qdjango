@@ -259,6 +259,8 @@ static QStack<QDjangoMetaModel> qdjango_sorted_metamodels()
 
 /*!
     Creates the database tables for all registered models.
+
+    \return true if all the tables were created, false otherwise.
 */
 bool QDjango::createTables()
 {
@@ -274,6 +276,8 @@ bool QDjango::createTables()
 
 /*!
     Drops the database tables for all registered models.
+
+    \return true if all the tables were dropped, false otherwise.
 */
 bool QDjango::dropTables()
 {

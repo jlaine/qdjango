@@ -419,6 +419,8 @@ QDjangoMetaModel& QDjangoMetaModel::operator=(const QDjangoMetaModel& other)
 
 /*!
     Creates the database table for this QDjangoMetaModel.
+
+    \return true if the table was created, false otherwise.
 */
 bool QDjangoMetaModel::createTable() const
 {
@@ -643,10 +645,7 @@ QStringList QDjangoMetaModel::createTableSql() const
 /*!
     Drops the database table for this QDjangoMetaModel.
 
-    If the table never existed, or was already dropped, this method
-    will still return true.
-
-    \return true if drop query succeeded, false otherwise.
+    \return true if the table was dropped or did not exist, false otherwise.
 */
 bool QDjangoMetaModel::dropTable() const
 {
