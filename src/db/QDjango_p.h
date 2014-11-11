@@ -41,7 +41,7 @@
  *
  * \internal
  */
-class QDjangoDatabase : public QObject
+class QDJANGO_EXPORT QDjangoDatabase : public QObject
 {
     Q_OBJECT
 
