@@ -50,3 +50,15 @@ Mailing list
 ============
 
 If you wish to discuss QDjango, you are welcome to join the [QDjango group](http://groups.google.com/group/qdjango).
+
+Notes
+======
+
+MSSQL
+-----
+
+Fast forward cursors are used by default. This greatly improves performance, and has the added benefit of implicitly converting to a static cursor when it [needs to]( http://technet.microsoft.com/en-us/library/aa172573(v=sql.80).aspx). Unfortunately, this also means that these cursors can block a connection to the server. In order to deal properly with this situation, there are a few requirements:
+
+- Connection pooling must be enabled in your [ODBC manager](http://www.unixodbc.org/doc/conn_pool.html)
+- You must enable Multiple Active Result Sets in the QODBC driver using "MARS_Connection=Yes" in the connection string
+- You must enable connection pooling in the QODBC driver using the "SQL_ATTR_CONNECTION_POOLING" attribute
