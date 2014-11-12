@@ -29,7 +29,7 @@
 static const char *connectionPrefix = "_qdjango_";
 
 QMap<QByteArray, QDjangoMetaModel> globalMetaModels = QMap<QByteArray, QDjangoMetaModel>();
-static QDjangoDatabase *globalDatabase = 0;
+static QDjangoDatabase *globalDatabase = NULL;
 static bool globalDebugEnabled = false;
 
 /// \cond
@@ -56,7 +56,9 @@ void QDjangoDatabase::threadFinished()
 
 static void closeDatabase()
 {
-    delete globalDatabase;
+    if (globalDatabase)
+        delete globalDatabase;
+    globalDatabase = NULL;
 }
 
 static void initDatabase(QSqlDatabase db)
