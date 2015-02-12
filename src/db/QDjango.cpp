@@ -231,6 +231,16 @@ void QDjango::setDebugEnabled(bool enabled)
     globalDebugEnabled = enabled;
 }
 
+/*!
+    returns an already registered model
+
+    \sa registerModel()
+*/
+QDjangoMetaModel QDjango::metaModel(const QObject *model)
+{
+    return metaModel(model->metaObject()->className());
+}
+
 static void qdjango_topsort(const QByteArray &modelName, QHash<QByteArray, bool> &visited,
                             QStack<QDjangoMetaModel> &stack)
 {
