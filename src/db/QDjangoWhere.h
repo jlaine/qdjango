@@ -37,7 +37,7 @@ class QDjangoWherePrivate;
  *
  * \ingroup Database
  */
-class QDJANGO_EXPORT QDjangoWhere
+class QDJANGO_DB_EXPORT QDjangoWhere
 {
 public:
     enum Operation

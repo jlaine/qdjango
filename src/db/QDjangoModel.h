@@ -75,7 +75,7 @@
  *
  * \ingroup Database
  */
-class QDJANGO_EXPORT QDjangoModel : public QObject
+class QDJANGO_DB_EXPORT QDjangoModel : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QVariant pk READ pk WRITE setPk)

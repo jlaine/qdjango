@@ -3,6 +3,8 @@ include(../../qdjango.pri)
 QT -= gui
 QT += sql
 
+DEFINES += QDJANGO_DB_BUILD
+
 TARGET = qdjango-db
 win32 {
     DESTDIR = $$OUT_PWD

@@ -18,6 +18,17 @@
 #ifndef QDJANGO_SCRIPT_P_H
 #define QDJANGO_SCRIPT_P_H
 
+#if defined(QDJANGO_SHARED)
+#  if defined(QDJANGO_SCRIPT_BUILD)
+#    define QDJANGO_SCRIPT_EXPORT Q_DECL_EXPORT
+#  else
+#    define QDJANGO_SCRIPT_EXPORT Q_DECL_IMPORT
+#  endif
+#else
+#  define QDJANGO_SCRIPT_EXPORT
+#endif
+
+#include "QDjangoWhere.h"
 //
 //  W A R N I N G
 //  -------------
@@ -25,7 +36,7 @@
 // This file is not part of the QDjango API.
 //
 
-QDJANGO_EXPORT QDjangoWhere QDjangoWhereFromScriptValue(QScriptEngine *engine, const QScriptValue &obj);
+QDJANGO_SCRIPT_EXPORT QDjangoWhere QDjangoWhereFromScriptValue(QScriptEngine *engine, const QScriptValue &obj);
 
 template <class T>
 static QScriptValue QDjangoQuerySet_all(QScriptContext *context, QScriptEngine *engine)

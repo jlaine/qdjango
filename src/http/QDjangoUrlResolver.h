@@ -32,7 +32,7 @@ class QRegExp;
  *
  * \ingroup Http
  */
-class QDJANGO_EXPORT QDjangoUrlResolver : public QObject
+class QDJANGO_HTTP_EXPORT QDjangoUrlResolver : public QObject
 {
     Q_OBJECT
 

@@ -28,7 +28,7 @@ class QDjangoHttpResponsePrivate;
  *
  * \ingroup Http
  */
-class QDJANGO_EXPORT QDjangoHttpResponse : public QObject
+class QDJANGO_HTTP_EXPORT QDjangoHttpResponse : public QObject
 {
     Q_OBJECT
 

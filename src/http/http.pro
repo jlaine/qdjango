@@ -3,6 +3,8 @@ include(../../qdjango.pri)
 QT -= gui
 QT += network
 
+DEFINES += QDJANGO_HTTP_BUILD
+
 TARGET = qdjango-http
 win32 {
     DESTDIR = $$OUT_PWD

@@ -3,6 +3,8 @@ include(../../qdjango.pri)
 QT -= gui
 QT += script sql
 
+DEFINES += QDJANGO_SCRIPT_BUILD
+
 TARGET = qdjango-script
 win32 {
     DESTDIR = $$OUT_PWD

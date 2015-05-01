@@ -39,7 +39,7 @@ class QDjangoUrlResolver;
  * \ingroup Http
  * \sa QDjangoFastCgiServer
  */
-class QDJANGO_EXPORT QDjangoHttpServer : public QObject
+class QDJANGO_HTTP_EXPORT QDjangoHttpServer : public QObject
 {
     Q_OBJECT
 
