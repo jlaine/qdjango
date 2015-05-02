@@ -56,7 +56,7 @@ typedef struct {
     unsigned char reserved;
 } FCGI_Header;
 
-class QDJANGO_AUTOTEST_EXPORT QDjangoFastCgiHeader
+class QDJANGO_HTTP_AUTOTEST_EXPORT QDjangoFastCgiHeader
 {
 public:
     static quint16 contentLength(FCGI_Header *header);
@@ -65,7 +65,7 @@ public:
     static void setRequestId(FCGI_Header *header, quint16 requestId);
 };
 
-class QDJANGO_AUTOTEST_EXPORT QDjangoFastCgiConnection : public QObject
+class QDJANGO_HTTP_AUTOTEST_EXPORT QDjangoFastCgiConnection : public QObject
 {
     Q_OBJECT
 

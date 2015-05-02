@@ -27,13 +27,13 @@
 #include <QVariant>
 
 #if defined(QDJANGO_SHARED)
-#  if defined(QDJANGO_BUILD)
-#    define QDJANGO_EXPORT Q_DECL_EXPORT
+#  if defined(QDJANGO_DB_BUILD)
+#    define QDJANGO_DB_EXPORT Q_DECL_EXPORT
 #  else
-#    define QDJANGO_EXPORT Q_DECL_IMPORT
+#    define QDJANGO_DB_EXPORT Q_DECL_IMPORT
 #  endif
 #else
-#  define QDJANGO_EXPORT
+#  define QDJANGO_DB_EXPORT
 #endif
 
 /** \brief The QDjangoDatabase class represents a set of connections to a
@@ -41,7 +41,7 @@
  *
  * \internal
  */
-class QDJANGO_EXPORT QDjangoDatabase : public QObject
+class QDJANGO_DB_EXPORT QDjangoDatabase : public QObject
 {
     Q_OBJECT
 
@@ -71,7 +71,7 @@ private slots:
     void threadFinished();
 };
 
-class QDJANGO_EXPORT QDjangoQuery : public QSqlQuery
+class QDJANGO_DB_EXPORT QDjangoQuery : public QSqlQuery
 {
 public:
     QDjangoQuery(QSqlDatabase db);

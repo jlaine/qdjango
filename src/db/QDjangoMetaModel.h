@@ -31,7 +31,7 @@ class QDjangoMetaModelPrivate;
  *
  * \internal
  */
-class QDJANGO_EXPORT QDjangoMetaField
+class QDJANGO_DB_EXPORT QDjangoMetaField
 {
 public:
     QDjangoMetaField();
@@ -61,7 +61,7 @@ private:
  *
  * \internal
  */
-class QDJANGO_EXPORT QDjangoMetaModel
+class QDJANGO_DB_EXPORT QDjangoMetaModel
 {
 public:
     QDjangoMetaModel(const QMetaObject *model = 0);

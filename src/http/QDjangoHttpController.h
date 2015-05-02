@@ -31,7 +31,7 @@ class QUrl;
  *
  * \ingroup Http
  */
-class QDJANGO_EXPORT QDjangoHttpController
+class QDJANGO_HTTP_EXPORT QDjangoHttpController
 {
 public:
     // get basic authorization credentials

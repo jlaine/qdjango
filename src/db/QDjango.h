@@ -31,7 +31,7 @@ class QString;
  *
  * \ingroup Database
  */
-class QDJANGO_EXPORT QDjango
+class QDJANGO_DB_EXPORT QDjango
 {
 public:
     static bool createTables();

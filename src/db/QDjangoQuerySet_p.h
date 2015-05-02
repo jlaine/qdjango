@@ -32,7 +32,7 @@
 
 class QDjangoMetaModel;
 
-class QDJANGO_EXPORT QDjangoModelReference
+class QDJANGO_DB_EXPORT QDjangoModelReference
 {
 public:
     QDjangoModelReference(const QString &tableReference_ = QString(), const QDjangoMetaModel &metaModel_ = QDjangoMetaModel(), bool nullable_ = false)
@@ -47,7 +47,7 @@ public:
     bool nullable;
 };
 
-class QDJANGO_EXPORT QDjangoReverseReference
+class QDJANGO_DB_EXPORT QDjangoReverseReference
 {
 public:
     QString leftHandKey;
@@ -56,7 +56,7 @@ public:
 
 /** \internal
  */
-class QDJANGO_EXPORT QDjangoCompiler
+class QDJANGO_DB_EXPORT QDjangoCompiler
 {
 public:
     QDjangoCompiler(const char *modelName, const QSqlDatabase &db);
@@ -78,7 +78,7 @@ private:
 
 /** \internal
  */
-class QDJANGO_EXPORT QDjangoQuerySetPrivate
+class QDJANGO_DB_EXPORT QDjangoQuerySetPrivate
 {
 public:
     QDjangoQuerySetPrivate(const char *modelName);

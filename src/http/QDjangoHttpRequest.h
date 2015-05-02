@@ -28,7 +28,7 @@ class QDjangoHttpRequestPrivate;
  *
  * \ingroup Http
  */
-class QDJANGO_EXPORT QDjangoHttpRequest
+class QDJANGO_HTTP_EXPORT QDjangoHttpRequest
 {
 public:
     QDjangoHttpRequest();
@@ -53,7 +53,7 @@ private:
 
 /** \cond */
 
-class QDJANGO_EXPORT QDjangoHttpTestRequest : public QDjangoHttpRequest
+class QDJANGO_HTTP_EXPORT QDjangoHttpTestRequest : public QDjangoHttpRequest
 {
 public:
     QDjangoHttpTestRequest(const QString &method, const QString &path);
