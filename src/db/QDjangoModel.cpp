@@ -64,7 +64,7 @@ QObject *QDjangoModel::foreignKey(const char *name) const
  * \param name
  * \param value
  *
- * \note The current QDjangoModel will take ownership of the given \c value.
+ * \note The QDjangoModel will not take ownership of the given \c value.
  */
 void QDjangoModel::setForeignKey(const char *name, QObject *value)
 {
