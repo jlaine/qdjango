@@ -1,3 +1,9 @@
+QDjango 0.6.0 (UNRELEASED)
+ * Make tests runnable using "make check".
+ * Fix build errors on Windows.
+ * Clarify return values of createTable(s) and dropTable(s).
+ * Fix documentation for setForeignKey concerning object ownership.
+
 QDjango 0.5.0 (2014-09-13)
  * Add support for case-insensitive lookups.
  * Simplify SQL for multiple OR/AND clauses.
