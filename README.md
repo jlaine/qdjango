@@ -24,7 +24,7 @@ Qt 4 on Debian:
 
 Qt 5 on Debian:
 
-    sudo apt-get install qtbase5-dev qtscript5-dev
+    sudo apt-get install qtbase5-dev
 
 Qt 4 on Mac OS X:
 

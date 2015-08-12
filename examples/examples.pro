@@ -1,2 +1,2 @@
 TEMPLATE = subdirs
-SUBDIRS = http-server script-console
+SUBDIRS = http-server

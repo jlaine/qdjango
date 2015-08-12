@@ -1,4 +1,5 @@
 QDjango 0.6.0 (UNRELEASED)
+ * Remove support for QtScript.
  * Make tests runnable using "make check".
  * Fix build errors on Windows.
  * Clarify return values of createTable(s) and dropTable(s).

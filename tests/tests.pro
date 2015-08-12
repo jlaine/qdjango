@@ -1,2 +1,2 @@
 TEMPLATE = subdirs
-SUBDIRS = db http script
+SUBDIRS = db http

@@ -7,6 +7,6 @@ if [ "$QT_SELECT" = "qt4" ]; then
 else
     sudo add-apt-repository -y ppa:ubuntu-sdk-team/ppa
     sudo apt-get update
-    sudo apt-get install qtbase5-dev qtscript5-dev libqt5sql5-mysql libqt5sql5-odbc libqt5sql5-psql libqt5sql5-sqlite
+    sudo apt-get install qtbase5-dev libqt5sql5-mysql libqt5sql5-odbc libqt5sql5-psql libqt5sql5-sqlite
 fi
 sudo apt-get install lcov odbcinst libmyodbc odbc-postgresql
