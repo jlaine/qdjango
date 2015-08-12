@@ -57,7 +57,7 @@ someUsers = users.limit(0, 100);
 
 \section iterating-queries Iterating over results
 
-The easiest way to iterate over results is to use Qt's <a href="http://doc.qt.nokia.com/latest/containers.html#the-foreach-keyword">foreach</a> keyword:
+The easiest way to iterate over results is to use Qt's <a href="http://doc.qt.io/qt-5/containers.html#the-foreach-keyword">foreach</a> keyword:
 
 \code
 // iterate over matching users

@@ -25,10 +25,10 @@ QDjango's Object Relation Mapper (ORM) strives to be both powerful
 and simple to use. Where possible it tries to follow django's
 ORM API, with a similar lazy queryset mechanism.
 
-The object relation mapper builds upon <a href="http://doc.qt.nokia.com/latest/metaobjects.html">Qt's Meta-Object System</a>,
+The object relation mapper builds upon <a href="http://doc.qt.io/qt-5/metaobjects.html">Qt's Meta-Object System</a>,
 so if you are familiar with Qt, you should feel right at home. Features include:
 
-\li support for a wide range of database backends thanks to <a href="http://doc.qt.nokia.com/latest/qtsql.html">QtSql</a>
+\li support for a wide range of database backends thanks to <a href="http://doc.qt.io/qt-5/qtsql-index.html">QtSql</a>
 \li <a href="models.html">creating and registering database models</a> is easy using Qt's property system
 \li <a href="queries.html">performing queries using querysets</a>
 \li QDjango can <a href="database.html">create and drop database tables and indices</a> for registered models
@@ -39,7 +39,7 @@ so if you are familiar with Qt, you should feel right at home. Features include:
 \section setup Setting the database
 
 The first step is to open the database using
-<a href="http://doc.qt.nokia.com/latest/qsqldatabase.html#addDatabase">QSqlDatabase::addDatabase()</a>,
+<a href="http://doc.qt.io/qt-5/qsqldatabase.html#addDatabase">QSqlDatabase::addDatabase()</a>,
 for instance for an in-memory SQLite database:
 
 \code

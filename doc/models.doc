@@ -25,9 +25,9 @@ account information, and illustrate different types of queries on this model.
 \section declaring Declaring your model
 
 To declare your model, subclass the QDjangoModel class, and define a property
-using the <a href="http://doc.qt.nokia.com/latest/qobject.html#Q_PROPERTY">Q_PROPERTY</a>
+using the <a href="http://doc.qt.io/qt-5/qobject.html#Q_PROPERTY">Q_PROPERTY</a>
 macro for each database field. You can provide additional information about a
-field using the <a href="http://doc.qt.nokia.com/latest/qobject.html#Q_CLASSINFO">Q_CLASSINFO</a>
+field using the <a href="http://doc.qt.io/qt-5/qobject.html#Q_CLASSINFO">Q_CLASSINFO</a>
 macro:
 
  \li \c max_length : the maximum length of the field (used when creating the database table)
@@ -112,7 +112,7 @@ instances as described in \ref queries.
 
 Although it is recommended you make your models inherit QDjangoModel, it is not strictly necessary. QDjango can in fact handle any QObject-derived class, but you will lose some of the syntactic sugar.
 
-If for instance you defined a \c SomeObject class which inherits <a href="http://doc.qt.nokia.com/latest/qobject.html">QObject</a>, you can write:
+If for instance you defined a \c SomeObject class which inherits <a href="http://doc.qt.io/qt-5/qobject.html">QObject</a>, you can write:
 
 \code
 QDjangoMetaModel meta = QDjango::registerModel<SomeObject>();

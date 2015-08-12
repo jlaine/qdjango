@@ -21,11 +21,11 @@
 
 \brief Scripting support for models
 
-The QDjangoScript class makes it easy to access your models from <a href="http://doc.qt.nokia.com/latest/qtscript.html">QtScript</a>.
+The QDjangoScript class makes it easy to access your models from <a href="http://doc.qt.io/qt-5/qtscript-index.html">QtScript</a>.
 
 \section making-scriptable Making your models scriptable
 
-You can register a model with a <a href="http://doc.qt.nokia.com/latest/qscriptengine.html">QScriptEngine</a> instance as follows:
+You can register a model with a <a href="http://doc.qt.io/qt-5/qscriptengine.html">QScriptEngine</a> instance as follows:
 
 \code
 #include <QDjangoQuerySet.h>
@@ -41,7 +41,7 @@ QDjangoScript::registerModel<User>(engine);
 \section scripting-models Using your models from a script
 
 Because QDjango makes use of Qt's property system, all model fields can
-automatically be accessed from <a href="http://doc.qt.nokia.com/latest/qtscript.html">QtScript</a>.
+automatically be accessed from <a href="http://doc.qt.io/qt-5/qtscript-index.html">QtScript</a>.
 For instance if you declared a \c User model, you can run the following code:
 
 \code
