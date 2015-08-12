@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2014 Jeremy Lainé
+ * Copyright (C) 2010-2015 Jeremy Lainé
  * Copyright (C) 2011 Mathias Hasselmann
  * Contact: https://github.com/jlaine/qdjango
  *
