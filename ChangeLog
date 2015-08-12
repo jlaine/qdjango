@@ -1,4 +1,4 @@
-QDjango 0.6.0 (UNRELEASED)
+QDjango 0.6.0 (2015-08-12)
  * Remove support for QtScript.
  * Make tests runnable using "make check".
  * Fix build errors on Windows.
