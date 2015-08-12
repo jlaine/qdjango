@@ -10,6 +10,8 @@ win32 {
     DESTDIR = $$OUT_PWD
 }
 
+macx:QMAKE_LFLAGS_SONAME = -Wl,-install_name,@rpath/
+
 INCLUDEPATH += ../db
 LIBS += -L../db $$QDJANGO_DB_LIBS
 HEADERS += QDjangoScript.h QDjangoScript_p.h

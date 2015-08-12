@@ -10,6 +10,8 @@ win32 {
     DESTDIR = $$OUT_PWD
 }
 
+macx:QMAKE_LFLAGS_SONAME = -Wl,-install_name,@rpath/
+
 HEADERS += \
     QDjango.h \
     QDjango_p.h \
