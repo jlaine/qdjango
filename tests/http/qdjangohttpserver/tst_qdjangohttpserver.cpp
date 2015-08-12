@@ -59,7 +59,7 @@ void tst_QDjangoHttpServer::cleanupTestCase()
 void tst_QDjangoHttpServer::initTestCase()
 {
     httpServer = new QDjangoHttpServer;
-    httpServer->urls()->set(QRegExp(QLatin1String(QLatin1String("^$"))), this, "_q_index");
+    httpServer->urls()->set(QRegExp(QLatin1String("^$")), this, "_q_index");
     httpServer->urls()->set(QRegExp(QLatin1String("^internal-server-error$")), this, "_q_error");
     QCOMPARE(httpServer->serverAddress(), QHostAddress(QHostAddress::Null));
     QCOMPARE(httpServer->serverPort(), quint16(0));
