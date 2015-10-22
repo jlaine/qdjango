@@ -19,6 +19,7 @@
 #include <QDateTime>
 #include <QFile>
 #include <QFileInfo>
+#include <QLocale>
 #include <QRegExp>
 #include <QStringList>
 #include <QUrl>
@@ -52,7 +53,7 @@ bool QDjangoHttpController::getBasicAuth(const QDjangoHttpRequest &request, QStr
 QString QDjangoHttpController::httpDateTime(const QDateTime &dt)
 {
     if (dt.isValid())
-        return dt.toUTC().toString(QLatin1String("ddd, dd MMM yyyy HH:mm:ss")) + QLatin1String(" GMT");
+        return QLocale("C").toString(dt.toUTC(), QLatin1String("ddd, dd MMM yyyy HH:mm:ss")) + QLatin1String(" GMT");
     return QString();
 }
 
@@ -60,7 +61,7 @@ QString QDjangoHttpController::httpDateTime(const QDateTime &dt)
  */
 QDateTime QDjangoHttpController::httpDateTime(const QString &str)
 {
-    QDateTime dt = QDateTime::fromString(str.left(25), QLatin1String("ddd, dd MMM yyyy HH:mm:ss"));
+    QDateTime dt = QLocale("C").toDateTime(str.left(25), QLatin1String("ddd, dd MMM yyyy HH:mm:ss"));
     dt.setTimeSpec(Qt::UTC);
     return dt;
 }
