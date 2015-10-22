@@ -1,4 +1,4 @@
-QDjango 0.6.1 (UNRELEASED)
+QDjango 0.6.2 (2015-10-22)
  * Make sure HTTP dates are handled using C locale.
 
 QDjango 0.6.1 (2015-08-13)
