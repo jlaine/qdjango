@@ -353,12 +353,24 @@ QDjangoQuery QDjangoQuerySetPrivate::countQuery() const
     const QString where = resolvedWhere.sql(db);
     const QString limit = compiler.orderLimitSql(QStringList(), lowMark, highMark);
     QString sql = QLatin1String("SELECT COUNT(*) FROM ") + compiler.fromSql();
-    if (!where.isEmpty())
-        sql += QLatin1String(" WHERE ") + where;
+    if (!customWhere.isNull())
+    {
+       sql += QLatin1String(" WHERE ") + customWhere;
+    }
+    else if (!where.isEmpty())
+    {
+       sql += QLatin1String(" WHERE ") + where;
+    }
+
     sql += limit;
+
     QDjangoQuery query(db);
     query.prepare(sql);
-    resolvedWhere.bindValues(query);
+
+    if (customWhere.isNull())
+    {
+       resolvedWhere.bindValues(query);
+    }
 
     return query;
 }
@@ -427,12 +439,23 @@ QDjangoQuery QDjangoQuerySetPrivate::selectQuery() const
     const QString where = resolvedWhere.sql(db);
     const QString limit = compiler.orderLimitSql(orderBy, lowMark, highMark);
     QString sql = QLatin1String("SELECT ") + columns.join(QLatin1String(", ")) + QLatin1String(" FROM ") + compiler.fromSql();
-    if (!where.isEmpty())
-        sql += QLatin1String(" WHERE ") + where;
+    if (!customWhere.isNull())
+    {
+       sql += QLatin1String(" WHERE ") + customWhere;
+    }
+    else if (!where.isEmpty())
+    {
+       sql += QLatin1String(" WHERE ") + where;
+    }
     sql += limit;
     QDjangoQuery query(db);
     query.prepare(sql);
-    resolvedWhere.bindValues(query);
+    
+    if (customWhere.isNull())
+    {
+       resolvedWhere.bindValues(query);
+    }
+
     return query;
 }
 

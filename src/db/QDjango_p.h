@@ -36,6 +36,9 @@
 #  define QDJANGO_DB_EXPORT
 #endif
 
+#define CREATE_QUERY "createTable"
+#define DROP_QUERY "dropTable"
+
 /** \brief The QDjangoDatabase class represents a set of connections to a
  *  database.
  *

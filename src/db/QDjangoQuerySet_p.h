@@ -107,6 +107,7 @@ public:
     int lowMark;
     int highMark;
     QDjangoWhere whereClause;
+    QString customWhere;
     QStringList orderBy;
     QList<QVariantList> properties;
     bool selectRelated;

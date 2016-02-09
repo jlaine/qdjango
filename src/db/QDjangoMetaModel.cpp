@@ -237,6 +237,8 @@ public:
     QByteArray primaryKey;
     QString table;
     QList<QByteArray> uniqueTogether;
+    QString sqlCreateTable;
+    QString sqlDropTable;
 };
 
 /*!
@@ -378,6 +380,18 @@ QDjangoMetaModel::QDjangoMetaModel(const QMetaObject *meta)
         d->primaryKey = field.d->name;
     }
 
+    // manual create and drop table
+    int idxCreateTable = meta->indexOfClassInfo(CREATE_QUERY);
+    if (idxCreateTable >= 0)
+    {
+       d->sqlCreateTable = meta->classInfo(idxCreateTable).value();
+    }
+
+    int idxDropTable = meta->indexOfClassInfo(DROP_QUERY);
+    if (idxDropTable >= 0)
+    {
+       d->sqlDropTable = meta->classInfo(idxDropTable).value();
+    }
 }
 
 /*!
@@ -445,6 +459,17 @@ QStringList QDjangoMetaModel::createTableSql() const
     QStringList queries;
     QStringList propSql;
     QStringList constraintSql;
+
+    if (!d->sqlCreateTable.isEmpty())
+    {
+
+       for (const QString &sql : d->sqlCreateTable.split("CREATE", QString::SkipEmptyParts))
+       {
+          queries << "CREATE" + sql;
+       }
+       return queries;
+    }
+
     const QString quotedTable = db.driver()->escapeIdentifier(d->table, QSqlDriver::TableName);
     foreach (const QDjangoMetaField &field, d->localFields)
     {
@@ -654,8 +679,24 @@ bool QDjangoMetaModel::dropTable() const
         return true;
 
     QDjangoQuery query(db);
-    return query.exec(QLatin1String("DROP TABLE ") +
-        db.driver()->escapeIdentifier(d->table, QSqlDriver::TableName));
+    if (!d->sqlDropTable.isEmpty())
+    {
+       bool result = true;
+       QString aa = d->sqlDropTable;
+       for (const QString &sql : d->sqlDropTable.split(";", QString::SkipEmptyParts))
+       {
+          bool tRes = query.exec(sql + ";");
+          result = result && tRes;
+       }
+       return result;
+    }
+    else
+    {
+       if (!db.tables().contains(d->table))
+          return true;
+       return query.exec(QLatin1String("DROP TABLE ") +
+          db.driver()->escapeIdentifier(d->table, QSqlDriver::TableName));
+    }
 }
 
 /*!

@@ -293,6 +293,7 @@ public:
     QDjangoQuerySet all() const;
     QDjangoQuerySet exclude(const QDjangoWhere &where) const;
     QDjangoQuerySet filter(const QDjangoWhere &where) const;
+    QDjangoQuerySet setCustomWhere(const QString &where) const;
     QDjangoQuerySet limit(int pos, int length = -1) const;
     QDjangoQuerySet none() const;
     QDjangoQuerySet orderBy(const QStringList &keys) const;
@@ -655,4 +656,11 @@ QDjangoQuerySet<T> &QDjangoQuerySet<T>::operator=(const QDjangoQuerySet<T> &othe
     return *this;
 }
 
+template <class T>
+QDjangoQuerySet<T> QDjangoQuerySet<T>::setCustomWhere(const QString &where) const
+{
+   QDjangoQuerySet<T> other = all();
+   other.d->customWhere = where;
+   return other;
+}
 #endif
