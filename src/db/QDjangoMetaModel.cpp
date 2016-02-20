@@ -725,7 +725,7 @@ void QDjangoMetaModel::setForeignKey(QObject *model, const char *name, QObject *
 /*!
     Loads the given properties into a \a model instance.
 */
-void QDjangoMetaModel::load(QObject *model, const QVariantList &properties, int &pos) const
+void QDjangoMetaModel::load(QObject *model, const QVariantList &properties, int &pos, QStringList *relatedFields) const
 {
     // process local fields
     foreach (const QDjangoMetaField &field, d->localFields)
@@ -736,11 +736,26 @@ void QDjangoMetaModel::load(QObject *model, const QVariantList &properties, int 
         return;
     foreach (const QByteArray &fkName, d->foreignFields.keys())
     {
-        QObject *object = model->property(fkName + "_ptr").value<QObject*>();
-        if (object)
+        QString fkS(fkName);
+        if ( (relatedFields != 0) && (relatedFields->contains(fkS) ) )
         {
-            const QDjangoMetaModel foreignMeta = QDjango::metaModel(d->foreignFields[fkName]);
-            foreignMeta.load(object, properties, pos);
+            QStringList nsl = relatedFields->filter(QRegExp("^" + fkS + "__")).replaceInStrings(QRegExp("^" + fkS + "__"),"");
+            QObject *object = model->property(fkName + "_ptr").value<QObject*>();
+            if (object)
+            {
+                const QDjangoMetaModel foreignMeta = QDjango::metaModel(d->foreignFields[fkName]);
+                foreignMeta.load(object, properties, pos, &nsl);
+            }
+        }
+
+        if (relatedFields == 0)
+        {
+            QObject *object = model->property(fkName + "_ptr").value<QObject*>();
+            if (object)
+            {
+                const QDjangoMetaModel foreignMeta = QDjango::metaModel(d->foreignFields[fkName]);
+                foreignMeta.load(object, properties, pos);
+            }
         }
     }
 }

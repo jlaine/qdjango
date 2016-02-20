@@ -296,7 +296,7 @@ public:
     QDjangoQuerySet limit(int pos, int length = -1) const;
     QDjangoQuerySet none() const;
     QDjangoQuerySet orderBy(const QStringList &keys) const;
-    QDjangoQuerySet selectRelated() const;
+    QDjangoQuerySet selectRelated(QStringList *relatedFields=0) const;
 
     int count() const;
     QDjangoWhere where() const;
@@ -425,6 +425,7 @@ QDjangoQuerySet<T> QDjangoQuerySet<T>::all() const
     other.d->highMark = d->highMark;
     other.d->orderBy = d->orderBy;
     other.d->selectRelated = d->selectRelated;
+    other.d->relatedFields = d->relatedFields;
     other.d->whereClause = d->whereClause;
     return other;
 }
@@ -579,10 +580,11 @@ bool QDjangoQuerySet<T>::remove()
  *  executes its query.
  */
 template <class T>
-QDjangoQuerySet<T> QDjangoQuerySet<T>::selectRelated() const
+QDjangoQuerySet<T> QDjangoQuerySet<T>::selectRelated(QStringList *relatedFields) const
 {
     QDjangoQuerySet<T> other = all();
     other.d->selectRelated = true;
+    other.d->relatedFields = relatedFields;
     return other;
 }
 
