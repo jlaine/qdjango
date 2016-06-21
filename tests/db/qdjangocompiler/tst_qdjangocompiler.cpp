@@ -594,6 +594,8 @@ void tst_QDjangoCompiler::fieldNames_data()
            " INNER JOIN \"item\" T1 ON T1.\"id\" = \"owner\".\"item2_id\"";
 }
 
+Q_DECLARE_METATYPE(QDjangoWhere)
+
 void tst_QDjangoCompiler::fieldNames()
 {
     QFETCH(QByteArray, modelName);
@@ -669,6 +671,5 @@ void tst_QDjangoCompiler::orderLimitSql()
     QCOMPARE(compiler.orderLimitSql(orderBy, lowMark, highMark), sql);
 }
 
-Q_DECLARE_METATYPE(QDjangoWhere)
 QTEST_MAIN(tst_QDjangoCompiler)
 #include "tst_qdjangocompiler.moc"
