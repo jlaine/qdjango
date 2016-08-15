@@ -10,3 +10,4 @@ else
 fi
 
 sudo apt-get install -qq lcov odbcinst libmyodbc odbc-postgresql
+sudo apt-get install -qq mysql-server postgresql
