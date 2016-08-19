@@ -110,7 +110,7 @@ public:
     QStringList orderBy;
     QList<QVariantList> properties;
     bool selectRelated;
-    QStringList *relatedFields;
+    QStringList relatedFields;
 
 private:
     Q_DISABLE_COPY(QDjangoQuerySetPrivate)

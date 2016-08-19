@@ -75,7 +75,7 @@ public:
     QStringList createTableSql() const;
     bool dropTable() const;
 
-    void load(QObject *model, const QVariantList &props, int &pos, QStringList *relatedFields=0) const;
+    void load(QObject *model, const QVariantList &props, int &pos, const QStringList &relatedFields = QStringList()) const;
     bool remove(QObject *model) const;
     bool save(QObject *model) const;
 

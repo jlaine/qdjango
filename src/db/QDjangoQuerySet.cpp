@@ -410,11 +410,11 @@ QDjangoQuery QDjangoQuerySetPrivate::insertQuery(const QVariantMap &fields) cons
     foreach (const QString &name, fields.keys()) {
         const QDjangoMetaField field = metaModel.localField(name.toLatin1());
         fieldColumns << db.driver()->escapeIdentifier(field.column(), QSqlDriver::FieldName);
-        fieldHolders << QString::fromLatin1(":%1").arg(name);//QLatin1String("?");
+        fieldHolders << QString::fromLatin1(":%1").arg(name);
     }
 
     QDjangoQuery query(db);
-    query.prepare(QString::fromLatin1("INSERT INTO %1 (%2) VALUES (%3)").arg(
+    query.prepare(QString::fromLatin1("INSERT INTO %1 (%2) VALUES(%3)").arg(
                   db.driver()->escapeIdentifier(metaModel.table(), QSqlDriver::TableName),
                   fieldColumns.join(QLatin1String(", ")), fieldHolders.join(QLatin1String(", "))));
     foreach (const QString &name, fields.keys())
@@ -433,7 +433,7 @@ QDjangoQuery QDjangoQuerySetPrivate::selectQuery() const
     QDjangoWhere resolvedWhere(whereClause);
     compiler.resolve(resolvedWhere);
 
-    const QStringList columns = compiler.fieldNames(selectRelated, this->relatedFields);
+    const QStringList columns = compiler.fieldNames(selectRelated, &this->relatedFields);
     const QString where = resolvedWhere.sql(db);
     const QString limit = compiler.orderLimitSql(orderBy, lowMark, highMark);
     QString sql = QLatin1String("SELECT ") + columns.join(QLatin1String(", ")) + QLatin1String(" FROM ") + compiler.fromSql();
