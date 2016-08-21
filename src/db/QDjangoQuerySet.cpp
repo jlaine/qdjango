@@ -410,7 +410,7 @@ QDjangoQuery QDjangoQuerySetPrivate::insertQuery(const QVariantMap &fields) cons
     foreach (const QString &name, fields.keys()) {
         const QDjangoMetaField field = metaModel.localField(name.toLatin1());
         fieldColumns << db.driver()->escapeIdentifier(field.column(), QSqlDriver::FieldName);
-        fieldHolders << QString::fromLatin1(":%1").arg(name);
+        fieldHolders << QLatin1String("?");
     }
 
     QDjangoQuery query(db);
