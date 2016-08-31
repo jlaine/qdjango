@@ -299,6 +299,7 @@ public:
     QDjangoQuerySet selectRelated() const;
 
     int count() const;
+    QVariant aggregate(const QString& field, QDjangoWhere::AggregateType func) const;
     QDjangoWhere where() const;
 
     bool remove();
@@ -449,6 +450,20 @@ int QDjangoQuerySet<T>::count() const
     if (!query.exec() || !query.next())
         return -1;
     return query.value(0).toInt();
+}
+
+/** Counts the objects in the queryset using an SQL [AVG, COUNT, SUM, MIN, MAX] query,
+ *  or -1 if the query failed.
+ *
+ */
+template <class T>
+QVariant QDjangoQuerySet<T>::aggregate(const QString& field, QDjangoWhere::AggregateType func) const
+{
+    // execute aggregate query
+    QDjangoQuery query(d->aggregateQuery(field,func));
+    if (!query.exec() || !query.next())
+        return -1;
+    return query.value(0);
 }
 
 /** Returns a new QDjangoQuerySet containing objects for which the given key

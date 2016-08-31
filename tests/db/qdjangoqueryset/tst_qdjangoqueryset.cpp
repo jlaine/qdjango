@@ -55,6 +55,7 @@ private slots:
     void countQuery();
     void deleteQuery();
     void insertQuery();
+    void aggregateQuery();
     void selectQuery();
     void updateQuery();
     void cleanupTestCase();
@@ -104,6 +105,29 @@ void tst_QDjangoQuerySetPrivate::insertQuery()
     QCOMPARE(normalizeSql(QDjango::database(), query.lastQuery()), QLatin1String("INSERT INTO \"foo_table\" (\"foo\") VALUES(?)"));
     QCOMPARE(query.boundValues().size(), 1);
     QCOMPARE(query.boundValue(0), QVariant("abc"));
+}
+
+void tst_QDjangoQuerySetPrivate::aggregateQuery()
+{
+    for (int i=0;i<10;i++){
+        QVariantMap data;
+        data.insert("foo", "abc");
+        data.insert("bar",i+1);
+        QDjangoQuerySetPrivate qs("Object");
+        QDjangoQuery query = qs.insertQuery(data);
+        QVERIFY(query.exec());
+    }
+    QDjangoQuerySetPrivate qs("Object");
+    QDjangoQuery query = qs.aggregateQuery("bar_column", QDjangoWhere::SUM);
+    QVERIFY(query.exec());
+    QVERIFY(query.next());
+    QCOMPARE(normalizeSql(QDjango::database(), query.lastQuery()), QLatin1String("SELECT SUM(bar_column) FROM \"foo_table\""));
+    QCOMPARE(query.value(0).toInt(),55);
+    qs.addFilter(QDjangoWhere("bar",QDjangoWhere::GreaterThan,5));
+    query = qs.aggregateQuery("bar_column", QDjangoWhere::SUM);
+    QVERIFY(query.exec());
+    QVERIFY(query.next());
+    QCOMPARE(query.value(0).toInt(),40);
 }
 
 void tst_QDjangoQuerySetPrivate::selectQuery()

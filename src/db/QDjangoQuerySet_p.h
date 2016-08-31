@@ -95,10 +95,14 @@ public:
 
     // SQL queries
     QDjangoQuery countQuery() const;
+    QDjangoQuery aggregateQuery(const QString &field, QDjangoWhere::AggregateType func) const;
     QDjangoQuery deleteQuery() const;
     QDjangoQuery insertQuery(const QVariantMap &fields) const;
     QDjangoQuery selectQuery() const;
     QDjangoQuery updateQuery(const QVariantMap &fields) const;
+
+    //static aggregate functions mapping
+    static QString aggregationToString(QDjangoWhere::AggregateType type);
 
     // reference counter
     QAtomicInt counter;
