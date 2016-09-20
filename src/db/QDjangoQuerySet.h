@@ -299,7 +299,7 @@ public:
     QDjangoQuerySet selectRelated() const;
 
     int count() const;
-    QVariant aggregate(const QString& field, QDjangoWhere::AggregateType func) const;
+    QVariant aggregate(const QDjangoWhere::AggregateType func, const QString& field) const;
     QDjangoWhere where() const;
 
     bool remove();
@@ -445,24 +445,21 @@ int QDjangoQuerySet<T>::count() const
     if (d->hasResults)
         return d->properties.size();
 
-    // execute COUNT query
-    QDjangoQuery query(d->countQuery());
-    if (!query.exec() || !query.next())
-        return -1;
-    return query.value(0).toInt();
+    QVariant count(aggregate(QDjangoWhere::COUNT,"*"));
+    return count.isValid() ? count.toInt() : -1;
 }
 
 /** Counts the objects in the queryset using an SQL [AVG, COUNT, SUM, MIN, MAX] query,
- *  or -1 if the query failed.
+ *  or invalid QVariant if the query failed.
  *
  */
 template <class T>
-QVariant QDjangoQuerySet<T>::aggregate(const QString& field, QDjangoWhere::AggregateType func) const
+QVariant QDjangoQuerySet<T>::aggregate(const QDjangoWhere::AggregateType func, const QString& field) const
 {
     // execute aggregate query
-    QDjangoQuery query(d->aggregateQuery(field,func));
+    QDjangoQuery query(d->aggregateQuery(func, field));
     if (!query.exec() || !query.next())
-        return -1;
+        return QVariant();
     return query.value(0);
 }
 

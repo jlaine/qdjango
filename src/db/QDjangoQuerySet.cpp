@@ -339,20 +339,24 @@ bool QDjangoQuerySetPrivate::sqlLoad(QObject *model, int index)
     return true;
 }
 
-/** Returns the SQL query to perform a COUNT on the current set.
- */
-QDjangoQuery QDjangoQuerySetPrivate::countQuery() const
-{
-    return aggregateQuery("*",QDjangoWhere::COUNT);
+static QString aggregationToString(QDjangoWhere::AggregateType type){
+    switch (type) {
+    case QDjangoWhere::AVG: return QLatin1String("AVG");
+    case QDjangoWhere::COUNT: return QLatin1String("COUNT");
+    case QDjangoWhere::SUM: return QLatin1String("SUM");
+    case QDjangoWhere::MIN: return QLatin1String("MIN");
+    case QDjangoWhere::MAX: return QLatin1String("MAX");
+    }
+    return QString();
 }
 
 /**
- * @brief QDjangoQuerySetPrivate::aggregateQuery Returns the SQL query to perform a @param field on the current set.
- * @param field name to aggregae
+ * @brief QDjangoQuerySetPrivate::aggregateQuery Returns the SQL query to perform a @param func on the current set.
+ * @param field name or expression to aggregate (eq price or amount*price)
  * @param func one of [AVG, COUNT, SUM, MIN, MAX]
  * @return SQL query to perform a @param func on the current set.
  */
-QDjangoQuery QDjangoQuerySetPrivate::aggregateQuery(const QString &field, QDjangoWhere::AggregateType func) const
+QDjangoQuery QDjangoQuerySetPrivate::aggregateQuery(const QDjangoWhere::AggregateType func, const QString &field) const
 {
     QSqlDatabase db = QDjango::database();
 
@@ -444,6 +448,7 @@ QDjangoQuery QDjangoQuerySetPrivate::selectQuery() const
     QDjangoQuery query(db);
     query.prepare(sql);
     resolvedWhere.bindValues(query);
+
     return query;
 }
 
@@ -585,14 +590,5 @@ QList<QVariantList> QDjangoQuerySetPrivate::sqlValuesList(const QStringList &fie
     return values;
 }
 
-QString QDjangoQuerySetPrivate::aggregationToString(QDjangoWhere::AggregateType type){
-    switch (type) {
-    case QDjangoWhere::AVG: return QLatin1String("AVG");
-    case QDjangoWhere::COUNT: return QLatin1String("COUNT");
-    case QDjangoWhere::SUM: return QLatin1String("SUM");
-    case QDjangoWhere::MIN: return QLatin1String("MIN");
-    case QDjangoWhere::MAX: return QLatin1String("MAX");
-    }
-    return QString();
-}
+
 /// \endcond

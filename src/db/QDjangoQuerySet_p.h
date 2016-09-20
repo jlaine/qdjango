@@ -94,15 +94,11 @@ public:
     QList<QVariantList> sqlValuesList(const QStringList &fields);
 
     // SQL queries
-    QDjangoQuery countQuery() const;
-    QDjangoQuery aggregateQuery(const QString &field, QDjangoWhere::AggregateType func) const;
+    QDjangoQuery aggregateQuery(const QDjangoWhere::AggregateType func, const QString &field) const;
     QDjangoQuery deleteQuery() const;
     QDjangoQuery insertQuery(const QVariantMap &fields) const;
     QDjangoQuery selectQuery() const;
     QDjangoQuery updateQuery(const QVariantMap &fields) const;
-
-    //static aggregate functions mapping
-    static QString aggregationToString(QDjangoWhere::AggregateType type);
 
     // reference counter
     QAtomicInt counter;
