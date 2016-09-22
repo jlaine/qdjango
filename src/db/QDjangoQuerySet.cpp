@@ -339,9 +339,24 @@ bool QDjangoQuerySetPrivate::sqlLoad(QObject *model, int index)
     return true;
 }
 
-/** Returns the SQL query to perform a COUNT on the current set.
+static QString aggregationToString(QDjangoWhere::AggregateType type){
+    switch (type) {
+    case QDjangoWhere::AVG: return QLatin1String("AVG");
+    case QDjangoWhere::COUNT: return QLatin1String("COUNT");
+    case QDjangoWhere::SUM: return QLatin1String("SUM");
+    case QDjangoWhere::MIN: return QLatin1String("MIN");
+    case QDjangoWhere::MAX: return QLatin1String("MAX");
+    }
+    return QString();
+}
+
+/**
+ * @brief QDjangoQuerySetPrivate::aggregateQuery Returns the SQL query to perform a @param func on the current set.
+ * @param field name or expression to aggregate (eq price or amount*price)
+ * @param func one of [AVG, COUNT, SUM, MIN, MAX]
+ * @return SQL query to perform a @param func on the current set.
  */
-QDjangoQuery QDjangoQuerySetPrivate::countQuery() const
+QDjangoQuery QDjangoQuerySetPrivate::aggregateQuery(const QDjangoWhere::AggregateType func, const QString &field) const
 {
     QSqlDatabase db = QDjango::database();
 
@@ -352,14 +367,14 @@ QDjangoQuery QDjangoQuerySetPrivate::countQuery() const
 
     const QString where = resolvedWhere.sql(db);
     const QString limit = compiler.orderLimitSql(QStringList(), lowMark, highMark);
-    QString sql = QLatin1String("SELECT COUNT(*) FROM ") + compiler.fromSql();
+
+    QString sql = QLatin1String("SELECT ") + aggregationToString(func)+"("+field+") "+"FROM " + compiler.fromSql();
     if (!where.isEmpty())
         sql += QLatin1String(" WHERE ") + where;
     sql += limit;
     QDjangoQuery query(db);
     query.prepare(sql);
     resolvedWhere.bindValues(query);
-
     return query;
 }
 
@@ -433,6 +448,7 @@ QDjangoQuery QDjangoQuerySetPrivate::selectQuery() const
     QDjangoQuery query(db);
     query.prepare(sql);
     resolvedWhere.bindValues(query);
+
     return query;
 }
 
@@ -573,5 +589,6 @@ QList<QVariantList> QDjangoQuerySetPrivate::sqlValuesList(const QStringList &fie
     }
     return values;
 }
+
 
 /// \endcond
