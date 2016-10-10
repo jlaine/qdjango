@@ -61,6 +61,13 @@ public:
         IContains
     };
 
+    enum AggregateType{
+        AVG,
+        COUNT,
+        SUM,
+        MIN,
+        MAX
+    };
     QDjangoWhere();
     QDjangoWhere(const QDjangoWhere &other);
     QDjangoWhere(const QString &key, QDjangoWhere::Operation operation, QVariant value);

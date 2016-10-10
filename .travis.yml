@@ -1,3 +1,5 @@
+sudo: required
+dist: trusty
 language: cpp
 cache: apt
 env:
@@ -8,7 +10,7 @@ env:
 install:
   - tests/travis/install-build-depends
 before_script:
-  - mysql -e 'create database qdjango_test'
+  - mysql -e 'create database qdjango_test' -u root
   - psql -c 'create database qdjango_test' -U postgres
 script:
   - tests/travis/build-and-test
