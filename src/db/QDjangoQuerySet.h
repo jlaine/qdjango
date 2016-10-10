@@ -583,6 +583,7 @@ bool QDjangoQuerySet<T>::remove()
  *  keys. This is handy for very complex DB structures and allows the user
  *  to limit the amount of retrieved data. If omitted, the basic functionality
  *  is preserved and the function will traverse all foreign key relationships.
+ *  Each list element is a chain of foreing keys separated by double underscore "__".
  */
 template <class T>
 QDjangoQuerySet<T> QDjangoQuerySet<T>::selectRelated(const QStringList &relatedFields) const
