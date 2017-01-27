@@ -47,6 +47,7 @@ public:
     static QDjangoHttpResponse *serveInternalServerError(const QDjangoHttpRequest &request);
     static QDjangoHttpResponse *serveNotFound(const QDjangoHttpRequest &request);
     static QDjangoHttpResponse *serveRedirect(const QDjangoHttpRequest &request, const QUrl &url, bool permanent = false);
+    static QDjangoHttpResponse *serveRedirect(const QDjangoHttpRequest &request, const QString &urlString, bool permanent = false);
     static QDjangoHttpResponse *serveStatic(const QDjangoHttpRequest &request, const QString &filePath, const QDateTime &expires = QDateTime());
 
 private:
