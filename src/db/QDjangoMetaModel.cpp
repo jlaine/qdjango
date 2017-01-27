@@ -266,7 +266,17 @@ QDjangoMetaModel::QDjangoMetaModel(const QMetaObject *meta)
     }
 
     const int count = meta->propertyCount();
-    for(int i = QObject::staticMetaObject.propertyCount(); i < count; ++i)
+    int start = 0;
+
+    for(const QMetaObject *superClass = meta; superClass; superClass = superClass->superClass())
+    {
+        start = superClass->propertyCount();
+        if(superClass->className()[0] == 'Q')
+        {
+            break;
+        }
+    }
+    for(int i = start; i < count; ++i)
     {
         const QString typeName = QString::fromLatin1(meta->property(i).typeName());
         if (!qstrcmp(meta->property(i).name(), "pk"))
