@@ -55,7 +55,7 @@ QDjangoHttpResponse* QDjangoUrlResolverPrivate::respond(const QDjangoHttpRequest
         if (it->urls && it->path.indexIn(path) == 0) {
             // try recursing
             QString subPath = path.mid(it->path.capturedTexts().first().size());
-            QDjangoHttpResponse *response = it->urls->d->respond(request, subPath);
+            QDjangoHttpResponse *response = it->urls->respond(request, subPath);
             if (response)
                 return response;
         } else if (it->receiver && it->path.exactMatch(path)) {

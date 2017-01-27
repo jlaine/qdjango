@@ -42,10 +42,8 @@ public:
 
     bool include(const QRegExp &path, QDjangoUrlResolver *urls);
     bool set(const QRegExp &path, QObject *receiver, const char *member);
-    QString reverse(QObject *receiver, const char *member, const QVariantList &args = QVariantList()) const;
-
-public slots:
-    QDjangoHttpResponse* respond(const QDjangoHttpRequest &request, const QString &path) const;
+    virtual QString reverse(QObject *receiver, const char *member, const QVariantList &args = QVariantList()) const;
+    virtual QDjangoHttpResponse* respond(const QDjangoHttpRequest &request, const QString &path) const;
 
 private:
     QDjangoUrlResolverPrivate *d;
