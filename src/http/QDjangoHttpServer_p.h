@@ -33,7 +33,7 @@
 class QDjangoHttpRequest;
 class QDjangoHttpResponse;
 class QDjangoHttpServer;
-class QTcpSocket;
+class QAbstractSocket;
 
 typedef QPair<QDjangoHttpRequest*,QDjangoHttpResponse*> QDjangoHttpJob;
 
@@ -44,7 +44,7 @@ class QDjangoHttpConnection : public QObject
     Q_OBJECT
 
 public:
-    QDjangoHttpConnection(QTcpSocket *device, QDjangoHttpServer *server);
+    QDjangoHttpConnection(QAbstractSocket *device, QDjangoHttpServer *server);
     ~QDjangoHttpConnection();
 
 signals:
@@ -68,7 +68,7 @@ private:
     QDjangoHttpRequest *m_pendingRequest;
     int m_requestCount;
     QDjangoHttpServer *m_server;
-    QTcpSocket *m_socket;
+    QAbstractSocket *m_socket;
 
     // request parsing
     qint64 m_requestBytesRemaining;

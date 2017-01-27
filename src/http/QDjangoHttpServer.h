@@ -20,6 +20,10 @@
 
 #include <QHostAddress>
 #include <QObject>
+#ifndef QT_NO_OPENSSL
+#include <QSslKey>
+#include <QSslSocket>
+#endif
 
 #include "QDjangoHttp_p.h"
 
@@ -43,6 +47,7 @@ class QDJANGO_HTTP_EXPORT QDjangoHttpServer : public QObject
 {
     Q_OBJECT
 
+    friend class TcpServer;
 public:
     QDjangoHttpServer(QObject *parent = 0);
     ~QDjangoHttpServer();
@@ -53,13 +58,23 @@ public:
     quint16 serverPort() const;
     QDjangoUrlResolver *urls() const;
 
+#ifndef QT_NO_OPENSSL
+    void setupSSL(const QSslKey &sslKey, const QSslCertificate &sslCert, const QList<QSslCertificate> &sslCaCerts = QList<QSslCertificate>());
+#endif
+
+    quint32 serverPort() const;
+
 signals:
     /** This signal is emitted when a request completes.
      */
     void requestFinished(QDjangoHttpRequest *request, QDjangoHttpResponse *response);
 
-private slots:
-    void _q_newTcpConnection();
+private:
+#if QT_VERSION > QT_VERSION_CHECK(5, 0, 0)
+    void _q_incomingConnection(qintptr socketDescriptor);
+#else
+    void _q_incomingConnection(int socketDescriptor);
+#endif
 
 private:
     Q_DISABLE_COPY(QDjangoHttpServer)
