@@ -45,6 +45,7 @@ public:
 
     template <class T>
     static QDjangoMetaModel registerModel();
+    static void closeDatabase();
 
 private:
     static QDjangoMetaModel registerModel(const QMetaObject *meta);

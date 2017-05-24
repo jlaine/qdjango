@@ -59,6 +59,7 @@ void QDjangoDatabase::threadFinished()
 static void closeDatabase()
 {
     delete globalDatabase;
+    globalDatabase = 0;
 }
 
 static QDjangoDatabase::DatabaseType getDatabaseType(QSqlDatabase &db)
@@ -319,6 +320,11 @@ QDjangoMetaModel QDjango::registerModel(const QMetaObject *meta)
     if (!globalMetaModels.contains(name))
         globalMetaModels.insert(name, QDjangoMetaModel(meta));
     return globalMetaModels[name];
+}
+
+void QDjango::closeDatabase()
+{
+    ::closeDatabase();
 }
 
 QDjangoDatabase::DatabaseType QDjangoDatabase::databaseType(const QSqlDatabase &db)
