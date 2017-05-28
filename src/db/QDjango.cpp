@@ -58,10 +58,8 @@ void QDjangoDatabase::threadFinished()
 
 static void closeDatabase()
 {
-    if (globalDatabase) {
-        delete globalDatabase;
-        globalDatabase = 0;
-    }
+    delete globalDatabase;
+    globalDatabase = 0;
 }
 
 static QDjangoDatabase::DatabaseType getDatabaseType(QSqlDatabase &db)
