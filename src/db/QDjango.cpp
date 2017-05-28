@@ -58,7 +58,10 @@ void QDjangoDatabase::threadFinished()
 
 static void closeDatabase()
 {
-    delete globalDatabase;
+    if (globalDatabase) {
+        delete globalDatabase;
+        globalDatabase = 0;
+    }
 }
 
 static QDjangoDatabase::DatabaseType getDatabaseType(QSqlDatabase &db)
@@ -202,8 +205,7 @@ void QDjango::setDatabase(QSqlDatabase database)
         qWarning() << "Unsupported database driver" << database.driverName();
     }
 
-    if (!globalDatabase)
-    {
+    if (!globalDatabase) {
         globalDatabase = new QDjangoDatabase();
         qAddPostRoutine(closeDatabase);
     }
