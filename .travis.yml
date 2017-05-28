@@ -7,10 +7,11 @@ addons:
     packages:
       - lcov
       - libmyodbc
-      - mysql-server
       - odbcinst
       - odbc-postgresql
-      - postgresql
+services:
+  - mysql
+  - postgresql
 env:
   - QT_SELECT=qt4 CONFIG=shared
   - QT_SELECT=qt4 CONFIG=static
