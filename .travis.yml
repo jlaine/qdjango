@@ -2,6 +2,15 @@ sudo: required
 dist: trusty
 language: cpp
 cache: apt
+addons:
+  apt:
+    packages:
+      - lcov
+      - libmyodbc
+      - mysql-server
+      - odbcinst
+      - odbc-postgresql
+      - postgresql
 env:
   - QT_SELECT=qt4 CONFIG=shared
   - QT_SELECT=qt4 CONFIG=static
