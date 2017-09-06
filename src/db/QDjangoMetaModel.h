@@ -21,6 +21,7 @@
 #include <QMap>
 #include <QSharedDataPointer>
 #include <QVariant>
+#include <QPair>
 
 #include "QDjango_p.h"
 
@@ -86,6 +87,7 @@ public:
     QDjangoMetaField localField(const char *name) const;
     QList<QDjangoMetaField> localFields() const;
     QMap<QByteArray, QByteArray> foreignFields() const;
+    QMap<QByteArray, QPair<QByteArray, QByteArray> > manyToManyFields() const;
     QByteArray primaryKey() const;
     QString table() const;
 
