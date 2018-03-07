@@ -155,14 +155,18 @@ QString QDjangoCompiler::orderLimitSql(const QStringList &orderBy, int lowMark, 
     QStringList bits;
     QString field;
     foreach (field, orderBy) {
-        QString order = QLatin1String("ASC");
-        if (field.startsWith(QLatin1Char('-'))) {
-            order = QLatin1String("DESC");
-            field = field.mid(1);
-        } else if (field.startsWith(QLatin1Char('+'))) {
-            field = field.mid(1);
+        if (field.compare("RANDOM") == 0) {
+            bits.append("RANDOM()");
+        } else {
+            QString order = QLatin1String("ASC");
+            if (field.startsWith(QLatin1Char('-'))) {
+                order = QLatin1String("DESC");
+                field = field.mid(1);
+            } else if (field.startsWith(QLatin1Char('+'))) {
+                field = field.mid(1);
+            }
+            bits.append(databaseColumn(field) + QLatin1Char(' ') + order);
         }
-        bits.append(databaseColumn(field) + QLatin1Char(' ') + order);
     }
 
     if (!bits.isEmpty())
