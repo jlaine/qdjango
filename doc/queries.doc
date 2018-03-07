@@ -106,4 +106,121 @@ int numberOfUsers = someUsers.count();
 someUsers.remove();
 \endcode
 
+\section select-related Selecting related objects
+It is efficient to fetch the main object together with the selected one. 
+This is particularly true if multiple objects are needed so that all of them are fetched with a single query.
+QDjagno offers two ways how to select related objects.
+The default option is to traverse all foreign keys recursuvely.
+In case of small dependence trees this option is suitable, however when the database structure is complex, fetching all related object in a recursive manner can be overwhelming.
+Therefore, the QDjangoQuerySet::selectRelated() method can be invoked with a list of foreign keys that have to be traversed, thus limiting the set of fetched related objects.
+
+
+Let us have the following model structure:
+\code
+#include <QObject>
+#include <QDjangoModel.h>
+#include <QByteArray>
+#include <QDateTime>
+#include <enterprise.h>
+#include <row_status_type.h>
+#include <site_type.h>
+class Author : public QDjangoModel
+{       Q_OBJECT
+        Q_PROPERTY(long author_id READ author_id WRITE set_author_id)
+        Q_CLASSINFO("author_id","primary_key=true auto_increment=true")
+        Q_PROPERTY(QString name READ name WRITE set_name)
+        Q_CLASSINFO("name","max_length=254 null=true blank=true")
+        Q_PROPERTY(QDateTime birthday READ birthday WRITE set_birthday)
+        Q_CLASSINFO("birthday","null=true blank=true")
+public:
+        Author(QObject *parent=0);
+        long author_id() const;
+        void set_author_id(long value);
+        QString name() const;
+        QDateTime birthday() const;
+        void set_birthday(QDateTime value);
+private:
+        long m_author_id;
+        QString m_name;
+        QDateTime m_birthday;
+};
+
+class Location : public QDjangoModel
+{       Q_OBJECT
+        Q_PROPERTY(long location_id READ publisher_id WRITE set_location_id)
+        Q_CLASSINFO("location_id","primary_key=true auto_increment=true")
+        Q_PROPERTY(QString name READ name WRITE set_name)
+        Q_CLASSINFO("name","max_length=254 null=true blank=true")
+public:
+        Location(QObject *parent=0);
+        long location_id() const;
+        void set_location_id(long value);
+        QString name() const;
+private:
+        long m_location_id;
+        QString m_name;
+};
+
+class Publisher : public QDjangoModel
+{       Q_OBJECT
+        Q_PROPERTY(long publisher_id READ publisher_id WRITE set_publisher_id)
+        Q_CLASSINFO("author_id","primary_key=true auto_increment=true")
+        Q_PROPERTY(QString name READ name WRITE set_name)
+        Q_CLASSINFO("name","max_length=254 null=true blank=true")
+	Q_PROPERTY(Location* location READ location WRITE set_location)
+public:
+        Publisher(QObject *parent=0);
+        long publisher_id() const;
+        void set_publisher_id(long value);
+        QString name() const;
+	void sel_location(Location *value);
+	Location* location();
+private:
+        long m_publisher_id;
+        QString m_name;
+};
+
+class Book : public QDjangoModel
+{       Q_OBJECT
+        Q_PROPERTY(long book_id READ book_id WRITE set_book_id)
+        Q_CLASSINFO("book_id","primary_key=true auto_increment=true")
+        Q_PROPERTY(QString name READ name WRITE set_name)
+        Q_CLASSINFO("name","max_length=254 null=true blank=true")
+	Q_PROPERTY(Author* author READ author WRITE set_author)
+	Q_PROPERTY(Publisher* publisher READ publisher WRITE set_publisher)
+public:
+        Book(QObject *parent=0);
+        long book_id() const;
+        void set_book_id(long value);
+        QString name() const;
+	void set_author(Author* value);
+	Author* author();
+	void set_publisher(Publisher* value);
+	Publisher* publisher();
+private:
+        long m_book_id;
+        QString m_name;
+};
+\endcode
+
+If one invokes QDjangoQuerySet::selectRelated() without arguments on a QuerySet of Book, QDjango will return the selected Book object with filled Author, Publisher as well as Location of the Publisher.
+In order to limit the pre-fetched objects, just for Author the QDjangoQuerySet::selectRelated() method should be invoked using a QStringList in the following format
+\code
+QStringList relatedNames;
+relatedNames << "author" << "publisher";
+\endcode 
+
+Limiting the pre-fetching to publisher and its location the QStringList becomes:
+\code
+QStringList relatedNames;
+relatedNames << "publisher__location";
+\endcode
+
+Fetching all the complete structure as if the method was invoked without any argument is equivalent to the following QStringList:
+\code
+QStringList relatedNames;
+relatedNames << "publisher__location" << "author";
+\endcode
+
+The first level of the related names represent the foreign keys of the class Book. The subsequent foreign keys of the related objects are separated by double underscore '__' as in the QDjangoWhere class.
 */

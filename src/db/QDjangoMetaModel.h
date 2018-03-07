@@ -21,6 +21,7 @@
 #include <QMap>
 #include <QSharedDataPointer>
 #include <QVariant>
+#include <QStringList>
 
 #include "QDjango_p.h"
 
@@ -75,7 +76,7 @@ public:
     QStringList createTableSql() const;
     bool dropTable() const;
 
-    void load(QObject *model, const QVariantList &props, int &pos) const;
+    void load(QObject *model, const QVariantList &props, int &pos, const QStringList &relatedFields = QStringList()) const;
     bool remove(QObject *model) const;
     bool save(QObject *model) const;
 

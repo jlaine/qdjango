@@ -296,7 +296,7 @@ public:
     QDjangoQuerySet limit(int pos, int length = -1) const;
     QDjangoQuerySet none() const;
     QDjangoQuerySet orderBy(const QStringList &keys) const;
-    QDjangoQuerySet selectRelated() const;
+    QDjangoQuerySet selectRelated(const QStringList &relatedFields = QStringList()) const;
 
     int count() const;
     QVariant aggregate(const QDjangoWhere::AggregateType func, const QString& field) const;
@@ -426,6 +426,7 @@ QDjangoQuerySet<T> QDjangoQuerySet<T>::all() const
     other.d->highMark = d->highMark;
     other.d->orderBy = d->orderBy;
     other.d->selectRelated = d->selectRelated;
+    other.d->relatedFields = d->relatedFields;
     other.d->whereClause = d->whereClause;
     return other;
 }
@@ -589,12 +590,19 @@ bool QDjangoQuerySet<T>::remove()
 /** Returns a QDjangoQuerySet that will automatically "follow" foreign-key
  *  relationships, selecting that additional related-object data when it
  *  executes its query.
+ *
+ *  \param relatedFields If provided it will follow only the listed foreign
+ *  keys. This is handy for very complex DB structures and allows the user
+ *  to limit the amount of retrieved data. If omitted, the basic functionality
+ *  is preserved and the function will traverse all foreign key relationships.
+ *  Each list element is a chain of foreing keys separated by double underscore "__".
  */
 template <class T>
-QDjangoQuerySet<T> QDjangoQuerySet<T>::selectRelated() const
+QDjangoQuerySet<T> QDjangoQuerySet<T>::selectRelated(const QStringList &relatedFields) const
 {
     QDjangoQuerySet<T> other = all();
     other.d->selectRelated = true;
+    other.d->relatedFields = relatedFields;
     return other;
 }
 

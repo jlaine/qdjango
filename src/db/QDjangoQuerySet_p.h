@@ -61,7 +61,7 @@ class QDJANGO_DB_EXPORT QDjangoCompiler
 public:
     QDjangoCompiler(const char *modelName, const QSqlDatabase &db);
     QString fromSql();
-    QStringList fieldNames(bool recurse, QDjangoMetaModel *metaModel = 0, const QString &modelPath = QString(), bool nullable = false);
+    QStringList fieldNames(bool recurse, const QStringList *fields = 0, QDjangoMetaModel *metaModel = 0, const QString &modelPath = QString(), bool nullable = false);
     QString orderLimitSql(const QStringList &orderBy, int lowMark, int highMark);
     void resolve(QDjangoWhere &where);
 
@@ -110,6 +110,7 @@ public:
     QStringList orderBy;
     QList<QVariantList> properties;
     bool selectRelated;
+    QStringList relatedFields;
 
 private:
     Q_DISABLE_COPY(QDjangoQuerySetPrivate)

@@ -99,7 +99,7 @@ QString QDjangoCompiler::databaseColumn(const QString &name)
     return modelRef + QLatin1Char('.') + driver->escapeIdentifier(field.column(), QSqlDriver::FieldName);
 }
 
-QStringList QDjangoCompiler::fieldNames(bool recurse, QDjangoMetaModel *metaModel, const QString &modelPath, bool nullable)
+QStringList QDjangoCompiler::fieldNames(bool recurse, const QStringList *fields, QDjangoMetaModel *metaModel, const QString &modelPath, bool nullable)
 {
     QStringList columns;
     if (!metaModel)
@@ -117,7 +117,17 @@ QStringList QDjangoCompiler::fieldNames(bool recurse, QDjangoMetaModel *metaMode
     foreach (const QByteArray &fkName, metaModel->foreignFields().keys()) {
         QDjangoMetaModel metaForeign = QDjango::metaModel(metaModel->foreignFields()[fkName]);
         bool nullableForeign = metaModel->localField(fkName + QByteArray("_id")).isNullable();
-        columns += fieldNames(recurse, &metaForeign, pathPrefix + QString::fromLatin1(fkName), nullableForeign);
+        QString fkS(fkName);
+        if ( (fields != 0) && (fields->contains(fkS) ) )
+        {
+            QStringList nsl = fields->filter(QRegExp("^" + fkS + "__")).replaceInStrings(QRegExp("^" + fkS + "__"),"");
+            columns += fieldNames(recurse, &nsl, &metaForeign, pathPrefix + QString::fromLatin1(fkName), nullableForeign);
+        }
+
+        if (fields == 0)
+        {
+            columns += fieldNames(recurse, 0, &metaForeign, pathPrefix + QString::fromLatin1(fkName), nullableForeign);
+        }
     }
     return columns;
 }
@@ -335,7 +345,7 @@ bool QDjangoQuerySetPrivate::sqlLoad(QObject *model, int index)
 
     const QDjangoMetaModel metaModel = QDjango::metaModel(m_modelName);
     int pos = 0;
-    metaModel.load(model, properties.at(index), pos);
+    metaModel.load(model, properties.at(index), pos, this->relatedFields);
     return true;
 }
 
@@ -438,7 +448,7 @@ QDjangoQuery QDjangoQuerySetPrivate::selectQuery() const
     QDjangoWhere resolvedWhere(whereClause);
     compiler.resolve(resolvedWhere);
 
-    const QStringList columns = compiler.fieldNames(selectRelated);
+    const QStringList columns = compiler.fieldNames(selectRelated, &this->relatedFields);
     const QString where = resolvedWhere.sql(db);
     const QString limit = compiler.orderLimitSql(orderBy, lowMark, highMark);
     QString sql = QLatin1String("SELECT ") + columns.join(QLatin1String(", ")) + QLatin1String(" FROM ") + compiler.fromSql();
